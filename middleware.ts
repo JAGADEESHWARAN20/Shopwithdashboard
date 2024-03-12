@@ -1,23 +1,20 @@
+// File: middleware.ts
 import { authMiddleware } from "@clerk/nextjs";
 
-// Configure the public and ignored routes as needed
-export default authMiddleware({
-  // Define the routes that can be accessed while signed out
-  publicRoutes: [
-    "/",
-    "/about",
-    // Add more public routes here as needed
-  ],
-  // Define routes that should be ignored by the authentication middleware
-  ignoredRoutes: [
-    // Add routes that should be ignored here
-  ],
+const middleware = authMiddleware({
+  // If the .env based settings for the sign-in and sign-up routes are present,
+  // add the sign-in and sign-up routes to any routes listed in publicRoutes.
+  // If the .env based settings are not present, add /sign-in and /sign-up
+  // to any routes listed in publicRoutes.
+  publicRoutes: [process.env.SIGN_IN_ROUTE ?? '/sign-in', process.env.SIGN_UP_ROUTE ?? '/sign-up'],
+  // No routes are ignored
+  ignoredRoutes: [],
 });
 
-// Configure the matcher to protect all routes except the public ones
+export default middleware;
+
 export const config = {
-  // Protects all routes, including api/trpc.
-  // See https://clerk.com/docs/references/nextjs/auth-middleware
-  // for more information about configuring your Middleware
+  // Make all routes from publicRoutes public.
+  // Make all remaining routes protected.
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)"],
 };

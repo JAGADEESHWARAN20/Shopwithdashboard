@@ -41,7 +41,7 @@ export const StoreModal = () => {
     return (
         <Modal title="Create Store" description="Add a new Store to manage products and Categories" isOpen={storeModal.isOpen} onClose={storeModal.onClose}>
             <div className="space-y-4 py-2 pb-4">
-                {/* Wrap the form with the FormProvider component */}
+              
                 <FormProvider {...form}> 
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <FormField
@@ -58,10 +58,10 @@ export const StoreModal = () => {
                             )}
                         />
                         <div className="pt-6 space-x-2 flex items-center justify-end w-full ">
-                                <Button disabled={loading} variant="outline" onClick={storeModal.onClose}>
+                                <Button suppressHydrationWarning disabled={loading} variant="outline" onClick={storeModal.onClose}>
                                     cancel
                                 </Button>
-                                 <Button disabled={loading} type="submit">
+                                 <Button suppressHydrationWarning disabled={loading} type="submit">
                                     Continue
                                 </Button>
                         </div>
