@@ -1,6 +1,7 @@
+"use client"
 // DashboardLayout.tsx
 
-import { auth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/clerk-react";
 import { redirect } from "next/navigation";
 import Navbar from '@/components/navbar'
 import prismadb from "@/lib/prismadb";
@@ -13,7 +14,7 @@ export default async function DashboardLayout({
     params: { storeId: string };
 }) {
     
-    const { userId } = auth();
+    const { userId } = useAuth();
 
     if (!userId) {
         redirect('/sign-in')
@@ -27,7 +28,7 @@ export default async function DashboardLayout({
     });
 
     if (!store) {
-        redirect('/');
+        redirect(`/`);
     }
 
     return (

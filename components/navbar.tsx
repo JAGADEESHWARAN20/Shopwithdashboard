@@ -1,4 +1,4 @@
-import { UserButton,auth } from '@clerk/nextjs'
+import { UserButton,useAuth } from '@clerk/nextjs'
 import { redirect } from 'next/navigation';
 import { MainNav } from '@/components/mainNav'
 import StoreSwitcher from '@/components/store-switcher';
@@ -6,7 +6,7 @@ import prismadb from '@/lib/prismadb';
 
 
 const Navbar = async () => {
-    const { userId } = auth();
+    const { userId } = useAuth();
 
     if(!userId) {
         redirect('/sign-in')
