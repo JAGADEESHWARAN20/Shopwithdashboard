@@ -1,4 +1,5 @@
 "use client";
+
 import { Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -24,7 +25,7 @@ export const BillboardClient : React.FC<BillboardClientProps> =  ({
             title={`Billboards (${data.length})`}
             description="manage billboards for your store"
             />
-                <Button onClick={() => router.push(`/${params.storeId}/billboards/new`)}>
+                <Button   onClick={() => router.push(`/${params.storeId}/billboards/new`)}>
                     <Plus className="mr-2 h-4 w-4"/>
                     Add New
                 </Button>        

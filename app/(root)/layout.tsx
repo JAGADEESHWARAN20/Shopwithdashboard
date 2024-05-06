@@ -1,20 +1,21 @@
-import { useAuth} from "@clerk/nextjs";
+"use client"
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from "next/navigation";
-
+import { ReactNode } from 'react';
 import  prismadb  from "@/lib/prismadb";
 import React from "react";
 
 export default async function SetupLayout( {
   children  
 }:{
-    children:React.ReactNode;
+    children:ReactNode;
 }){
-    const { userId } = useAuth();
+    const { userId } = auth();
 
     if(!userId){
         redirect('/sign-in');
     }
-
+    
 
     const store = await prismadb.store.findFirst({
         where:{

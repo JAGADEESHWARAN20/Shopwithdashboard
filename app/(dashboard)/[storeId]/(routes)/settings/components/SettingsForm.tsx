@@ -5,7 +5,7 @@ import * as z from 'zod'
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { Trash } from "lucide-react";
 import { useParams,useRouter } from "next/navigation";
@@ -21,14 +21,15 @@ import {
   FormItem, 
   FormLabel, 
   FormMessage} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { AlertModel } from "@/components/modals/alert-model";
-import { ApiAlert } from "@/components/ui/api-alert";
-import { useOrigin } from "@/hooks/use-origin";
-
-
+  import { Input } from '@/components/ui/input';
+  import { AlertModel } from "@/components/modals/alert-model";
+  import { ApiAlert } from "@/components/ui/api-alert";
+  import { useOrigin } from "@/hooks/use-origin";
+  
+  import {useState, useEffect} from "react"
+  
 interface SettingsFormProps {
-    initialData: store;
+  initialData: store;
 }
 
 const formSchema = z.object({
@@ -82,6 +83,11 @@ export const SettingsForm:React.FC<SettingsFormProps> = ({
     }
   }
 
+    const [isClient, setIsClient] = useState(false)
+     useEffect(() => {
+    setIsClient(true)
+  }, [])
+
     return(
       <>
       <AlertModel 
@@ -95,7 +101,7 @@ export const SettingsForm:React.FC<SettingsFormProps> = ({
         title="Settings"
         description="Manage Store Preferences"
         />
-        <Button
+        {isClient ? <Button
         disabled={loading}
         suppressHydrationWarning={true}
         variant="destructive"
@@ -103,7 +109,8 @@ export const SettingsForm:React.FC<SettingsFormProps> = ({
         onClick={() => setOpen(true)}
         >
             <Trash className="h-4 w-4"/>
-        </Button>
+        </Button>: null }
+        
       </div>  
         <Separator/>
         <Form {...form}>
@@ -125,13 +132,13 @@ export const SettingsForm:React.FC<SettingsFormProps> = ({
                   ) }
                   />
              </div>
-             <Button disabled={loading} className="ml-auto" type='submit'>
+             <Button suppressHydrationWarning={true} disabled={loading} className="ml-auto" type='submit'>
               Save Changes
              </Button>
           </form>
         </Form>
         <Separator/>
-        <ApiAlert 
+        <ApiAlert
         title="NEXT_PUBLIC_API_URL" 
         description={`${origin}/api/${params.storeId}`} 
         variant="public"/>

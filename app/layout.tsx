@@ -1,4 +1,4 @@
- 
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -31,17 +31,19 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
   return (
 
-    <ClerkProvider {...pageProps}>
-      <html lang="en">
+    <html lang="en">
          <body className={inter.className}>
           <ToasterProvider/>
           <ModalProvider/>
+        <ClerkProvider {...pageProps}>
           {children}
+        </ClerkProvider>
          </body>
       </html>
 
-    </ClerkProvider>
     
 
   );
 }
+
+export default DashboardLayout;

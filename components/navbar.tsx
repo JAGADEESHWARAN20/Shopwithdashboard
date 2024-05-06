@@ -1,12 +1,14 @@
-import { UserButton,useAuth } from '@clerk/nextjs'
+import { auth } from "@clerk/nextjs/server"
+import { UserButton} from '@clerk/nextjs'
 import { redirect } from 'next/navigation';
 import { MainNav } from '@/components/mainNav'
 import StoreSwitcher from '@/components/store-switcher';
 import prismadb from '@/lib/prismadb';
 
 
+
 const Navbar = async () => {
-    const { userId } = useAuth();
+    const { userId } = auth();
 
     if(!userId) {
         redirect('/sign-in')
@@ -16,6 +18,8 @@ const Navbar = async () => {
             userId
         },
     }); 
+
+
 
     return ( 
         <div className='border-b'>

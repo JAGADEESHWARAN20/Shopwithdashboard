@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 
 export async function POST(
@@ -8,7 +8,7 @@ export async function POST(
     ) {
     try {
         // Ensure user is authenticated
-        const { userId } = auth();
+        const { userId } = useAuth();
         const body = await req.json();
         const { label, imageUrl } = body;
         if (!userId) {
