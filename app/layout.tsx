@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs' 
+import { ClerkProvider } from '@clerk/nextjs'
 import { ModalProvider } from "@/Providers/modal-provider";
 import { ToasterProvider } from "@/Providers/toast-provider";
 
@@ -25,23 +25,23 @@ export const metadata: Metadata = {
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  pageProps?: any; // Adjust the type of pageProps if known
+  pageProps?: any;
 }
 
 const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
   return (
 
     <html lang="en">
-         <body className={inter.className}>
-          <ToasterProvider/>
-          <ModalProvider/>
-        <ClerkProvider {...pageProps}>
+      <body className={inter.className}>
+        <ToasterProvider />
+        <ModalProvider />
+        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInFallbackRedirectUrl="/dashboard"  {...pageProps}>
           {children}
         </ClerkProvider>
-         </body>
-      </html>
+      </body>
+    </html>
 
-    
+
 
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import {  Copy, Server, icons } from "lucide-react";
+import { Copy, Server, icons } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button"
@@ -12,30 +12,30 @@ interface ApiAlertProps {
     variant: "public" | "admin";
 };
 
-const textMap: Record<ApiAlertProps["variant"],string> = {
-    public:"Public",
+const textMap: Record<ApiAlertProps["variant"], string> = {
+    public: "Public",
     admin: "Admin"
 };
 const variantMap: Record<ApiAlertProps["variant"], BadgeProps["variant"]> = {
-    public:"secondary",
+    public: "secondary",
     admin: "destructive"
 };
 
 
-export const ApiAlert: React.FC<ApiAlertProps> =({
+export const ApiAlert: React.FC<ApiAlertProps> = ({
     title,
     description,
-    variant="public"
-}) =>{
-    const oncopy = () =>{
+    variant = "public"
+}) => {
+    const oncopy = () => {
         navigator.clipboard.writeText(description);
         toast.success("API Route Copied to the Clipboard");
     }
 
     return (
         <Alert>
-            <Server className="h-4 w-4"/>
-            <AlertTitle>
+            <Server className="h-4 w-4" />
+            <AlertTitle className="flex gap-2 items-center">
                 {title}
                 <Badge variant={variantMap[variant]}>
                     {textMap[variant]}
@@ -46,7 +46,7 @@ export const ApiAlert: React.FC<ApiAlertProps> =({
                     {description}
                 </code>
                 <Button variant={"outline"} size={"icon"} onClick={oncopy}>
-                    <Copy className="h-4 w-4"/>
+                    <Copy className="h-4 w-4" />
                 </Button>
             </AlertDescription>
         </Alert>

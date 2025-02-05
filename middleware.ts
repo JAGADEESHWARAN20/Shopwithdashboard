@@ -1,17 +1,18 @@
-// Import clerkMiddleware from the correct location
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-// Define the middleware function
-const middleware = clerkMiddleware();
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/api/:path*'])
 
-// Export the middleware function as a named export
-export { middleware };
+export default clerkMiddleware((auth, request) => {
+  if (!isPublicRoute(request)) {
+    auth().protect()
+  }
+})
 
-// Export the config for clerkMiddleware
 export const config = {
-  // The following matcher runs middleware on all routes
-  // except static assets.
-  
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
-
-};
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+}

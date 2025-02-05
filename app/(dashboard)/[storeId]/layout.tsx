@@ -16,7 +16,7 @@ export default async function DashboardLayout({
     children: ReactNode;
     params: { storeId: string };
 }) {
-    
+
     const { userId } = auth();
 
     if (!userId) {

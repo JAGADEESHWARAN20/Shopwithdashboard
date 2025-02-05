@@ -1,26 +1,20 @@
-
-
-import { getAuth } from "@clerk/nextjs/server";
-import type { NextApiRequest, NextApiResponse } from "next";
 import prismadb from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+// Handle POST request
+export async function POST(req: Request) {
   try {
-    // Ensure user is authenticated
-    const { userId } = getAuth(req);
+    const { userId } = auth();
 
-    // Parse request body
-    const { name } = req.body;
+    const body = await req.json();
+    const { name } = body;
 
-    // Validate request body
     if (!userId) {
-      return res.status(401).json({ error: "Not authenticated" });
+      return new NextResponse("Not authenticated", { status: 401 });
     }
     if (!name) {
-      return res.status(400).json({ error: "Name is required" });
+      return new NextResponse("Name is required", { status: 400 });
     }
 
     // Create a new store
@@ -31,10 +25,9 @@ export default async function handler(
       },
     });
 
-    // Return the created store
-    return res.status(201).json(store);
+    return NextResponse.json(store, { status: 201 });
   } catch (error) {
     console.error("[STORES_POST]", error);
-    return res.status(500).json({ error: "Internal error" });
+    return new NextResponse("Internal error", { status: 500 });
   }
 }
