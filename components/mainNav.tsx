@@ -99,7 +99,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
 
     return (
         <nav className={cn("relative w-full", className)} {...props}>
-            <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border-b">
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 border-b">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     className="sm:hidden text-gray-700 dark:text-gray-300 focus:outline-none"
