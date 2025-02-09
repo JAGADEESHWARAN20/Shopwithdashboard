@@ -10,11 +10,11 @@ import { DataTable } from "@/components/ui/data-table";
 
 
 
-interface OrderProps {
+interface OrderClientProps {
     data: OrderColumn[]
 }
 
-export const BillboardClient: React.FC<OrderProps> = ({
+export const OrderClient: React.FC<OrderClientProps> = ({
     data
 }) => {
 
@@ -26,7 +26,7 @@ export const BillboardClient: React.FC<OrderProps> = ({
             />
 
             <Separator />
-            <DataTable SearchKey={"label"} columns={columns} data={data} />
+            <DataTable SearchKey={"products"} columns={columns} data={data} />
 
         </>
     )

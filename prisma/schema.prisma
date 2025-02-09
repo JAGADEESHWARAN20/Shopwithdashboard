@@ -139,5 +139,3 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
 }
-
-

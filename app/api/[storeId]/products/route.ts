@@ -77,7 +77,7 @@ export async function POST(
                     sizeId,
                     colorId,
                     storeId: params.storeId,
-                    
+
                }
           })
 
@@ -117,7 +117,7 @@ export async function GET(
                     images: true,
                     category: true,
                     color: true,
-                    size: true
+                    size: true,
                },
                orderBy: {
                     createdAt: 'desc'
@@ -125,6 +125,7 @@ export async function GET(
           })
 
           return NextResponse.json(products);
+
 
      } catch (err) {
           console.log(`[PRODUCTS_GET] ${err}`);

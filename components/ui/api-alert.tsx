@@ -86,7 +86,7 @@ export const ApiAlert: React.FC<ApiAlertProps> = ({
     };
 
     return (
-        <Alert className="w-full max-w-md mx-auto p-4 md:max-w-lg lg:max-w-xl">
+        <Alert className="w-full min-w-sm mx-auto p-4 md:max-w-lg lg:max-w-[2800px]">
             <div className="flex items-center gap-2">
                 <Server className="h-5 w-5 text-primary" />
                 <AlertTitle className="flex gap-2 items-center text-lg font-semibold">
