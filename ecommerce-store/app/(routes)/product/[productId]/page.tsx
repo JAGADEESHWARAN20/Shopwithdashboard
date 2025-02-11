@@ -4,6 +4,7 @@ import Container from "@/components/ui/container";
 import ProductList from "@/components/product-list"
 import Gallery from "@/components/gallery"
 import Info from "@/components/info";
+import { MobileGallery } from "@/components/gallery/mobile-gallery"
 
 interface ProductPageProps {
      params: {
@@ -25,7 +26,12 @@ const ProductPage: React.FC<ProductPageProps> = async ({
                <Container>
                     <div className="px-4 py-10 sm:px-6 lg:px-8">
                          <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-                              <Gallery images={product.images} />
+                              {/* Mobile view */}
+                              <MobileGallery images={product.images.map((img) => img.url)} />
+                              {/* Large device view */}
+                              <div className="hidden lg:block">
+                                   <Gallery images={product.images} />
+                              </div>
 
                               <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
                                    {/* info */}

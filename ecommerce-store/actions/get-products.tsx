@@ -10,13 +10,14 @@ interface Query {
 }
 
 const getProducts = async (query: Query): Promise<Product[]> => {
+     const concurrecyQuery = await query;
      const url = qs.stringifyUrl({
           url: URL,
           query: {
-               sizeId: query.sizeId,
-               colorId: query.colorId,
-               categoryId: query.categoryId,
-               isFeatured: query.isFeatured,
+               sizeId: concurrecyQuery.sizeId,
+               colorId: concurrecyQuery.colorId,
+               categoryId: concurrecyQuery.categoryId,
+               isFeatured: concurrecyQuery.isFeatured,
           }
      })
      const res = await fetch(url);

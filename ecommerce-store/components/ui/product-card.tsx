@@ -1,10 +1,14 @@
 "use client"
-import { Product } from "@/types"
-import Image from "next/image"
-import IconButton from "@/components/ui/icon-button";
-import { Expand, ShoppingCart } from "lucide-react";
-import Currency from "@/components/ui/currency";
+import { MouseEventHandler } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image"
+import { Expand, ShoppingCart } from "lucide-react";
+
+import IconButton from "@/components/ui/icon-button";
+import Currency from "@/components/ui/currency";
+import usePreviewModal from "@/hooks/use-preview-modal";
+import { Product } from "@/types"
+import useCart from "@/hooks/use-cart";
 
 interface ProductCardProp {
      data: Product;
@@ -14,9 +18,19 @@ const ProductCard: React.FC<ProductCardProp> = ({
      data
 }) => {
      const router = useRouter();
-
+     const cart = useCart();
+     const previewModal = usePreviewModal();
      const handleClick = () => {
           router.push(`/product/${data?.id}`);
+     }
+
+     const onPreview: MouseEventHandler<HTMLButtonElement> = (event) => {
+          event.stopPropagation();
+          previewModal.onOpen(data);
+     }
+     const onAddtoCart: MouseEventHandler<HTMLButtonElement> = (event) => {
+          event.stopPropagation();
+          cart.addItem(data);
      }
 
      return (
@@ -32,8 +46,8 @@ const ProductCard: React.FC<ProductCardProp> = ({
                     />
                     <div className="opacity-0 group-hover:opacity-100 transition absolute w-full px-6 bottom-5">
                          <div className="flex gap-x-6 justify-center">
-                              <IconButton onClick={() => { }} icon={<Expand size={20} className="text-gray-600" />} className={``} />
-                              <IconButton onClick={() => { }} icon={<ShoppingCart size={20} className="text-gray-600" />} className={``} />
+                              <IconButton onClick={onPreview} icon={<Expand size={20} className="text-gray-600" />}  />
+                              <IconButton onClick={onAddtoCart} icon={<ShoppingCart size={20} className="text-gray-600" />}  />
 
                          </div>
                     </div>
