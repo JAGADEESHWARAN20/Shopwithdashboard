@@ -20,7 +20,7 @@ const MainNav: React.FC<MainNavProps> = ({ data }) => {
      return (
           <>
 
-               <nav className="mx-6 flex items-center space-x-4 lg:space-x-6">
+               <nav className="mx-3 sm:mx-3 lg:mx-6  flex items-center space-x-[10px] sm:space-x-[10px] lg:space-x-6">
                     {routes.map((route) => (
                          <Link
                               key={route.href}

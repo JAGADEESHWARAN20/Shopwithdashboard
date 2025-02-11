@@ -12,6 +12,17 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+
+      container: {
+        screens: {
+          "xsm":"250px",
+          "sm": "300px",
+          "md": "700px",
+          "lg": "900px",
+          "xl": "1280px",
+          "2xl": "1400px",
+        },
+      },
     },
   },
   plugins: [],
