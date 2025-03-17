@@ -16,7 +16,7 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": { "@/*": ["./*"] },
-    "types": ["next", "@clerk/nextjs"]
+    "types": ["next"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "webhook_secret.js"],
   "exclude": ["node_modules"]
