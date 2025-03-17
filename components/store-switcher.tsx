@@ -6,10 +6,13 @@ import { PopoverContent, Popover, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandList, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandSeparator } from '@/components/ui/command';
 import { useRouter, useParams } from 'next/navigation';
 import { useStoreModal } from '@/hooks/use-store-modal';
-import { Button }  from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { Store } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+
+type Store = Prisma.StoreGetPayload<{}>;
+
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
 
@@ -51,15 +54,15 @@ export default function StoreSwitcher({
                     aria-label="select a store"
                     className={cn("w-[200px] justify-between", className)}
                 >
-                    <StoreIcon  suppressHydrationWarning={true} className='mr-2 h-4 w-4'/>
+                    <StoreIcon suppressHydrationWarning={true} className='mr-2 h-4 w-4' />
                     {currentStore?.label}
-                    <ChevronDown  suppressHydrationWarning={true} className="ml-auto h-4 w-4 shrink-0 opacity-50"/>
+                    <ChevronDown suppressHydrationWarning={true} className="ml-auto h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0 mr-7 mt-2">
                 <Command>
                     <CommandList>
-                        <CommandInput placeholder="Search Store"/>
+                        <CommandInput placeholder="Search Store" />
                         <CommandEmpty>No Store found</CommandEmpty>
                         <CommandGroup heading="Stores">
                             {formattedItems.map((store) => (
@@ -68,7 +71,7 @@ export default function StoreSwitcher({
                                     onSelect={() => onStoreSelect(store)}
                                     className="text-sm"
                                 >
-                                    <StoreIcon className="mr-2 h-4 w-4"/>
+                                    <StoreIcon className="mr-2 h-4 w-4" />
                                     {store.label}
                                     <Check
                                         className={cn("ml-auto h-4 w-4", currentStore?.value === store.value ? "opacity-100" : "opacity-0")}
@@ -77,7 +80,7 @@ export default function StoreSwitcher({
                             ))}
                         </CommandGroup>
                     </CommandList>
-                    <CommandSeparator/>
+                    <CommandSeparator />
                     <CommandList>
                         <CommandGroup>
                             <CommandItem
@@ -86,7 +89,7 @@ export default function StoreSwitcher({
                                     storeModel.onOpen();
                                 }}
                             >
-                                <PlusCircle className="mr-2 h-5 w-5"/>
+                                <PlusCircle className="mr-2 h-5 w-5" />
                                 Create Store
                             </CommandItem>
                         </CommandGroup>

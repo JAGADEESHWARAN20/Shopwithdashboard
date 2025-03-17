@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { fetchGraphData } from "@/actions/get-graph-action";
+import { fetchGraphData } from "../actions/get-graph-action";
 import { DateRange } from "react-day-picker";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import {
      ResponsiveContainer,
      BarChart,
