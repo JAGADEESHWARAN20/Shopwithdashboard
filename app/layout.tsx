@@ -1,20 +1,11 @@
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs';
 import { ModalProvider } from "@/Providers/modal-provider";
 import { ToasterProvider } from "@/Providers/toast-provider";
-
 import Script from 'next/script';
 import { ReactNode } from "react";
-
-// Place this component in your page or layout component
-<Script strategy="beforeInteractive">
-  {`
-    window.__NEXT_HYDRATED = true;
-  `}
-</Script>
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,20 +21,27 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
   return (
-
     <html lang="en">
+      <head>
+        <Script strategy="beforeInteractive">
+          {`
+            window.__NEXT_HYDRATED = true;
+          `}
+        </Script>
+      </head>
       <body className={inter.className}>
         <ToasterProvider />
         <ModalProvider />
-        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInFallbackRedirectUrl="/dashboard"  {...pageProps}>
+        <ClerkProvider
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          fallbackRedirectUrl="/dashboard" // Changed from signInFallbackRedirectUrl
+          {...pageProps}
+        >
           {children}
         </ClerkProvider>
       </body>
     </html>
-
-
-
   );
-}
+};
 
 export default DashboardLayout;

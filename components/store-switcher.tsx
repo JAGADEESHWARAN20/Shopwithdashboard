@@ -9,12 +9,12 @@ import { useStoreModal } from '@/hooks/use-store-modal';
 import { Button }  from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { store } from '@prisma/client';
+import { Store } from '@prisma/client';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
 
 interface StoreSwitcherProps extends PopoverTriggerProps {
-    items: store[];
+    items: Store[];
 }
 
 export default function StoreSwitcher({
@@ -56,7 +56,7 @@ export default function StoreSwitcher({
                     <ChevronDown  suppressHydrationWarning={true} className="ml-auto h-4 w-4 shrink-0 opacity-50"/>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="w-[200px] p-0 mr-7 mt-2">
                 <Command>
                     <CommandList>
                         <CommandInput placeholder="Search Store"/>

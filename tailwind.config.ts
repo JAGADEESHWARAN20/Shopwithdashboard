@@ -7,13 +7,17 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   prefix: "",
   theme: {
     container: {
       center: true,
       padding: "2rem",
       screens: {
+        "sm": "300px",
+        "md": "700px",
+        "lg": "900px",
+        "xl": "1280px",
         "2xl": "1400px",
       },
     },

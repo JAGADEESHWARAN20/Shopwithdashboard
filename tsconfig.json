@@ -16,6 +16,6 @@
     "paths": { "@/*": ["./*"] },
     "types": ["next", "@clerk/nextjs"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "webhook_secret.js"],
   "exclude": ["node_modules"]
 }
