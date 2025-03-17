@@ -3,21 +3,21 @@
 import { useState } from 'react'
 import * as z from 'zod'
 import { Category, Color, Image, Product, Size } from "@prisma/client";
-import { Heading } from "@/components/ui/heading";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Heading } from "../../../../../../../components/ui/heading";
+import { Button } from "../../../../../../../components/ui/button";
+import { Separator } from "../../../../../../../components/ui/separator";
 import { Trash } from "lucide-react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../../../../../../../components/ui/form';
+import { Input } from '../../../../../../../components/ui/input';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import { AlertModel } from '@/components/modals/alert-model';
-import ImageUpload from '@/components/ui/image-upload';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { AlertModel } from '../../../../../../../components/modals/alert-model';
+import ImageUpload from '../../../../../../../components/ui/image-upload';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../../../components/ui/select';
+import { Checkbox } from '../../../../../../../components/ui/checkbox';
 
 interface ProductFromProps {
   initialData: Product & {

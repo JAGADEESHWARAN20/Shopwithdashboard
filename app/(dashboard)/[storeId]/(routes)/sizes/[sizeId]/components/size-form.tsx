@@ -11,9 +11,9 @@ import { Trash } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
 
-import { Separator } from "@/components/ui/separator";
-import { Heading } from "@/components/ui/heading";
-import { Button } from "@/components/ui/button"
+import { Separator } from "../../../../../../../components/ui/separator";
+import { Heading } from "../../../../../../../components/ui/heading";
+import { Button } from "../../../../../../../components/ui/button"
 import {
   Form,
   FormControl,
@@ -21,9 +21,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { AlertModel } from "@/components/modals/alert-model";
+} from '../../../../../../../components/ui/form';
+import { Input } from '../../../../../../../components/ui/input';
+import { AlertModel } from "../../../../../../../components/modals/alert-model";
 
 
 const formSchema = z.object({
