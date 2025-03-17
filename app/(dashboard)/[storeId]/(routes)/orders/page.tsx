@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import prismadb from "@/lib/prismadb";
 import { OrderClient } from "./components/client";
 import { OrderColumn } from "./components/column";
-import { formatter } from "@/lib/utils";
+import { formatter } from "../../../../../lib/utils";
 import { Order } from "@prisma/client";
 
 // Define the type of the data returned by prismadb.order.findMany

@@ -4,7 +4,7 @@ import axios from "axios";
 import { Copy, Edit, Ghost, MoreHorizontal, Trash } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../../../../components/ui/button";
 import { useState } from "react";
 
 
@@ -14,11 +14,11 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "../../../../../../components/ui/dropdown-menu"
 
 
 import { CategoryColumn } from "./column";
-import { AlertModel } from "@/components/modals/alert-model";
+import { AlertModel } from "../../../../../../components/modals/alert-model";
 
 
 

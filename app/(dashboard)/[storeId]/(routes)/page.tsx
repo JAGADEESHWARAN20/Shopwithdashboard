@@ -2,15 +2,15 @@
 
 import { CreditCard, DollarSign, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heading } from "@/components/ui/heading";
-import { formatter } from "@/lib/utils";
+import { Heading } from "../../../../components/ui/heading";
+import { formatter } from "../../../../lib/utils";
 import React, { useEffect, useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import { getTotalRevenue } from "@/actions/get-total-revenue"; // Server function
-import { getSalesCount } from "@/actions/get-sales-count";
-import { getStockCount } from "@/actions/get-stock-count";
-import { Component, DateRangeType } from "@/components/DateRange";
-import GraphDisplay from "@/components/GraphArea";
+import { Separator } from "../../../../components/ui/separator";
+import { getTotalRevenue } from "../../../../actions/get-total-revenue"; // Server function
+import { getSalesCount } from "../../../../actions/get-sales-count";
+import { getStockCount } from "../../../../actions/get-stock-count";
+import { Component, DateRangeType } from "../../../../components/DateRange";
+import GraphDisplay from "../../../../components/GraphArea";
 
 interface DashboardPageProps {
     params: { storeId: string };

@@ -11,20 +11,20 @@ import { Trash } from "lucide-react";
 import { useParams,useRouter } from "next/navigation";
 
 
-import { Separator } from "@/components/ui/separator";
-import { Heading } from "@/components/ui/heading";
-import { Button } from "@/components/ui/button"
+import { Separator } from "../../../../../../components/ui/separator";
+import { Heading } from "../../../../../../components/ui/heading";
+import { Button } from "../../../../../../components/ui/button"
 import { 
   Form, 
   FormControl, 
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage} from '@/components/ui/form';
-  import { Input } from '@/components/ui/input';
-  import { AlertModel } from "@/components/modals/alert-model";
-  import { ApiAlert } from "@/components/ui/api-alert";
-  import { useOrigin } from "@/hooks/use-origin";
+  FormMessage} from '../../../../../../components/ui/form';
+  import { Input } from '../../../../../../components/ui/input';
+  import { AlertModel } from "../../../../../../components/modals/alert-model";
+  import { ApiAlert } from "../../../../../../components/ui/api-alert";
+  import { useOrigin } from "../../../../../../hooks/use-origin";
   
   import {useState, useEffect} from "react"
   

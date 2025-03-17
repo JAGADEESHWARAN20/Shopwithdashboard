@@ -1,8 +1,8 @@
 import { format } from "date-fns"
-import prismadb from "@/lib/prismadb";
+import prismadb from "../../../../../lib/prismadb";
 import { ProductClient } from "./components/client";
 import { ProductColumn } from "./components/column";
-import { formatter } from "@/lib/utils";
+import { formatter } from "../../../../../lib/utils";
 
 const ProductsPage = async ({
     params

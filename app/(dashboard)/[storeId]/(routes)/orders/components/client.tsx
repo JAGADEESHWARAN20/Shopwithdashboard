@@ -3,10 +3,10 @@
 
 
 
-import { Heading } from "@/components/ui/heading";
-import { Separator } from "@/components/ui/separator";
+import { Heading } from "../../../../../../components/ui/heading";
+import { Separator } from "../../../../../../components/ui/separator";
 import { columns, OrderColumn } from "./column";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "../../../../../../components/ui/data-table";
 
 
 
