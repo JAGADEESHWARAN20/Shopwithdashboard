@@ -1,6 +1,6 @@
 "use client";
 
-import { store } from "@prisma/client";
+import { Store } from "@prisma/client";
 import * as z from 'zod'
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,7 +29,7 @@ import {
   import {useState, useEffect} from "react"
   
 interface SettingsFormProps {
-  initialData: store;
+  initialData: Store;
 }
 
 const formSchema = z.object({
