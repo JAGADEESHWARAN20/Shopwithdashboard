@@ -90,20 +90,19 @@
 //     }
 // }
 
-
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 
-const allowedOrigins = ["http://localhost:3000", "https://yourdomain.com"]; // Define allowed domains
+const allowedOrigins = ["http://localhost:3000", "https://yourdomain.com"];
 
-const getCorsHeaders = (origin) => ({
-    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "https://yourdomain.com",
+const getCorsHeaders = (origin: string | null): Record<string, string> => ({
+    "Access-Control-Allow-Origin": origin && allowedOrigins.includes(origin) ? origin : "https://yourdomain.com",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
 });
 
-export async function OPTIONS(req) {
+export async function OPTIONS(req: Request): Promise<NextResponse> {
     const origin = req.headers.get("origin");
     return new NextResponse(null, {
         status: 204,
@@ -111,7 +110,10 @@ export async function OPTIONS(req) {
     });
 }
 
-export async function POST(req, { params }) {
+export async function POST(
+    req: Request,
+    { params }: { params: { storeId: string } }
+): Promise<NextResponse> {
     try {
         const origin = req.headers.get("origin");
         const { userId } = auth();
@@ -136,11 +138,14 @@ export async function POST(req, { params }) {
         return NextResponse.json(category, { headers: getCorsHeaders(origin) });
     } catch (error) {
         console.error("[CATEGORIES_POST]", error);
-        return new NextResponse("Internal error", { status: 500 });
+        return new NextResponse("Internal error", { status: 500, headers: getCorsHeaders(origin) });
     }
 }
 
-export async function GET(req, { params }) {
+export async function GET(
+    req: Request,
+    { params }: { params: { storeId: string } }
+): Promise<NextResponse> {
     try {
         const origin = req.headers.get("origin");
 
@@ -153,6 +158,6 @@ export async function GET(req, { params }) {
         return NextResponse.json(categories, { headers: getCorsHeaders(origin) });
     } catch (error) {
         console.error("[CATEGORIES_GET]", error);
-        return new NextResponse("Internal error", { status: 500 });
+        return new NextResponse("Internal error", { status: 500, headers: getCorsHeaders(origin) });
     }
 }
