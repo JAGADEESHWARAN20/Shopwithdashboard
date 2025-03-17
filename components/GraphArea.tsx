@@ -15,7 +15,8 @@ import {
      Tooltip,
      CartesianGrid,
 } from "recharts";
-import { format, differenceInDays, parseISO, addDays } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
+import { TooltipProps } from 'recharts';
 
 interface GraphDisplayProps {
      dateRange: DateRange | Date | undefined;
@@ -26,6 +27,25 @@ interface GraphDisplayProps {
 const CustomBarShape = (props: any) => {
      const { x, y, width, height } = props;
      return <rect x={x} y={y} width={width} height={height} fill="#6C4AB6" rx="1" ry="1" />;
+};
+
+// Custom Tooltip Component
+interface CustomTooltipProps extends TooltipProps<number, string> {
+     active?: boolean;
+     payload?: any[];
+     label?: string | number;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+     if (active && payload && payload.length) {
+          return (
+               <div className="custom-tooltip" style={{ backgroundColor: '#fff', borderRadius: '5px', padding: '8px', fontSize: '12px' }}>
+                    <p className="label">{`${label}`}</p>
+                    <p className="intro">{`Revenue: $${payload[0].value}`}</p>
+               </div>
+          );
+     }
+     return null;
 };
 
 const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
@@ -114,9 +134,10 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
                               <ResponsiveContainer width="100%" height={graphHeight}>
                                    <BarChart data={graphData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                                        <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#374151",opacity:"50%" }} padding={{ left: 10, right: 10 }} />
-                                        <YAxis tick={{ fontSize: 12, fill: "#374151", opacity: "50%" }} width={40} />
+                                        <XAxis tickLine={false} axisLine={false} dataKey="date" tick={{ fontSize: 12, fill: "#374151", opacity: "50%" }} padding={{ left: 10, right: 10 }} />
+                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "#374151", opacity: "50%" }} width={40} />
                                         <Tooltip
+                                             content={<CustomTooltip />}
                                              wrapperStyle={{ fontSize: "12px" }}
                                              contentStyle={{ backgroundColor: "#fff", borderRadius: "5px", padding: "8px" }}
                                              cursor={{ fill: "rgba(108, 74, 182, 0.1)" }}

@@ -12,7 +12,7 @@ export interface GraphDataPoint {
 export const fetchGraphData = async (
      storeId: string,
      dateRangeOrSingleDate: DateRange | Date | undefined,
-     drillDownMonth?: number // Optional: Month for drill-down
+     drillDownMonth?: number
 ): Promise<GraphDataPoint[]> => {
      try {
           if (!dateRangeOrSingleDate) return [];
@@ -48,7 +48,7 @@ export const fetchGraphData = async (
                               product: true,
                          },
                     },
-               },
+               }, // Corrected: Added closing curly brace here
           });
 
           // Initialize all dates in range with zero sales

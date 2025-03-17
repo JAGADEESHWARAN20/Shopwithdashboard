@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider } from "@clerk/nextjs";
 import { ModalProvider } from "@/Providers/modal-provider";
 import { ToasterProvider } from "@/Providers/toast-provider";
-import Script from 'next/script';
+import Script from "next/script";
 import { ReactNode } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
   return (
     <html lang="en">
       <head>
-        <Script strategy="beforeInteractive">
+        <Script id="next-hydrated" strategy="beforeInteractive">
           {`
             window.__NEXT_HYDRATED = true;
           `}
@@ -34,7 +34,7 @@ const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
         <ModalProvider />
         <ClerkProvider
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-          fallbackRedirectUrl="/dashboard" // Changed from signInFallbackRedirectUrl
+          fallbackRedirectUrl="/dashboard"
           {...pageProps}
         >
           {children}
