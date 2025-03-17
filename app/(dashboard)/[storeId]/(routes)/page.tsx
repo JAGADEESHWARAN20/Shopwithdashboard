@@ -1,7 +1,7 @@
 "use client"; // Ensure it's a client component
 
 import { CreditCard, DollarSign, Package } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Heading } from "../../../../components/ui/heading";
 import { formatter } from "../../../../lib/utils";
 import React, { useEffect, useState } from "react";

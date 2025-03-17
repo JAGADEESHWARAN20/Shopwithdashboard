@@ -14,11 +14,11 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "../../../../../../components/ui/dropdown-menu"
 
 
 import { SizeColumn } from "./column";
-import { AlertModel } from "@/components/modals/alert-model";
+import { AlertModel } from "../../../../../../components/modals/alert-model";
 
 
 
