@@ -21,11 +21,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { AlertModel } from "@/components/modals/alert-model";
+} from '../../../../../../../components/ui/form';
+import { Input } from '../../../../../../../components/ui/input';
+import { AlertModel } from "../../../../../../../components/modals/alert-model";
 
-import ImageUpload from "@/components/ui/image-upload";
+import ImageUpload from "../../../../../../../components/ui/image-upload";
 
 const formSchema = z.object({
   label: z.string().min(1),
