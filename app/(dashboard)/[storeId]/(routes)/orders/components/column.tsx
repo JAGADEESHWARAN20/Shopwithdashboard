@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Popover, PopoverTrigger, PopoverContent } from "../../../../../../components/ui/popover";
 import { Button } from "../../../../../../components/ui/button";
+import { User } from "lucide-react"; // ✅ Importing Lucide React User Icon
 
 export type OrderColumn = {
   id: string;
@@ -54,7 +55,9 @@ export const columns: ColumnDef<OrderColumn>[] = [
   {
     accessorKey: "deliveredTime",
     header: "Delivered Time",
-    cell: ({ row }) => row.original.deliveredTime ? format(new Date(row.original.deliveredTime), "MMMM do,дак, HH:mm") : "Not Delivered",
+    cell: ({ row }) => row.original.deliveredTime
+      ? format(new Date(row.original.deliveredTime), "MMMM do, HH:mm")
+      : "Not Delivered",
   },
   {
     id: "fullInfo",
@@ -63,13 +66,11 @@ export const columns: ColumnDef<OrderColumn>[] = [
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 00-1.57-.429m1.57.429v5.25m12-4.875a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" />
-            </svg>
+            <User className="w-5 h-5" /> {/* ✅ Added Lucide React User Icon */}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[400px] h-[400px] overflow-x-hidden m-[30px]">
-          <div className="space-y-4 p-4 ">
+          <div className="space-y-4 p-4">
             <h3 className="text-lg font-semibold text-gray-800">Order Details</h3>
             <div className="space-y-2">
               <p><strong className="font-medium text-gray-700">Name:</strong> <br /><span className="text-gray-600">{row.original.name}</span></p>
@@ -79,7 +80,7 @@ export const columns: ColumnDef<OrderColumn>[] = [
               <p><strong className="font-medium text-gray-700">Phone:</strong> <br /> <span className="text-gray-600">{row.original.phone}</span></p>
               <p><strong className="font-medium text-gray-700">Address:</strong> <br /><span className="text-gray-600">{row.original.address}</span></p>
               <p><strong className="font-medium text-gray-700">Order Time:</strong><br /> <span className="text-gray-600">{format(new Date(row.original.orderTime), "MMMM do, HH:mm:ss")}</span></p>
-              <p><strong className="font-medium text-gray-700">Delivered Time:</strong> <br /><span className="text-gray-600">{row.original.deliveredTime ? format(new Date(row.original.deliveredTime), "MMMM do,дак, HH:mm:ss") : "Not Delivered"}</span></p>
+              <p><strong className="font-medium text-gray-700">Delivered Time:</strong> <br /><span className="text-gray-600">{row.original.deliveredTime ? format(new Date(row.original.deliveredTime), "MMMM do, HH:mm:ss") : "Not Delivered"}</span></p>
             </div>
           </div>
         </PopoverContent>
