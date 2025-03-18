@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
   return (
     <html lang="en">
       <head>
-        <Script strategy="beforeInteractive">
+        <Script strategy="beforeInteractive" id="hydrate-script"> {/* Added id here */}
           {`
             window.__NEXT_HYDRATED = true;
           `}
