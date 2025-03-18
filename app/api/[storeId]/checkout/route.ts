@@ -3,7 +3,7 @@ import { razorpay } from "@/lib/razorpay";
 import prismadb from "@/lib/prismadb";
 
 const corsHeaders = {
-     "Access-Control-Allow-Origin": "https://ecommercestore-online.vercel.app/",
+     "Access-Control-Allow-Origin": "https://ecommercestore-online.vercel.app",
      "Access-Control-Allow-Methods": "POST,GET,PUT,DELETE,OPTIONS",
      "Access-Control-Allow-Headers": "Content-Type, Authorization",
      "Access-Control-Allow-Credentials": "true"
@@ -57,11 +57,11 @@ export async function POST(req: Request, { params }: { params: { storeId: string
           });
 
           const conversionRate = process.env.USD_TO_INR_RATE ? parseFloat(process.env.USD_TO_INR_RATE) : 83;
-
-          const totalAmount = products.reduce((total, product) => {
+          const totalAmount = products.reduce((total: number, product: { price: number }) => {
                const inrAmount = Math.round(product.price * conversionRate);
                return total + inrAmount;
           }, 0);
+
 
           const finalAmount = Math.min(Math.max(totalAmount * 83, 100), 50000000);
 
