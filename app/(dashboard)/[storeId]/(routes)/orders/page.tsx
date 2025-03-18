@@ -6,7 +6,15 @@ import { formatter } from "../../../../../lib/utils";
 
 type OrderWithItems = Awaited<
     ReturnType<typeof prismadb.order.findMany>
->[number];
+>[number] & {
+    orderItems: {
+        product: {
+            name: string;
+            price: number;
+        };
+    }[];
+};
+
 
 const OrdersPage = async ({ params }: { params: { storeId: string } }) => {
     const orders = await prismadb.order.findMany({
@@ -29,7 +37,10 @@ const OrdersPage = async ({ params }: { params: { storeId: string } }) => {
         id: item.id,
         phone: item.phone,
         address: item.address,
-        products: item.orderItems.map((orderItem: { product: { name: string } }) => orderItem.product.name).join(","),
+        products: item.orderItems
+            .map((orderItem: { product: { name: string } }) => orderItem.product.name)
+            .join(", "), // ✅ Explicitly typed orderItem
+
         totalPrice: formatter.format(
             item.orderItems.reduce(
                 (total: number, orderItem: { product: { price: number } }) => {
@@ -37,7 +48,8 @@ const OrdersPage = async ({ params }: { params: { storeId: string } }) => {
                 },
                 0
             )
-        ),
+        ), // ✅ Explicitly typed total and orderItem
+
         isPaid: item.isPaid,
         createdAt: format(item.createdAt, "MMMM do, yyyy"),
         name: item.name,
@@ -47,6 +59,7 @@ const OrdersPage = async ({ params }: { params: { storeId: string } }) => {
         orderTime: item.createdAt.toISOString(),
         deliveredTime: item.deliveredTime ? format(item.deliveredTime, "MMMM do, yyyy") : null,
     }));
+
 
     return (
         <div className="flex-col">
