@@ -72,19 +72,19 @@ export const columns: ColumnDef<OrderColumn>[] = [
         <PopoverContent
           side="bottom"
           align="center"
-          sideOffset={10}
-          className="max-w-[90vw] md:max-w-[400px] h-auto max-h-[60vh] overflow-auto p-4"
+          sideOffset={12}  // Increased spacing between button and popover
+          className="max-w-[90vw] md:max-w-[400px] h-auto max-h-[60vh] overflow-auto p-6 shadow-lg rounded-lg border border-gray-200 bg-white"
         >
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">Order Details</h3>
-            <div className="space-y-2 text-sm md:text-base">
+            <div className="space-y-3 text-sm md:text-base">
               <p><strong className="font-medium text-gray-700">Name:</strong> <br /><span className="text-gray-600">{row.original.name}</span></p>
               <p><strong className="font-medium text-gray-700">Email:</strong> <br /><span className="text-gray-600">{row.original.email}</span></p>
               <p><strong className="font-medium text-gray-700">Age:</strong> <br /><span className="text-gray-600">{row.original.age}</span></p>
               <p><strong className="font-medium text-gray-700">Location:</strong> <br /><span className="text-gray-600">{row.original.location}</span></p>
               <p><strong className="font-medium text-gray-700">Phone:</strong> <br /><span className="text-gray-600">{row.original.phone}</span></p>
               <p><strong className="font-medium text-gray-700">Address:</strong> <br /><span className="text-gray-600">{row.original.address}</span></p>
-              <p><strong className="font-medium text-gray-700">Order Time:</strong><br /><span className="text-gray-600">{format(new Date(row.original.orderTime), "MMMM do, HH:mm:ss")}</span></p>
+              <p><strong className="font-medium text-gray-700">Order Time:</strong> <br /><span className="text-gray-600">{format(new Date(row.original.orderTime), "MMMM do, HH:mm:ss")}</span></p>
               <p><strong className="font-medium text-gray-700">Delivered Time:</strong> <br /><span className="text-gray-600">{row.original.deliveredTime ? format(new Date(row.original.deliveredTime), "MMMM do, HH:mm:ss") : "Not Delivered"}</span></p>
             </div>
           </div>
