@@ -3,7 +3,7 @@ import { razorpay } from "@/lib/razorpay";
 import prismadb from "@/lib/prismadb";
 
 const corsHeaders = {
-     "Access-Control-Allow-Origin": "http://localhost:3002",
+     "Access-Control-Allow-Origin": "https://ecommercestore-online.vercel.app/",
      "Access-Control-Allow-Methods": "POST,GET,PUT,DELETE,OPTIONS",
      "Access-Control-Allow-Headers": "Content-Type, Authorization",
      "Access-Control-Allow-Credentials": "true"
@@ -63,7 +63,7 @@ export async function POST(req: Request, { params }: { params: { storeId: string
                return total + inrAmount;
           }, 0);
 
-          const finalAmount = Math.min(Math.max(totalAmount*83, 100), 50000000);
+          const finalAmount = Math.min(Math.max(totalAmount * 83, 100), 50000000);
 
           const razorpayOrder = await razorpay.orders.create({
                amount: finalAmount,
