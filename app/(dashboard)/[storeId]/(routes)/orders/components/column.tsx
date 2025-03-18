@@ -73,7 +73,7 @@ export const columns: ColumnDef<OrderColumn>[] = [
           side="bottom"
           align="center"
           sideOffset={12}  // Increased spacing between button and popover
-          className="max-w-[90vw] sm:mr-[20px] md:max-w-[400px] h-auto max-h-[60vh] overflow-auto p-6 shadow-lg rounded-lg border border-gray-200 bg-white"
+          className="max-w-[90vw] mr-5 sm:mr-[20px] md:max-w-[400px] h-auto max-h-[60vh] overflow-auto p-6 shadow-lg rounded-lg border border-gray-200 bg-white"
         >
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">Order Details</h3>
