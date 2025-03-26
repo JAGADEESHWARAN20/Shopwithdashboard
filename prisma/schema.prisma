@@ -23,6 +23,8 @@ model Store {
   orders     Order[]     @relation("StoreToOrder")
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  isActive    Boolean     @default(true) 
+  storeUrl    String?     
 }
 
 model Billboard {
