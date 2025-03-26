@@ -201,51 +201,47 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
           </Card>
 
           {/* Domain Status and Deploy Button */}
-          <Card className="col-span-1 md:col-span-1">
-            <CardHeader>
-              <CardTitle>Store Domain Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-              // In SettingsForm.tsx (around line 210)
-                <Badge variant={initialData.isActive ? "success" : "destructive"}>
-                  {initialData.isActive ? "Active" : "Inactive"}
-                </Badge>
-                <p className="text-sm text-muted-foreground">
-                  {initialData.storeUrl || "No domain set"}
-                </p>
-              </div>
-              <Button
-                disabled={deploying || !initialData.storeUrl}
-                onClick={onDeploy}
-                className="w-full"
-              >
-                <Rocket className="mr-2 h-4 w-4" />
-                {deploying ? "Deploying..." : "Deploy Frontend"}
-              </Button>
-            </CardContent>
-          </Card>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              {/* In SettingsForm.tsx (around line 210) */}
+              <Badge variant={initialData.isActive ? "success" : "destructive"}>
+                {initialData.isActive ? "Active" : "Inactive"}
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                {initialData.storeUrl || "No domain set"}
+              </p>
+            </div>
+            <Button
+              disabled={deploying || !initialData.storeUrl}
+              onClick={onDeploy}
+              className="w-full"
+            >
+              <Rocket className="mr-2 h-4 w-4" />
+              {deploying ? "Deploying..." : "Deploy Frontend"}
+            </Button>
+          </CardContent>
+        </Card>
 
-          {/* Iframe Previewer */}
-          <Card className="col-span-1 md:col-span-2">
-            <CardHeader>
-              <CardTitle>Frontend Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {initialData.storeUrl ? (
-                <iframe
-                  src={initialData.storeUrl}
-                  className="w-full h-96 border rounded-md"
-                  title="Frontend Preview"
-                  sandbox="allow-same-origin allow-scripts"
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">No domain set to preview.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Iframe Previewer */}
+        <Card className="col-span-1 md:col-span-2">
+          <CardHeader>
+            <CardTitle>Frontend Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {initialData.storeUrl ? (
+              <iframe
+                src={initialData.storeUrl}
+                className="w-full h-96 border rounded-md"
+                title="Frontend Preview"
+                sandbox="allow-same-origin allow-scripts"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">No domain set to preview.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
+    </div >
     </>
   );
 };
