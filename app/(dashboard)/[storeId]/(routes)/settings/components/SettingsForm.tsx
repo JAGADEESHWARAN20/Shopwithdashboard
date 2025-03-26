@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 
 import { useForm } from 'react-hook-form';
-import { Trash } from "lucide-react";
+import { Trash, ExternalLink, RefreshCw, Globe } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
 import { Separator } from "../../../../../../components/ui/separator";
@@ -28,7 +28,8 @@ import { useOrigin } from "../../../../../../hooks/use-origin";
 
 import { useState, useEffect } from "react";
 import { Switch } from "../../../../../../components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../../../components/ui/card";
+import { Badge } from "../../../../../../components/ui/badge";
 
 interface SettingsFormProps {
   initialData: Store;
@@ -53,6 +54,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
   const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || '');
   const [vercelUpdateLoading, setVercelUpdateLoading] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewKey, setPreviewKey] = useState(Date.now());
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -134,10 +136,12 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
 
   const handlePreviewClick = () => {
     if (storeUrl) {
-      setPreviewLoading(true);
       window.open(storeUrl, '_blank');
-      setPreviewLoading(false);
     }
+  };
+
+  const handleRefreshPreview = () => {
+    setPreviewKey(Date.now());
   };
 
   return (
@@ -151,7 +155,12 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       <div className="flex items-center justify-between">
         <Heading title="Settings" description="Manage Store Preferences" />
         <div className="flex items-center space-x-4">
-          <Switch checked={isActive} onCheckedChange={handleToggle} />
+          <div className="flex items-center space-x-2">
+            <Badge variant={isActive ? "default" : "destructive"}>
+              {isActive ? "Active" : "Inactive"}
+            </Badge>
+            <Switch checked={isActive} onCheckedChange={handleToggle} />
+          </div>
           {isClient ? (
             <Button
               disabled={loading}
@@ -194,24 +203,40 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       {storeUrl && (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Store Preview</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Store Preview</CardTitle>
+                <CardDescription>Live preview of your store</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleRefreshPreview}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button
+                  onClick={handlePreviewClick}
+                  variant="outline"
+                  size="sm"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open
+                </Button>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative w-full aspect-video">
+          <CardContent className="p-0">
+            <div className="relative w-full aspect-[16/9] bg-muted rounded-lg overflow-hidden">
               <iframe
+                key={previewKey}
                 src={storeUrl}
-                className="w-full h-full border rounded-lg"
+                className="w-full h-full border-0"
+                style={{ minHeight: '600px' }}
                 title="Store Preview"
               />
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">Store URL: {storeUrl}</p>
-              <Button
-                onClick={handlePreviewClick}
-                disabled={previewLoading}
-              >
-                {previewLoading ? 'Loading...' : 'Open in New Tab'}
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -219,18 +244,26 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       {storeUrl && (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Store URL Management</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Store URL</CardTitle>
+                <CardDescription>Manage your store's URL and deployment</CardDescription>
+              </div>
+              <Button
+                disabled={vercelUpdateLoading}
+                onClick={handleUpdateVercelEnv}
+                variant="outline"
+              >
+                <Globe className="h-4 w-4 mr-2" />
+                {vercelUpdateLoading ? 'Updating...' : 'Update URL'}
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Your store is accessible at: {storeUrl}
-            </p>
-            <Button
-              disabled={vercelUpdateLoading}
-              onClick={handleUpdateVercelEnv}
-            >
-              {vercelUpdateLoading ? 'Updating...' : 'Update Store URL'}
-            </Button>
+          <CardContent>
+            <div className="flex items-center space-x-2 bg-muted p-3 rounded-lg">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm font-medium break-all">{storeUrl}</p>
+            </div>
           </CardContent>
         </Card>
       )}
