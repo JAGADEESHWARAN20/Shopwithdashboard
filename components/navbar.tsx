@@ -1,37 +1,67 @@
-import { auth } from "@clerk/nextjs/server"
-import { UserButton } from '@clerk/nextjs'
-import { redirect } from 'next/navigation';
-import { MainNav } from '../components/mainNav'
-import StoreSwitcher from '../components/store-switcher';
-import prismadb from '../lib/prismadb';
+// components/navbar.tsx
+"use client";
 
+import { UserButton, useAuth } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { MainNav } from "./mainNav";
+import prismadb from "@/lib/prismadb";
+import { useEffect, useState } from "react";
 
+// Use default import for StoreSwitcher
+import StoreSwitcher from "./store-switcher";
 
-const Navbar = async () => {
-    const { userId } = auth();
+interface NavbarProps {
+    storeUrl?: string | null; // Add storeUrl prop
+}
 
-    if (!userId) {
-        redirect('/sign-in')
-    }
-    const stores = await prismadb.store.findMany({
-        where: {
-            userId
-        },
-    });
+export const Navbar: React.FC<NavbarProps> = ({ storeUrl }) => {
+    const { userId } = useAuth();
+    const pathname = usePathname();
+    const router = useRouter();
 
+    const [stores, setStores] = useState<any[]>([]);
 
+    useEffect(() => {
+        const fetchStores = async () => {
+            if (userId) {
+                const storesData = await prismadb.store.findMany({
+                    where: {
+                        userId,
+                    },
+                });
+                setStores(storesData);
+            }
+        };
+        fetchStores();
+    }, [userId]);
 
     return (
-        <div className='border-b'>
-            <div className="flex gap-2 h-16 items-center px-2">
-                <MainNav className='mx-1 ' />
+        <div className="border-b">
+            <div className="flex h-16 items-center px-4">
                 <StoreSwitcher items={stores} />
+                <MainNav className="mx-6" />
                 <div className="ml-auto flex items-center space-x-4">
-                    <UserButton afterSignOutUrl='/' />
+                    {storeUrl && (
+                        <Link href={storeUrl} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline">Visit Store</Button>
+                        </Link>
+                    )}
+                    <UserButton
+                        afterSignOutUrl="/"
+                        appearance={{
+                            elements: {
+                                userButtonAvatarBox: "h-8 w-8", // Customize avatar size
+                                userButtonTrigger: "border border-gray-300 rounded-full", // Add a border to the button
+                            },
+                        }}
+                    />
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default Navbar;
