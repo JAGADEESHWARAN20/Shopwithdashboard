@@ -121,15 +121,25 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
     try {
       setVercelUpdateLoading(true);
       const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
+
       if (response.status === 200) {
-        toast.success('Store URL successfully updated');
-        router.refresh();
+        const { vercelResult, message } = response.data;
+
+        toast.success(message || 'Store URL successfully updated');
+
+        if (vercelResult && !vercelResult.mocked) {
+          router.refresh();
+        }
       } else {
         toast.error('Failed to update store URL');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating store URL:', error);
-      toast.error('An error occurred while updating the store URL');
+
+      // Type guard to safely access axios error response properties
+      const axiosError = error as { response?: { data?: string } };
+      const errorMessage = axiosError.response?.data || 'An error occurred while updating the store URL';
+      toast.error(errorMessage);
     } finally {
       setVercelUpdateLoading(false);
     }

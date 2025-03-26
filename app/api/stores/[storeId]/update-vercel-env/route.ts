@@ -40,10 +40,13 @@ async function updateVercelEnvironmentVariable(storeUrl: string) {
           }
 
           return await response.json();
-     } catch (error) {
+     } catch (error: unknown) {
           console.error('Error in updateVercelEnvironmentVariable:', error);
           // Return success but note it failed
-          return { success: false, error: error.message };
+          return {
+               success: false,
+               error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
      }
 }
 
@@ -97,8 +100,11 @@ export async function POST(
                     ? 'Store URL updated (Vercel API token not configured)'
                     : 'Store URL and Vercel environment updated'
           });
-     } catch (error) {
+     } catch (error: unknown) {
           console.error('[VERCEL_ENV_UPDATE]', error);
-          return new NextResponse(`Internal error: ${error.message}`, { status: 500 });
+          return new NextResponse(
+               `Internal error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+               { status: 500 }
+          );
      }
 } 
