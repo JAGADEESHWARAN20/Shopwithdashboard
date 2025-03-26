@@ -120,6 +120,20 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
   const handleUpdateVercelEnv = async () => {
     try {
       setVercelUpdateLoading(true);
+
+      // Check if the current storeUrl is using the Git branch URL format
+      let currentStoreUrl = storeUrl;
+      if (currentStoreUrl && currentStoreUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+        // Extract store name and create correct URL format
+        const storeName = form.getValues('name').toLowerCase().replace(/\s+/g, '-');
+        currentStoreUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
+
+        // Update local state with corrected URL
+        setStoreUrl(currentStoreUrl);
+
+        toast.success('Corrected store URL format');
+      }
+
       const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
 
       if (response.status === 200) {
@@ -128,6 +142,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
         toast.success(message || 'Store URL successfully updated');
 
         if (vercelResult && !vercelResult.mocked) {
+          // Refresh the page to show updated URL
           router.refresh();
         }
       } else {

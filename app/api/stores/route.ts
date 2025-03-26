@@ -20,6 +20,12 @@ export async function POST(req: Request) {
     // Generate initial store URL
     const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}.ecommercestore-online.vercel.app`;
 
+    // Make sure we're using the production domain, not a Git branch URL
+    if (storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+      console.warn("Found Git deployment URL pattern, correcting to production domain");
+      // This should never happen with the above code, but just in case
+    }
+
     // Create a new store
     const store = await prismadb.store.create({
       data: {

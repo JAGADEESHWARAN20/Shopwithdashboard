@@ -15,6 +15,15 @@ async function updateVercelEnvironmentVariable(storeUrl: string) {
      try {
           console.log(`Updating Vercel environment variable with store URL: ${storeUrl}`);
 
+          // Ensure the URL is using the correct domain format
+          let formattedStoreUrl = storeUrl;
+          if (storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+               // Extract the store name from the URL
+               const storeName = storeUrl.split('/')[2].split('-git-')[0];
+               formattedStoreUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
+               console.log(`Reformatted Git URL to proper domain: ${formattedStoreUrl}`);
+          }
+
           const response = await fetch(
                `https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env`,
                {
@@ -25,7 +34,7 @@ async function updateVercelEnvironmentVariable(storeUrl: string) {
                     },
                     body: JSON.stringify({
                          key: 'NEXT_PUBLIC_STORE_URL',
-                         value: storeUrl,
+                         value: formattedStoreUrl,
                          target: ['production', 'preview', 'development'],
                          type: 'plain',
                          ...(VERCEL_TEAM_ID ? { teamId: VERCEL_TEAM_ID } : {}),
