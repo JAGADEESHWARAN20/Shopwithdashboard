@@ -193,7 +193,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             <CardContent>
               <ApiAlert
                 title="NEXT_PUBLIC_API_URL"
-                description={`<span class="math-inline">\{origin\}/api/</span>{params.storeId}`}
+                description={`<span class="math-inline"><span class="math-inline">\{origin\}/api/</span\></span>{params.storeId}`}
                 variant="public"
               />
             </CardContent>
@@ -239,7 +239,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
                   sandbox="allow-same-origin allow-scripts"
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">No domain set to preview.</p>
+                <p className="text-sm text text-muted-foreground">No domain set to preview.</p>
               )}
             </CardContent>
           </Card>
