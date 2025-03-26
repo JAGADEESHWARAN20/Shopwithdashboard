@@ -28,7 +28,7 @@ import { useOrigin } from "../../../../../../hooks/use-origin";
 
 import { useState, useEffect } from "react";
 import { Switch } from "../../../../../../components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card"; // Import Card components
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card";
 
 interface SettingsFormProps {
   initialData: Store;
@@ -52,6 +52,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
   const [isActive, setIsActive] = useState(initialData.isActive || false);
   const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || '');
   const [vercelUpdateLoading, setVercelUpdateLoading] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -131,6 +132,14 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
     }
   };
 
+  const handlePreviewClick = () => {
+    if (storeUrl) {
+      setPreviewLoading(true);
+      window.open(storeUrl, '_blank');
+      setPreviewLoading(false);
+    }
+  };
+
   return (
     <>
       <AlertModel
@@ -187,30 +196,40 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
           <CardHeader>
             <CardTitle>Store Preview</CardTitle>
           </CardHeader>
-          <CardContent>
-            <iframe
-              src={storeUrl}
-              style={{ width: '400px', height: '300px', aspectRatio: '4/3' }}
-              title="Store Preview"
-            />
-            <Button onClick={() => window.open(storeUrl, '_blank')}>
-              Expand
-            </Button>
+          <CardContent className="space-y-4">
+            <div className="relative w-full aspect-video">
+              <iframe
+                src={storeUrl}
+                className="w-full h-full border rounded-lg"
+                title="Store Preview"
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">Store URL: {storeUrl}</p>
+              <Button
+                onClick={handlePreviewClick}
+                disabled={previewLoading}
+              >
+                {previewLoading ? 'Loading...' : 'Open in New Tab'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
       {storeUrl && (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Update Store URL</CardTitle>
+            <CardTitle>Store URL Management</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p>Generated URL: {storeUrl}</p>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Your store is accessible at: {storeUrl}
+            </p>
             <Button
               disabled={vercelUpdateLoading}
               onClick={handleUpdateVercelEnv}
             >
-              Update URL
+              {vercelUpdateLoading ? 'Updating...' : 'Update Store URL'}
             </Button>
           </CardContent>
         </Card>

@@ -40,3 +40,4 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
           return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
      }
 }
+

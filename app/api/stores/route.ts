@@ -17,11 +17,16 @@ export async function POST(req: Request) {
       return new NextResponse("Name is required", { status: 400 });
     }
 
+    // Generate initial store URL
+    const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}.ecommercestore-online.vercel.app`;
+
     // Create a new store
     const store = await prismadb.store.create({
       data: {
         name,
         userId,
+        isActive: true,
+        storeUrl
       },
     });
 
