@@ -14,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
                return NextResponse.json({ error: 'Store not found' }, { status: 404 });
           }
 
-          const apiUrl = `https://${store.name.toLowerCase()}.ecommercestore-online.vercel.app/api`;
+          const apiUrl = `https://${store.name.toLowerCase()}.ecommercestore-online.vercel.app`;
 
           const projectId = process.env.VERCEL_PROJECT_ID;
           const token = process.env.VERCEL_API_TOKEN;
