@@ -27,7 +27,8 @@ import { ApiAlert } from "../../../../../../components/ui/api-alert";
 import { useOrigin } from "../../../../../../hooks/use-origin";
 
 import { useState, useEffect } from "react";
-import { Switch } from "../../../../../../components/ui/switch"; // Import Shadcn UI Switch
+import { Switch } from "../../../../../../components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card"; // Import Card components
 
 interface SettingsFormProps {
   initialData: Store;
@@ -118,12 +119,12 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       setVercelUpdateLoading(true);
       const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
       if (response.status === 200) {
-        toast.success('Vercel environment variable updated');
+        toast.success('Vercel environment variable updated and redeployment triggered');
       } else {
-        toast.error('Failed to update Vercel environment variable');
+        toast.error('Failed to update Vercel environment variable and trigger redeployment');
       }
     } catch (error) {
-      console.error('Error updating Vercel environment variable:', error);
+      console.error('Error updating Vercel environment variable and redeploying:', error);
       toast.error('An error occurred');
     } finally {
       setVercelUpdateLoading(false);
@@ -141,7 +142,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       <div className="flex items-center justify-between">
         <Heading title="Settings" description="Manage Store Preferences" />
         <div className="flex items-center space-x-4">
-          <Switch checked={isActive} onCheckedChange={handleToggle} /> {/* Use Shadcn UI Switch */}
+          <Switch checked={isActive} onCheckedChange={handleToggle} />
           {isClient ? (
             <Button
               disabled={loading}
@@ -182,27 +183,37 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       </Form>
       <Separator />
       {storeUrl && (
-        <div className="mt-4">
-          <iframe
-            src={storeUrl}
-            style={{ width: '400px', height: '300px', aspectRatio: '4/3' }}
-            title="Store Preview"
-          />
-          <button onClick={() => window.open(storeUrl, '_blank')}>
-            Expand
-          </button>
-        </div>
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Store Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <iframe
+              src={storeUrl}
+              style={{ width: '400px', height: '300px', aspectRatio: '4/3' }}
+              title="Store Preview"
+            />
+            <Button onClick={() => window.open(storeUrl, '_blank')}>
+              Expand
+            </Button>
+          </CardContent>
+        </Card>
       )}
       {storeUrl && (
-        <div className="mt-4">
-          <p>Generated URL: {storeUrl}</p>
-          <Button
-            disabled={vercelUpdateLoading}
-            onClick={handleUpdateVercelEnv}
-          >
-            Update URL
-          </Button>
-        </div>
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Update Store URL</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Generated URL: {storeUrl}</p>
+            <Button
+              disabled={vercelUpdateLoading}
+              onClick={handleUpdateVercelEnv}
+            >
+              Update URL
+            </Button>
+          </CardContent>
+        </Card>
       )}
       <Separator />
       <ApiAlert
