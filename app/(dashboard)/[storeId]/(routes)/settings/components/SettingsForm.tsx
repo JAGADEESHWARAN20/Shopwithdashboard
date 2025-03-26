@@ -122,13 +122,14 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       setVercelUpdateLoading(true);
       const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
       if (response.status === 200) {
-        toast.success('Vercel environment variable updated and redeployment triggered');
+        toast.success('Store URL successfully updated');
+        router.refresh();
       } else {
-        toast.error('Failed to update Vercel environment variable and trigger redeployment');
+        toast.error('Failed to update store URL');
       }
     } catch (error) {
-      console.error('Error updating Vercel environment variable and redeploying:', error);
-      toast.error('An error occurred');
+      console.error('Error updating store URL:', error);
+      toast.error('An error occurred while updating the store URL');
     } finally {
       setVercelUpdateLoading(false);
     }
@@ -236,6 +237,9 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 className="w-full h-full border-0"
                 style={{ minHeight: '600px' }}
                 title="Store Preview"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                loading="lazy"
+                referrerPolicy="no-referrer"
               />
             </div>
           </CardContent>
@@ -247,7 +251,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Store URL</CardTitle>
-                <CardDescription>Manage your store's URL and deployment</CardDescription>
+                <CardDescription>Your store's public URL</CardDescription>
               </div>
               <Button
                 disabled={vercelUpdateLoading}
@@ -255,7 +259,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 variant="outline"
               >
                 <Globe className="h-4 w-4 mr-2" />
-                {vercelUpdateLoading ? 'Updating...' : 'Update URL'}
+                {vercelUpdateLoading ? 'Updating...' : 'Refresh URL'}
               </Button>
             </div>
           </CardHeader>
