@@ -261,7 +261,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Store URL</CardTitle>
-                <CardDescription>Your store's public URL</CardDescription>
+                <CardDescription>Your store&apos;s public URL</CardDescription>
               </div>
               <Button
                 disabled={vercelUpdateLoading}
