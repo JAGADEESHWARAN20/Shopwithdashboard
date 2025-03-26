@@ -53,18 +53,52 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
   const [isActive, setIsActive] = useState(initialData.isActive || false);
   const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || '');
   const [vercelUpdateLoading, setVercelUpdateLoading] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
+  const [previewError, setPreviewError] = useState(false);
+
+  // Check if URL is valid for preview
+  const isValidUrl = storeUrl &&
+    (storeUrl.startsWith('http://') || storeUrl.startsWith('https://')) &&
+    !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app');
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
+  // When form values change, update the storeUrl if needed
+  useEffect(() => {
+    // Only update if store is active
+    if (isActive && form.getValues('name')) {
+      const storeName = form.getValues('name').toLowerCase().replace(/\s+/g, '-');
+      const correctUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
+
+      // Update URL if it's different from what we have
+      if (storeUrl !== correctUrl && storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+        setStoreUrl(correctUrl);
+      }
+    }
+  }, [form.getValues('name'), isActive, storeUrl]);
+
   const onSubmit = async (data: SettingsFormValues) => {
     try {
       setLoading(true);
       await axios.patch(`/api/stores/${params.storeId}`, data);
+
+      // Update the storeUrl if needed
+      if (isActive) {
+        const newStoreName = data.name.toLowerCase().replace(/\s+/g, '-');
+        const newStoreUrl = `https://${newStoreName}.ecommercestore-online.vercel.app`;
+
+        if (storeUrl !== newStoreUrl) {
+          setStoreUrl(newStoreUrl);
+
+          // Also update the store URL in the database
+          await handleUpdateVercelEnv();
+        }
+      }
+
       router.refresh();
       toast.success(`Store Updated`);
     } catch {
@@ -121,17 +155,21 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
     try {
       setVercelUpdateLoading(true);
 
-      // Check if the current storeUrl is using the Git branch URL format
+      // Check if the current storeUrl is using the Git branch URL format or is invalid
+      let needsUpdate = false;
       let currentStoreUrl = storeUrl;
-      if (currentStoreUrl && currentStoreUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+
+      if (currentStoreUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') ||
+        !currentStoreUrl.includes('.ecommercestore-online.vercel.app')) {
         // Extract store name and create correct URL format
         const storeName = form.getValues('name').toLowerCase().replace(/\s+/g, '-');
         currentStoreUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
 
         // Update local state with corrected URL
         setStoreUrl(currentStoreUrl);
+        needsUpdate = true;
 
-        toast.success('Corrected store URL format');
+        console.log(`Corrected store URL format to: ${currentStoreUrl}`);
       }
 
       const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
@@ -139,11 +177,29 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       if (response.status === 200) {
         const { vercelResult, message } = response.data;
 
+        // Check if the response returned a new URL
+        if (response.data.updatedUrl && response.data.updatedUrl !== storeUrl) {
+          setStoreUrl(response.data.updatedUrl);
+          console.log(`Updated store URL from API: ${response.data.updatedUrl}`);
+        }
+
         toast.success(message || 'Store URL successfully updated');
 
-        if (vercelResult && !vercelResult.mocked) {
-          // Refresh the page to show updated URL
+        // Reset the preview
+        setPreviewKey(Date.now());
+        setPreviewLoading(true);
+        setPreviewError(false);
+
+        if (vercelResult && !vercelResult.mocked || needsUpdate) {
+          // Refresh the page to reflect the changes
           router.refresh();
+
+          // Force a full reload after a brief delay to ensure API changes are reflected
+          if (needsUpdate) {
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }
         }
       } else {
         toast.error('Failed to update store URL');
@@ -256,6 +312,38 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
           </CardHeader>
           <CardContent className="p-0">
             <div className="relative w-full aspect-[16/9] bg-muted rounded-lg overflow-hidden">
+              {storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10 p-4">
+                  <div className="text-center">
+                    <p className="text-amber-800 font-semibold mb-2">Preview unavailable with temporary URL</p>
+                    <p className="text-sm text-muted-foreground mb-4">Your store URL is using a temporary format that cannot be previewed</p>
+                    <Button
+                      onClick={handleUpdateVercelEnv}
+                      variant="outline"
+                      disabled={vercelUpdateLoading}
+                    >
+                      {vercelUpdateLoading ? 'Updating...' : 'Update URL Format'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {previewLoading && !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                </div>
+              )}
+              {previewError && !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10 p-4">
+                  <div className="text-center">
+                    <p className="text-red-600 font-semibold mb-2">Failed to load preview</p>
+                    <p className="text-sm text-muted-foreground mb-4">There was an error loading your store preview</p>
+                    <Button onClick={handleRefreshPreview} variant="outline">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Try Again
+                    </Button>
+                  </div>
+                </div>
+              )}
               <iframe
                 key={previewKey}
                 src={storeUrl}
@@ -265,6 +353,11 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                 loading="lazy"
                 referrerPolicy="no-referrer"
+                onLoad={() => setPreviewLoading(false)}
+                onError={() => {
+                  setPreviewLoading(false);
+                  setPreviewError(true);
+                }}
               />
             </div>
           </CardContent>

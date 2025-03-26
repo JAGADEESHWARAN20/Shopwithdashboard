@@ -6,7 +6,7 @@ const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
 const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || '';
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'ecommerce-store';
 
-async function updateVercelEnvironmentVariable(storeUrl: string) {
+async function updateVercelEnvironmentVariable(storeUrl: string, storeName: string) {
      if (!VERCEL_API_TOKEN) {
           console.log('No Vercel API token found. Skipping Vercel API call.');
           return { success: true, mocked: true };
@@ -17,11 +17,18 @@ async function updateVercelEnvironmentVariable(storeUrl: string) {
 
           // Ensure the URL is using the correct domain format
           let formattedStoreUrl = storeUrl;
+
+          // Check for Git deployment URLs
           if (storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
-               // Extract the store name from the URL
-               const storeName = storeUrl.split('/')[2].split('-git-')[0];
-               formattedStoreUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
+               const sanitizedStoreName = storeName.toLowerCase().replace(/\s+/g, '-');
+               formattedStoreUrl = `https://${sanitizedStoreName}.ecommercestore-online.vercel.app`;
                console.log(`Reformatted Git URL to proper domain: ${formattedStoreUrl}`);
+          }
+          // Check for other invalid URL formats
+          else if (!storeUrl.includes('.ecommercestore-online.vercel.app')) {
+               const sanitizedStoreName = storeName.toLowerCase().replace(/\s+/g, '-');
+               formattedStoreUrl = `https://${sanitizedStoreName}.ecommercestore-online.vercel.app`;
+               console.log(`Created proper subdomain URL: ${formattedStoreUrl}`);
           }
 
           const response = await fetch(
@@ -90,21 +97,42 @@ export async function POST(
           }
 
           // Update Vercel environment variable
-          const vercelResult = await updateVercelEnvironmentVariable(store.storeUrl);
+          const vercelResult = await updateVercelEnvironmentVariable(store.storeUrl, store.name);
 
-          // Always update our local store record to mark it as "updated"
-          await prismadb.store.update({
-               where: {
-                    id: params.storeId
-               },
-               data: {
-                    updatedAt: new Date()
-               }
-          });
+          // Check if the storeUrl is using Git deployment format and update it if needed
+          if (store.storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
+               const correctUrl = `https://${store.name.toLowerCase().replace(/\s+/g, '-')}.ecommercestore-online.vercel.app`;
+               console.log(`Fixing incorrect store URL format: ${store.storeUrl} → ${correctUrl}`);
+
+               // Update the store URL in the database
+               await prismadb.store.update({
+                    where: {
+                         id: params.storeId
+                    },
+                    data: {
+                         storeUrl: correctUrl,
+                         updatedAt: new Date()
+                    }
+               });
+
+               // Update the storeUrl for the response
+               store.storeUrl = correctUrl;
+          } else {
+               // Regular update just to mark as updated
+               await prismadb.store.update({
+                    where: {
+                         id: params.storeId
+                    },
+                    data: {
+                         updatedAt: new Date()
+                    }
+               });
+          }
 
           return NextResponse.json({
                success: true,
                vercelResult,
+               updatedUrl: store.storeUrl,
                message: vercelResult.mocked
                     ? 'Store URL updated (Vercel API token not configured)'
                     : 'Store URL and Vercel environment updated'
