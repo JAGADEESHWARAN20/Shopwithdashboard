@@ -1,106 +1,22 @@
-// import { NextResponse } from "next/server";
-// import { auth } from "@clerk/nextjs/server";
-// import prismadb from "@/lib/prismadb";
-
-// const allowedOrigins = ["http://localhost:3000", "https://yourdomain.com"]; // Add your frontend domains
-
-// const corsHeaders = {
-//     "Access-Control-Allow-Origin": "*", // Change "*" to a specific domain if needed
-//     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-//     "Access-Control-Allow-Headers": "Content-Type, Authorization",
-// };
-
-// export async function OPTIONS() {
-//     return new NextResponse(null, {
-//         status: 204,
-//         headers: corsHeaders,
-//     });
-// }
-
-// export async function POST(
-//     req: Request,
-//     { params }: { params: { storeId: string } }
-// ) {
-//     try {
-//         // Ensure user is authenticated
-//         const { userId } = auth();
-//         const body = await req.json();
-//         const { name, billboardId } = body;
-//         if (!userId) {
-//             return new NextResponse("Unauthorized", { status: 401 });
-//         }
-
-//         if (!name) {
-//             return new NextResponse("Name is required", { status: 400 });
-//         }
-//         if (!billboardId) {
-//             return new NextResponse("Billboard Id is required", { status: 400 });
-//         }
-
-//         if (!params.storeId) {
-//             return new NextResponse("Store ID is required", { status: 400 });
-//         }
-//         const storeByUserId = await prismadb.store.findFirst({
-//             where: {
-//                 id: params.storeId,
-//                 userId
-//             }
-//         });
-
-//         if (!storeByUserId) {
-//             return new NextResponse("Unauthorized", { status: 403 })
-//         }
-
-//         const categories = await prismadb.category.create({
-//             data: {
-//                 name,
-//                 billboardId,
-//                 storeId: params.storeId
-//             }
-//         });
-//         return NextResponse.json(categories);
-//     } catch (error) {
-//         console.error('[CATEGORIES_POST]', error);
-//         return new NextResponse("Internal error", { status: 500 });
-//     }
-// }
-
-
-// export async function GET(
-//     req: Request,
-//     { params }: { params: { storeId: string } }
-// ) {
-//     try {
-
-//         if (!params.storeId) {
-//             return new NextResponse("Store ID is required", { status: 400 });
-//         }
-
-
-//         const categories = await prismadb.category.findMany({
-//             where: {
-//                 storeId: params.storeId,
-//             },
-//         });
-//         return NextResponse.json(categories);
-//     } catch (error) {
-
-//         console.error('[CATEGORIES_GET]', error);
-//         return new NextResponse("Internal error", { status: 500 });
-//     }
-// }
-
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 
-const allowedOrigins = ["http://localhost:3000", "https://yourdomain.com"];
+// Define allowed origins for CORS
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3002", // Add your local dev frontend port
+    "https://ecommercestore-online.vercel.app", // Replace with your production frontend domain
+];
 
-const getCorsHeaders = (origin: string | null): Record<string, string> => ({
-    "Access-Control-Allow-Origin": origin && allowedOrigins.includes(origin) ? origin : "https://yourdomain.com",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-});
+const getCorsHeaders = (origin: string | null): Record<string, string> => {
+    const corsOrigin = origin && allowedOrigins.includes(origin) ? origin : "https://yourdomain.com";
+    return {
+        "Access-Control-Allow-Origin": corsOrigin,
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+};
 
 export async function OPTIONS(req: Request): Promise<NextResponse> {
     const origin = req.headers.get("origin");
@@ -153,7 +69,9 @@ export async function GET(
             return new NextResponse("Store ID is required", { status: 400, headers: getCorsHeaders(origin) });
         }
 
-        const categories = await prismadb.category.findMany({ where: { storeId: params.storeId } });
+        const categories = await prismadb.category.findMany({
+            where: { storeId: params.storeId },
+        });
 
         return NextResponse.json(categories, { headers: getCorsHeaders(origin) });
     } catch (error) {

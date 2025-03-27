@@ -245,8 +245,10 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
         </form>
       </Form>
       <Separator />
+      <div className="flex flex-row justify-between mt-1 gap-2">
+
       {storeUrl && (
-        <Card className="mt-4">
+        <Card className="mt-1 w-[600px]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -284,7 +286,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                       onClick={handleUpdateVercelEnv}
                       variant="outline"
                       disabled={vercelUpdateLoading}
-                    >
+                      >
                       {vercelUpdateLoading ? 'Updating...' : 'Update URL Format'}
                     </Button>
                   </div>
@@ -321,13 +323,13 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                   setPreviewLoading(false);
                   setPreviewError(true);
                 }}
-              />
+                />
             </div>
           </CardContent>
         </Card>
       )}
       {storeUrl && (
-        <Card className="mt-4">
+          <Card className="mt-1 w-full">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -338,7 +340,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 disabled={vercelUpdateLoading}
                 onClick={handleUpdateVercelEnv}
                 variant="outline"
-              >
+                >
                 <Globe className="h-4 w-4 mr-2" />
                 {vercelUpdateLoading ? 'Updating...' : 'Refresh URL'}
               </Button>
@@ -352,6 +354,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
           </CardContent>
         </Card>
       )}
+      </div>
       <Separator />
       <ApiAlert
         title="NEXT_PUBLIC_API_URL"
