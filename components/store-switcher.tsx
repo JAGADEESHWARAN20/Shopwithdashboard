@@ -13,7 +13,6 @@ import { Prisma } from '@prisma/client';
 
 type Store = Prisma.StoreGetPayload<{}>;
 
-
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
 
 interface StoreSwitcherProps extends PopoverTriggerProps {
