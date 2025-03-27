@@ -1,8 +1,8 @@
-// app/api/stores/[storeId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import axios from "axios";
+import validator from "validator";
 
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
@@ -15,22 +15,50 @@ async function addDomainToProject(projectId: string, domainName: string) {
     }
 
     try {
-        const response = await axios.post(
-            `${VERCEL_API_URL}/v9/projects/${projectId}/domains`,
-            { name: domainName },
+        // Check if domain exists in the project using v9 API
+        const domainCheckResponse = await axios.get(
+            `${VERCEL_API_URL}/v9/projects/${projectId}/domains?domain=${domainName}`,
             {
                 headers: {
                     Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
                 },
             }
         );
-        return response.data;
+
+        const domainExists = domainCheckResponse.data.domains.some(
+            (d: any) => d.name === domainName
+        );
+
+        if (domainExists) {
+            console.log(`[STORE_PATCH] Domain ${domainName} already exists in Vercel project.`);
+            return domainCheckResponse.data;
+        }
+
+        // Add new domain to project using v9 API
+        const domainAddResponse = await axios.post(
+            `${VERCEL_API_URL}/v9/projects/${projectId}/domains`,
+            { name: domainName },
+            {
+                headers: {
+                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        console.log(`[STORE_PATCH] Domain ${domainName} added to Vercel project.`);
+        return domainAddResponse.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-            throw new Error(
-                `Failed to add domain: ${error.response?.data?.error?.message || error.message}`
-            );
+            const errorCode = error.response?.data?.error?.code;
+            let errorMessage = `Failed to add domain: ${error.message}`;
+
+            if (errorCode) {
+                errorMessage += ` (Error code: ${errorCode})`;
+            }
+            console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
+            throw new Error(errorMessage);
         }
+        console.error(`[STORE_PATCH] Unexpected error: ${error}`);
         throw error;
     }
 }
@@ -50,13 +78,20 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
                 },
             }
         );
+        console.log(`[STORE_PATCH] Domain ${domainName} removed from Vercel project.`);
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-            throw new Error(
-                `Failed to remove domain: ${error.response?.data?.error?.message || error.message}`
-            );
+            const errorCode = error.response?.data?.error?.code;
+            let errorMessage = `Failed to remove domain: ${error.message}`;
+
+            if (errorCode) {
+                errorMessage += ` (Error code: ${errorCode})`;
+            }
+            console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
+            throw new Error(errorMessage);
         }
+        console.error(`[STORE_PATCH] Unexpected error: ${error}`);
         throw error;
     }
 }
@@ -98,22 +133,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
         }
 
         if (storeUrl) {
-            // Validate storeUrl format (basic check)
-            try {
-                new URL(storeUrl);
-            } catch (error) {
+            // Validate storeUrl format
+            if (!validator.isURL(storeUrl, { require_tld: false })) {
                 return new NextResponse("Invalid storeUrl format", { status: 400 });
             }
 
-            updatedData.storeUrl = storeUrl;
+            // Extract domain from storeUrl (remove protocol and path)
+            const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
 
-            // Update Vercel project domain if storeUrl changes
-            if (VERCEL_PROJECT_ID && store.storeUrl && store.storeUrl !== storeUrl) {
+            // Check if storeUrl is different from the existing domain
+            if (store.storeUrl && store.storeUrl !== storeUrl) {
                 try {
                     // Remove the old domain
-                    await removeDomainFromProject(VERCEL_PROJECT_ID, store.storeUrl);
+                    if (VERCEL_PROJECT_ID && store.storeUrl) {
+                        const oldDomain = store.storeUrl.replace(/^https?:\/\//, '').split('/')[0];
+                        await removeDomainFromProject(VERCEL_PROJECT_ID, oldDomain);
+                    }
                     // Add the new domain
-                    await addDomainToProject(VERCEL_PROJECT_ID, storeUrl);
+                    if (VERCEL_PROJECT_ID) {
+                        await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+                    }
                 } catch (error: unknown) {
                     if (error instanceof Error) {
                         return new NextResponse(`Failed to update Vercel domain: ${error.message}`, {
@@ -122,69 +161,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
                     }
                     return new NextResponse("Failed to update Vercel domain", { status: 500 });
                 }
+            } else if (!store.storeUrl && VERCEL_PROJECT_ID) {
+                // Add new domain if no previous domain existed
+                await addDomainToProject(VERCEL_PROJECT_ID, domainName);
             }
+            updatedData.storeUrl = storeUrl;
         }
 
-        const updatedStore = await prismadb.store.update({
-            where: {
-                id: params.storeId,
-            },
-            data: updatedData,
+        const updatedStore = await prismadb.$transaction(async (prisma) => {
+            const updatedStore = await prisma.store.update({
+                where: {
+                    id: params.storeId,
+                },
+                data: updatedData,
+            });
+            return updatedStore;
         });
 
         return NextResponse.json(updatedStore);
     } catch (error) {
         console.error("[STORE_PATCH]", error);
-        return new NextResponse("Internal error", { status: 500 });
-    }
-}
-
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { storeId: string } }
-) {
-    try {
-        const { userId } = getAuth(req);
-
-        if (!userId) {
-            return new NextResponse("Unauthenticated", { status: 401 });
-        }
-
-        if (!params.storeId) {
-            return new NextResponse("Store ID is required", { status: 400 });
-        }
-
-        const store = await prismadb.store.findFirst({
-            where: {
-                id: params.storeId,
-                userId,
-            },
-        });
-
-        if (!store) {
-            return new NextResponse("Unauthorized", { status: 403 });
-        }
-
-        // Remove the domain from Vercel before deleting the store
-        if (VERCEL_PROJECT_ID && store.storeUrl) {
-            try {
-                await removeDomainFromProject(VERCEL_PROJECT_ID, store.storeUrl);
-            } catch (error: unknown) {
-                if (error instanceof Error) {
-                    console.log(`[STORE_DELETE] Failed to remove Vercel domain: ${error.message}`);
-                }
-            }
-        }
-
-        const deletedStore = await prismadb.store.delete({
-            where: {
-                id: params.storeId,
-            },
-        });
-
-        return NextResponse.json(deletedStore);
-    } catch (error) {
-        console.error("[STORE_DELETE]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
