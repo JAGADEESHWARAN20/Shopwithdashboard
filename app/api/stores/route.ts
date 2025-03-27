@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate storeUrl (if needed)
-    const storeUrl = `${name.toLowerCase().replace(/\s+/g, '-')}.${process.env.NEXT_PUBLIC_APP_DOMAIN}`;
+    const storeUrl = `${process.env.NEXT_PUBLIC_APP_DOMAIN}`;
 
     const store = await prismadb.store.create({
       data: {
