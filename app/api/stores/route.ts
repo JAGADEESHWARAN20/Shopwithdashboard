@@ -1,3 +1,4 @@
+// app/api/stores/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
@@ -17,15 +18,15 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Name is required", { status: 400 });
     }
 
-    // Generate storeUrl (if needed)
-    const storeUrl = `${process.env.NEXT_PUBLIC_APP_DOMAIN}`;
+    // Generate unique storeUrl using ecommercestore-online.vercel.app
+    const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}.ecommercestore-online.vercel.app`;
 
     const store = await prismadb.store.create({
       data: {
         name,
         userId,
-        isActive: true, // Add isActive if needed
-        storeUrl, // Add storeUrl if needed
+        isActive: true,
+        storeUrl,
       },
     });
 

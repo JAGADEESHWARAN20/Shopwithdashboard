@@ -98,6 +98,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
         }
 
         if (storeUrl) {
+            // Validate storeUrl format (basic check)
+            try {
+                new URL(storeUrl);
+            } catch (error) {
+                return new NextResponse("Invalid storeUrl format", { status: 400 });
+            }
+
             updatedData.storeUrl = storeUrl;
 
             // Update Vercel project domain if storeUrl changes
@@ -127,7 +134,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
 
         return NextResponse.json(updatedStore);
     } catch (error) {
-        console.log("[STORE_PATCH]", error);
+        console.error("[STORE_PATCH]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
@@ -158,7 +165,7 @@ export async function DELETE(
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        // Optionally, remove the domain from Vercel before deleting the store
+        // Remove the domain from Vercel before deleting the store
         if (VERCEL_PROJECT_ID && store.storeUrl) {
             try {
                 await removeDomainFromProject(VERCEL_PROJECT_ID, store.storeUrl);
@@ -177,7 +184,7 @@ export async function DELETE(
 
         return NextResponse.json(deletedStore);
     } catch (error) {
-        console.log("[STORE_DELETE]", error);
+        console.error("[STORE_DELETE]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
@@ -197,9 +204,13 @@ export async function GET(
             },
         });
 
+        if (!store) {
+            return new NextResponse("Store not found", { status: 404 });
+        }
+
         return NextResponse.json(store);
     } catch (error) {
-        console.log("[STORE_GET]", error);
+        console.error("[STORE_GET]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
