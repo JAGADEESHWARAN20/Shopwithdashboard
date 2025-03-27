@@ -37,12 +37,18 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
   useEffect(() => {
     const fetchDomains = async () => {
+      if (!userId || !params.storeId) {
+        console.error("Missing userId or storeId:", { userId, storeId: params.storeId });
+        toast.error("Invalid user or store ID");
+        return;
+      }
+
       try {
         const response = await axios.get(`/api/stores/${params.storeId}/list-domains?userId=${userId}`);
         const domains = response.data.map((domain: any) => domain.name);
         setCurrentDomains(domains);
       } catch (error: any) {
-        console.error("Error fetching domains:", error);
+        console.error("Error fetching domains:", error.response?.data || error.message);
         toast.error("Failed to fetch current domains");
       }
     };
@@ -51,7 +57,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       fetchDomains();
     }
   }, [userId, params.storeId]);
-
+  
   const onSubmit = async () => {
     try {
       setLoading(true);
