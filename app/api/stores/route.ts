@@ -1,4 +1,3 @@
-// app/api/stores/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
@@ -20,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate unique storeUrl using ecommercestore-online.vercel.app
-    const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}.ecommercestore-online.vercel.app`;
+    const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}-ecommercestore-online.vercel.app`;
 
     const store = await prismadb.store.create({
       data: {

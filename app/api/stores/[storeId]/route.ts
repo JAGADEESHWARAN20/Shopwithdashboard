@@ -15,7 +15,6 @@ async function addDomainToProject(projectId: string, domainName: string) {
     }
 
     try {
-        // Check if domain exists in the project using v9 API
         const domainCheckResponse = await axios.get(
             `${VERCEL_API_URL}/v9/projects/${projectId}/domains?domain=${domainName}`,
             {
@@ -34,7 +33,6 @@ async function addDomainToProject(projectId: string, domainName: string) {
             return domainCheckResponse.data;
         }
 
-        // Add new domain to project using v9 API
         const domainAddResponse = await axios.post(
             `${VERCEL_API_URL}/v9/projects/${projectId}/domains`,
             { name: domainName },
@@ -51,7 +49,6 @@ async function addDomainToProject(projectId: string, domainName: string) {
         if (axios.isAxiosError(error)) {
             const errorCode = error.response?.data?.error?.code;
             let errorMessage = `Failed to add domain: ${error.message}`;
-
             if (errorCode) {
                 errorMessage += ` (Error code: ${errorCode})`;
             }
@@ -84,7 +81,6 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
         if (axios.isAxiosError(error)) {
             const errorCode = error.response?.data?.error?.code;
             let errorMessage = `Failed to remove domain: ${error.message}`;
-
             if (errorCode) {
                 errorMessage += ` (Error code: ${errorCode})`;
             }
@@ -133,23 +129,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
         }
 
         if (storeUrl) {
-            // Validate storeUrl format
             if (!validator.isURL(storeUrl, { require_tld: false })) {
                 return new NextResponse("Invalid storeUrl format", { status: 400 });
             }
 
-            // Extract domain from storeUrl (remove protocol and path)
             const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
 
-            // Check if storeUrl is different from the existing domain
             if (store.storeUrl && store.storeUrl !== storeUrl) {
                 try {
-                    // Remove the old domain
                     if (VERCEL_PROJECT_ID && store.storeUrl) {
                         const oldDomain = store.storeUrl.replace(/^https?:\/\//, '').split('/')[0];
                         await removeDomainFromProject(VERCEL_PROJECT_ID, oldDomain);
                     }
-                    // Add the new domain
                     if (VERCEL_PROJECT_ID) {
                         await addDomainToProject(VERCEL_PROJECT_ID, domainName);
                     }
@@ -162,7 +153,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
                     return new NextResponse("Failed to update Vercel domain", { status: 500 });
                 }
             } else if (!store.storeUrl && VERCEL_PROJECT_ID) {
-                // Add new domain if no previous domain existed
                 await addDomainToProject(VERCEL_PROJECT_ID, domainName);
             }
             updatedData.storeUrl = storeUrl;

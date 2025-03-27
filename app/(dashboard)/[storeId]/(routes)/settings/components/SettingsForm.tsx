@@ -1,365 +1,225 @@
 "use client";
 
-import { Store } from "@prisma/client";
-import * as z from 'zod';
-import axios from 'axios';
-import { zodResolver } from '@hookform/resolvers/zod';
-import toast from 'react-hot-toast';
-
-import { useForm } from 'react-hook-form';
-import { Trash, ExternalLink, RefreshCw, Globe } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-
-import { Separator } from "../../../../../../components/ui/separator";
-import { Heading } from "../../../../../../components/ui/heading";
-import { Button } from "../../../../../../components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../../../../../../components/ui/form';
-import { Input } from '../../../../../../components/ui/input';
-import { AlertModel } from "../../../../../../components/modals/alert-model";
-import { ApiAlert } from "../../../../../../components/ui/api-alert";
-import { useOrigin } from "../../../../../../hooks/use-origin";
-
 import { useState, useEffect } from "react";
-import { Switch } from "../../../../../../components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../../../components/ui/card";
-import { Badge } from "../../../../../../components/ui/badge";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import {Label} from "@/components/ui/label";
+import {Button} from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {Checkbox} from "@/components/ui/checkbox";
+import {Input} from "@/components/ui/input";
+
 
 interface SettingsFormProps {
-  initialData: Store;
+  initialData: any; // Store data
 }
 
-const formSchema = z.object({
-  name: z.string().min(1),
-});
-
-type SettingsFormValues = z.infer<typeof formSchema>;
-
-export const SettingsForm: React.FC<SettingsFormProps> = ({
-  initialData,
-}) => {
+const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
+  const { userId } = useAuth();
   const params = useParams();
   const router = useRouter();
-  const origin = useOrigin();
 
-  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(initialData.name);
+  const [isActive, setIsActive] = useState(initialData.isActive);
+  const [domainToRemove, setDomainToRemove] = useState("");
+  const [domainToAdd, setDomainToAdd] = useState("");
+  const [currentDomains, setCurrentDomains] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(initialData.isActive || false);
-  const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || '');
-  const [vercelUpdateLoading, setVercelUpdateLoading] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(true);
-  const [previewKey, setPreviewKey] = useState(Date.now());
-  const [previewError, setPreviewError] = useState(false);
+  const [domainLoading, setDomainLoading] = useState(false);
 
-  // Check if URL is valid for preview
-  const isValidUrl = storeUrl &&
-    (storeUrl.startsWith('http://') || storeUrl.startsWith('https://')) &&
-    !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app');
-
-  const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: initialData,
-  });
-
-  // When form values change, update the storeUrl if needed
   useEffect(() => {
-    // Only update if store is active
-    if (isActive && form.getValues('name')) {
-      const storeName = form.getValues('name').toLowerCase().replace(/\s+/g, '-');
-      const correctUrl = `https://${storeName}.ecommercestore-online.vercel.app`;
-
-      // Update URL if it's different from what we have
-      if (storeUrl !== correctUrl && storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app')) {
-        setStoreUrl(correctUrl);
+    const fetchDomains = async () => {
+      try {
+        const response = await axios.get(`/api/stores/${params.storeId}/list-domains?userId=${userId}`);
+        const domains = response.data.map((domain: any) => domain.name);
+        setCurrentDomains(domains);
+      } catch (error: any) {
+        console.error("Error fetching domains:", error);
+        toast.error("Failed to fetch current domains");
       }
-    }
-  }, [form.getValues('name'), isActive, storeUrl]);
+    };
 
-  const onSubmit = async (data: SettingsFormValues) => {
+    if (userId) {
+      fetchDomains();
+    }
+  }, [userId, params.storeId]);
+
+  const onSubmit = async () => {
     try {
       setLoading(true);
-      await axios.patch(`/api/stores/${params.storeId}`, data);
+      const response = await axios.patch(`/api/stores/${params.storeId}`, {
+        name,
+        isActive,
+        userId,
+      });
 
-      // Update the storeUrl if needed
-      if (isActive) {
-        const newStoreName = data.name.toLowerCase().replace(/\s+/g, '-');
-        const newStoreUrl = `https://${newStoreName}.ecommercestore-online.vercel.app`;
-
-        if (storeUrl !== newStoreUrl) {
-          setStoreUrl(newStoreUrl);
-
-          // Also update the store URL in the database
-          await handleUpdateVercelEnv();
-        }
+      // If the store name changes, update the storeUrl and environment variables
+      if (name !== initialData.name) {
+        const newDomain = `${name.toLowerCase().replace(/\s+/g, "-")}-ecommercestore-online.vercel.app`;
+        await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
+          userId,
+          domainToRemove: initialData.storeUrl?.replace("https://", ""),
+          domainToAdd: newDomain,
+        });
       }
 
+      toast.success("Store updated successfully");
       router.refresh();
-      toast.success(`Store Updated`);
-    } catch {
-      toast.error("its not working");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to update store");
     } finally {
       setLoading(false);
     }
   };
 
-  const onDelete = async () => {
+  const handleManageDomains = async () => {
     try {
-      setLoading(true);
-      await axios.delete(`/api/stores/${params.storeId}`);
-      router.refresh();
-      router.push("/");
-      toast.success("Store Deleted");
-    } catch (error) {
-      toast.error("Make sure you remove all products and categories first");
-    } finally {
-      setLoading(false);
-      setOpen(false);
-    }
-  };
-
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const handleToggle = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.patch(`/api/stores/${params.storeId}/activate`, {
-        isActive: !isActive,
+      setDomainLoading(true);
+      const response = await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
+        userId,
+        domainToRemove: domainToRemove || undefined,
+        domainToAdd: domainToAdd || undefined,
       });
       if (response.status === 200) {
-        const updatedStore = response.data;
-        setIsActive(updatedStore.isActive);
-        setStoreUrl(updatedStore.storeUrl);
-        toast.success('Store activation updated');
+        toast.success("Domains managed successfully");
+        setDomainToRemove("");
+        setDomainToAdd("");
+        const domainsResponse = await axios.get(`/api/stores/${params.storeId}/list-domains?userId=${userId}`);
+        const domains = domainsResponse.data.map((domain: any) => domain.name);
+        setCurrentDomains(domains);
         router.refresh();
       } else {
-        toast.error('Failed to update store activation');
+        toast.error("Failed to manage domains");
       }
-    } catch (error) {
-      console.error('Error updating store activation:', error);
-      toast.error('An error occurred');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to manage domains");
     } finally {
-      setLoading(false);
+      setDomainLoading(false);
     }
-  };
-
-  const handleUpdateVercelEnv = async () => {
-    try {
-      setVercelUpdateLoading(true);
-      const response = await axios.post(`/api/stores/${params.storeId}/update-vercel-env`);
-
-      if (response.status === 200) {
-        const { vercelResult, message } = response.data;
-
-        toast.success(message || 'Store URL successfully updated');
-
-        if (vercelResult && !vercelResult.mocked) {
-          router.refresh();
-        }
-      } else {
-        toast.error('Failed to update store URL');
-      }
-    } catch (error: unknown) {
-      console.error('Error updating store URL:', error);
-
-      // Type guard to safely access axios error response properties
-      const axiosError = error as { response?: { data?: string } };
-      const errorMessage = axiosError.response?.data || 'An error occurred while updating the store URL';
-      toast.error(errorMessage);
-    } finally {
-      setVercelUpdateLoading(false);
-    }
-  };
-
-  const handlePreviewClick = () => {
-    if (storeUrl) {
-      window.open(storeUrl, '_blank');
-    }
-  };
-
-  const handleRefreshPreview = () => {
-    setPreviewKey(Date.now());
   };
 
   return (
-    <>
-      <AlertModel
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        onConfirm={onDelete}
-        loading={loading}
-      />
-      <div className="flex items-center justify-between">
-        <Heading title="Settings" description="Manage Store Preferences" />
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Badge variant={isActive ? "default" : "destructive"}>
-              {isActive ? "Active" : "Inactive"}
-            </Badge>
-            <Switch checked={isActive} onCheckedChange={handleToggle} />
-          </div>
-          {isClient ? (
-            <Button
-              disabled={loading}
-              suppressHydrationWarning={true}
-              variant="destructive"
-              size="sm"
-              onClick={() => setOpen(true)}
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
-          ) : null}
-        </div>
-      </div>
-      <Separator />
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8 w-full'>
-          <div className='grid grid-cols-3 gap-8'>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Name
-                  </FormLabel>
-                  <FormControl>
-                    <Input disabled={loading} placeholder='Store Name' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <div className="space-y-6 p-6">
+      {/* Store Settings Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Store Settings</CardTitle>
+          <CardDescription>Update your store name and status.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="store-name">Store Name</Label>
+            <Input
+              id="store-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter store name"
             />
           </div>
-          <Button suppressHydrationWarning={true} disabled={loading} className="ml-auto" type='submit'>
-            Save Changes
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is-active"
+              checked={isActive}
+              onCheckedChange={(checked: boolean) => setIsActive(checked)}
+            />
+            <Label htmlFor="is-active">Active</Label>
+          </div>
+          <Button onClick={onSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
-        </form>
-      </Form>
-      <Separator />
-      <div className="flex flex-row justify-between mt-1 gap-2">
+        </CardContent>
+      </Card>
 
-      {storeUrl && (
-        <Card className="mt-1 w-[600px]">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Store Preview</CardTitle>
-                <CardDescription>Live preview of your store</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleRefreshPreview}
-                  variant="outline"
-                  size="sm"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-                <Button
-                  onClick={handlePreviewClick}
-                  variant="outline"
-                  size="sm"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="relative w-full aspect-[16/9] bg-muted rounded-lg overflow-hidden">
-              {storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10 p-4">
-                  <div className="text-center">
-                    <p className="text-amber-800 font-semibold mb-2">Preview unavailable with temporary URL</p>
-                    <p className="text-sm text-muted-foreground mb-4">Your store URL is using a temporary format that cannot be previewed</p>
-                    <Button
-                      onClick={handleUpdateVercelEnv}
-                      variant="outline"
-                      disabled={vercelUpdateLoading}
-                      >
-                      {vercelUpdateLoading ? 'Updating...' : 'Update URL Format'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {previewLoading && !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                </div>
-              )}
-              {previewError && !storeUrl.includes('-git-main-jagadeeshwaran20s-projects.vercel.app') && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted z-10 p-4">
-                  <div className="text-center">
-                    <p className="text-red-600 font-semibold mb-2">Failed to load preview</p>
-                    <p className="text-sm text-muted-foreground mb-4">There was an error loading your store preview</p>
-                    <Button onClick={handleRefreshPreview} variant="outline">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Try Again
-                    </Button>
-                  </div>
-                </div>
-              )}
-              <iframe
-                key={previewKey}
-                src={storeUrl}
-                className="w-full h-full border-0"
-                style={{ minHeight: '600px' }}
-                title="Store Preview"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                onLoad={() => setPreviewLoading(false)}
-                onError={() => {
-                  setPreviewLoading(false);
-                  setPreviewError(true);
-                }}
+      {/* Store URL and Preview Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Store URL</CardTitle>
+          <CardDescription>View and preview your store URL.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Current URL</Label>
+            <p className="mt-1 text-sm text-gray-600">{initialData.storeUrl || "No URL set"}</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Store Preview</Label>
+            <div className="relative w-full h-64 border rounded-md overflow-hidden">
+              {initialData.storeUrl ? (
+                <iframe
+                  src={initialData.storeUrl}
+                  title="Store Preview"
+                  className="w-full h-full border-none"
+                  style={{
+                    transform: "scale(0.5)", // Scale down to 50% to show a mini view
+                    transformOrigin: "top left",
+                    width: "200%", // Double the width to account for scaling
+                    height: "200%", // Double the height to account for scaling
+                    pointerEvents: "none", // Disable interaction with the iframe
+                  }}
+                  scrolling="no" // Disable scrolling
                 />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No store URL available for preview.
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      )}
-      {storeUrl && (
-          <Card className="mt-1 w-full">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Store URL</CardTitle>
-                <CardDescription>Your store&apos;s public URL</CardDescription>
-              </div>
-              <Button
-                disabled={vercelUpdateLoading}
-                onClick={handleUpdateVercelEnv}
-                variant="outline"
-                >
-                <Globe className="h-4 w-4 mr-2" />
-                {vercelUpdateLoading ? 'Updating...' : 'Refresh URL'}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2 bg-muted p-3 rounded-lg">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-medium break-all">{storeUrl}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      </div>
-      <Separator />
-      <ApiAlert
-        title="NEXT_PUBLIC_API_URL"
-        description={`${origin}/api/${params.storeId}`}
-        variant="public" />
-    </>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Manage Domains Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Manage Domains</CardTitle>
+          <CardDescription>Add or remove domains for your store.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Current Domains</Label>
+            {currentDomains.length > 0 ? (
+              <ul className="list-disc pl-5 mt-1 text-sm text-gray-600">
+                {currentDomains.map((domain) => (
+                  <li key={domain}>{domain}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-gray-600">No domains found.</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="domain-to-remove">Domain to Remove (optional)</Label>
+            <Input
+              id="domain-to-remove"
+              value={domainToRemove}
+              onChange={(e) => setDomainToRemove(e.target.value)}
+              placeholder="e.g., oldstore-ecommercestore-online.vercel.app"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="domain-to-add">Domain to Add (optional)</Label>
+            <Input
+              id="domain-to-add"
+              value={domainToAdd}
+              onChange={(e) => setDomainToAdd(e.target.value)}
+              placeholder="e.g., newstore-ecommercestore-online.vercel.app"
+            />
+          </div>
+          <Button onClick={handleManageDomains} disabled={domainLoading}>
+            {domainLoading ? "Managing Domains..." : "Manage Domains"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
+
+export default SettingsForm;
