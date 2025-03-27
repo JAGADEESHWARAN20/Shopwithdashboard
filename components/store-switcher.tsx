@@ -41,6 +41,11 @@ export default function StoreSwitcher({
         router.push(`/${selectedStore.value}`);
     };
 
+    // Debugging: Inspect params.storeId and formattedItems
+    console.log("params.storeId:", params.storeId);
+    console.log("formattedItems:", formattedItems);
+    console.log("currentStore:", currentStore);
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
