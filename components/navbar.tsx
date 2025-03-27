@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ storeUrl }) => {
                         </Link>
                     )}
                     <UserButton
-                        afterSignOutUrl="/"
+                     
                         appearance={{
                             elements: {
                                 userButtonAvatarBox: "h-8 w-8", // Customize avatar size

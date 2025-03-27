@@ -33,6 +33,7 @@ const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
         <ToasterProvider />
         <ModalProvider />
         <ClerkProvider
+          afterSignOutUrl={'/'}
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
           fallbackRedirectUrl="/dashboard" // Changed from signInFallbackRedirectUrl
           {...pageProps}
