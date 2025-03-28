@@ -1,7 +1,7 @@
 /** @type {import('next-sitemap').IConfig} */
 
 // Import your database client
-const prismadb = require('./lib/prismadb'); // Adjust the path as needed
+const prismadb = require('@/lib/prismadb'); // Adjust the path as needed
 
 module.exports = {
      siteUrl: process.env.SITE_URL || 'https://admindashboardecom.vercel.app/',
