@@ -2,7 +2,7 @@ import prismadb from "@/lib/prismadb";
 
 export const getStoreId = async (): Promise<string | null> => {
      try {
-          const hostname = process.env.VERCEL_URL || "localhost:3000";
+          const hostname = process.env.VERCEL_FRONTEND_URL || "localhost:3000";
           const subdomain = hostname.split("-")[0];
 
           if (!subdomain || subdomain === "localhost:3000") {
