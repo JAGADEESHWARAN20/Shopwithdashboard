@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+
+// Define the expected response type from Vercel API for listing domains
+interface VercelDomainsResponse {
+     domains: Array<{ name: string;[key: string]: any }>;
+     pagination?: {
+          next: number | null;
+          prev: number | null;
+          count: number;
+     };
+}
 
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
@@ -21,20 +31,39 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
                );
           }
 
-          const response = await axios.get(`${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`, {
-               headers: {
-                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-               },
-          });
+          let allDomains: Array<{ name: string;[key: string]: any }> = [];
+          let nextTimestamp: number | null = null;
+
+          // Fetch all domains with pagination
+          do {
+               const url: string = nextTimestamp
+                    ? `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains?until=${nextTimestamp}`
+                    : `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`;
+
+               const response: AxiosResponse<VercelDomainsResponse> = await axios.get(url, {
+                    headers: {
+                         Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                    },
+               });
+
+               allDomains.push(...response.data.domains);
+               nextTimestamp = response.data.pagination?.next || null;
+          } while (nextTimestamp);
 
           // Filter domains to only include frontend domains
-          const filteredDomains = response.data.domains.filter((domain: any) =>
+          const filteredDomains = allDomains.filter((domain) =>
                domain.name.endsWith("ecommercestore-online.vercel.app")
           );
 
           return NextResponse.json(filteredDomains);
      } catch (error: any) {
           console.error("[LIST_DOMAINS_API] Error:", error.response?.data || error.message);
+          if (error.response?.status === 429) {
+               return NextResponse.json({ error: "Rate limit exceeded. Please try again later." }, { status: 429 });
+          }
+          if (error.response?.status === 403) {
+               return NextResponse.json({ error: "Unauthorized access to Vercel API" }, { status: 403 });
+          }
           return NextResponse.json(
                { error: error.response?.data?.error?.message || "Internal Server Error" },
                { status: 500 }
@@ -42,12 +71,11 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
      }
 }
 
-// Handle OPTIONS for CORS preflight requests
 export async function OPTIONS() {
      return new NextResponse(null, {
           status: 204,
           headers: {
-               "Access-Control-Allow-Origin": "*",
+               "Access-Control-Allow-Origin": process.env.NODE_ENV === "production" ? "https://your-frontend-domain.com" : "*",
                "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
                "Access-Control-Allow-Headers": "Content-Type, Authorization",
           },

@@ -2,142 +2,215 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import axios from "axios";
+import validator from "validator";
 
-const RAZORPAY_API_URL = "https://api.razorpay.com/v1";
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID as string;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET as string;
+const VERCEL_API_URL = "https://api.vercel.com";
+const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
-// Validate environment variables at startup
-if (!RAZORPAY_KEY_ID) {
-  throw new Error("RAZORPAY_KEY_ID is not defined in environment variables");
-}
-if (!RAZORPAY_KEY_SECRET) {
-  throw new Error("RAZORPAY_KEY_SECRET is not defined in environment variables");
-}
+async function addDomainToProject(projectId: string, domainName: string) {
+  if (!VERCEL_ACCESS_TOKEN) {
+    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
+  }
 
-// Helper function to create Razorpay webhook
-async function createRazorpayWebhook(storeId: string) {
-  const webhookUrl = `https://admindashboardecom.vercel.app/api/${storeId}/webhook`;
   try {
-    const response = await axios.post(
-      `${RAZORPAY_API_URL}/webhooks`,
+    const domainCheckResponse = await axios.get(
+      `${VERCEL_API_URL}/v9/projects/${projectId}/domains?domain=${domainName}`,
       {
-        url: webhookUrl,
-        events: {
-          "payment.authorized": true,
-          "payment.captured": true,
-          "payment.failed": true,
-        },
-        alert_email: "jagadeeshwaransp5@gmail.com",
-        secret: "qn3WYkSwJgZpyhxKK4YK3wAy",
-      },
-      {
-        auth: {
-          username: RAZORPAY_KEY_ID,
-          password: RAZORPAY_KEY_SECRET,
+        headers: {
+          Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
         },
       }
     );
-    console.log(`[RAZORPAY_WEBHOOK] Created webhook for store ${storeId}: ${webhookUrl}`);
-    return response.data.id;
-  } catch (error: any) {
-    console.error("[RAZORPAY_WEBHOOK] Failed to create webhook:", error.response?.data || error.message);
+
+    const domainExists = domainCheckResponse.data.domains.some(
+      (d: any) => d.name === domainName
+    );
+
+    if (domainExists) {
+      console.log(`[STORE_PATCH] Domain ${domainName} already exists in Vercel project.`);
+      return domainCheckResponse.data;
+    }
+
+    const domainAddResponse = await axios.post(
+      `${VERCEL_API_URL}/v9/projects/${projectId}/domains`,
+      { name: domainName },
+      {
+        headers: {
+          Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(`[STORE_PATCH] Domain ${domainName} added to Vercel project.`);
+    return domainAddResponse.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorCode = error.response?.data?.error?.code;
+      let errorMessage = `Failed to add domain: ${error.message}`;
+      if (errorCode) {
+        errorMessage += ` (Error code: ${errorCode})`;
+      }
+      if (error.response?.status === 429) {
+        throw new Error("Rate limit exceeded. Please try again later.");
+      }
+      console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
+      throw new Error(errorMessage);
+    }
+    console.error(`[STORE_PATCH] Unexpected error: ${error}`);
     throw error;
   }
 }
 
-// POST route (for creating a new store)
-export async function POST(req: NextRequest) {
+async function removeDomainFromProject(projectId: string, domainName: string) {
+  if (!VERCEL_ACCESS_TOKEN) {
+    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
+  }
+
   try {
-    const { userId } = getAuth(req);
-
-    if (!userId) {
-      return new NextResponse("Not authenticated", { status: 401 });
-    }
-
-    const body = await req.json();
-    const { name } = body;
-
-    if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
-    }
-
-    const storeUrl = `https://${name.toLowerCase().replace(/\s+/g, '-')}-ecommercestore-online.vercel.app`;
-
-    const store = await prismadb.store.create({
-      data: {
-        name,
-        userId,
-        isActive: true,
-        storeUrl,
-      },
-    });
-
-    // Create Razorpay webhook for this store
-    let razorpayWebhookId: string | null = null;
-    try {
-      const id = await createRazorpayWebhook(store.id);
-      razorpayWebhookId = id;
-    } catch (error: any) {
-      console.error("[RAZORPAY_WEBHOOK] Failed to create webhook:", error.response?.data || error.message);
-      // Roll back the store creation if webhook creation fails
-      await prismadb.store.delete({ where: { id: store.id } });
-      return new NextResponse("Failed to create Razorpay webhook", { status: 500 });
-    }
-
-    // Update the store with the Razorpay webhook ID
-    if (razorpayWebhookId) {
-      await prismadb.store.update({
-        where: { id: store.id },
-        data: {
-          razorpayWebhookId: razorpayWebhookId,
+    const response = await axios.delete(
+      `${VERCEL_API_URL}/v9/projects/${projectId}/domains/${domainName}`,
+      {
+        headers: {
+          Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
         },
-      });
+      }
+    );
+    console.log(`[STORE_PATCH] Domain ${domainName} removed from Vercel project.`);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorCode = error.response?.data?.error?.code;
+      let errorMessage = `Failed to remove domain: ${error.message}`;
+      if (errorCode) {
+        errorMessage += ` (Error code: ${errorCode})`;
+      }
+      if (error.response?.status === 429) {
+        throw new Error("Rate limit exceeded. Please try again later.");
+      }
+      console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
-
-    return NextResponse.json(store, { status: 201 });
-  } catch (error) {
-    console.error("[STORES_POST]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error(`[STORE_PATCH] Unexpected error: ${error}`);
+    throw error;
   }
 }
 
-
-export async function GET(req: NextRequest, { params }: { params: { storeId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
   try {
     const { userId } = getAuth(req);
-    const { storeId } = params;
 
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse("Unauthenticated", { status: 401 });
     }
 
-    if (!storeId) {
+    if (!params.storeId) {
       return new NextResponse("Store ID is required", { status: 400 });
     }
 
-    // Verify if the user has access to the store
-    const store = await prismadb.store.findUnique({
+    const body = await req.json();
+    const { name, storeUrl } = body;
+
+    if (!name && !storeUrl) {
+      return new NextResponse("Name or storeUrl is required", { status: 400 });
+    }
+
+    const store = await prismadb.store.findFirst({
       where: {
-        id: storeId,
-        userId: userId, // Ensure the user owns this store
-      },
-      select: {
-        id: true,
-        storeUrl: true,
-        name: true,
+        id: params.storeId,
+        userId,
       },
     });
 
     if (!store) {
-      return new NextResponse("Store not found or unauthorized", { status: 404 });
+      return new NextResponse("Unauthorized", { status: 403 });
     }
 
-    return NextResponse.json({
-      storeId: store.id,
-      storeUrl: store.storeUrl,
-      storeName: store.name,
+    let updatedData: { name?: string; storeUrl?: string } = {};
+
+    if (name) {
+      updatedData.name = name;
+    }
+
+    if (storeUrl) {
+      if (!validator.isURL(storeUrl, { require_tld: false })) {
+        return new NextResponse("Invalid storeUrl format", { status: 400 });
+      }
+
+      if (!storeUrl.endsWith("ecommercestore-online.vercel.app")) {
+        return new NextResponse("Store URL must end with ecommercestore-online.vercel.app", { status: 400 });
+      }
+
+      const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
+
+      // Use a transaction to ensure consistency
+      const updatedStore = await prismadb.$transaction(async (prisma) => {
+        if (store.storeUrl && store.storeUrl !== storeUrl) {
+          try {
+            if (VERCEL_PROJECT_ID && store.storeUrl) {
+              const oldDomain = store.storeUrl.replace(/^https?:\/\//, '').split('/')[0];
+              await removeDomainFromProject(VERCEL_PROJECT_ID, oldDomain);
+            }
+            if (VERCEL_PROJECT_ID) {
+              await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+            }
+          } catch (error: any) {
+            throw new Error(`Failed to update Vercel domain: ${error.message}`);
+          }
+        } else if (!store.storeUrl && VERCEL_PROJECT_ID) {
+          await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+        }
+
+        updatedData.storeUrl = storeUrl;
+
+        return prisma.store.update({
+          where: {
+            id: params.storeId,
+          },
+          data: updatedData,
+        });
+      });
+
+      return NextResponse.json(updatedStore);
+    }
+
+    const updatedStore = await prismadb.store.update({
+      where: {
+        id: params.storeId,
+      },
+      data: updatedData,
     });
+
+    return NextResponse.json(updatedStore);
+  } catch (error: any) {
+    console.error("[STORE_PATCH]", error);
+    if (error.message.includes("Rate limit exceeded")) {
+      return new NextResponse("Rate limit exceeded. Please try again later.", { status: 429 });
+    }
+    return new NextResponse(`Internal error: ${error.message}`, { status: 500 });
+  }
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { storeId: string } }
+) {
+  try {
+    if (!params.storeId) {
+      return new NextResponse("Store ID is required", { status: 400 });
+    }
+
+    const store = await prismadb.store.findFirst({
+      where: {
+        id: params.storeId,
+      },
+    });
+
+    if (!store) {
+      return new NextResponse("Store not found", { status: 404 });
+    }
+
+    return NextResponse.json(store);
   } catch (error) {
     console.error("[STORE_GET]", error);
     return new NextResponse("Internal error", { status: 500 });
