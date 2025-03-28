@@ -7,18 +7,14 @@ const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
 export async function GET(req: NextRequest, { params }: { params: { storeId: string } }) {
      try {
-          console.log("[LIST_DOMAINS_API] Request received:", { url: req.url, storeId: params.storeId });
-
           const { searchParams } = new URL(req.url);
           const userId = searchParams.get("userId");
 
           if (!userId || !params.storeId) {
-               console.error("[LIST_DOMAINS_API] Missing userId or storeId:", { userId, storeId: params.storeId });
                return NextResponse.json({ error: "Unauthorized or missing storeId" }, { status: 401 });
           }
 
           if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
-               console.error("[LIST_DOMAINS_API] Missing Vercel credentials:", { VERCEL_ACCESS_TOKEN, VERCEL_PROJECT_ID });
                return NextResponse.json(
                     { error: "VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID is not configured" },
                     { status: 500 }
@@ -31,8 +27,12 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
                },
           });
 
-          console.log("[LIST_DOMAINS_API] Domains fetched successfully:", response.data.domains);
-          return NextResponse.json(response.data.domains);
+          // Filter domains to only include frontend domains
+          const filteredDomains = response.data.domains.filter((domain: any) =>
+               domain.name.endsWith("ecommercestore-online.vercel.app")
+          );
+
+          return NextResponse.json(filteredDomains);
      } catch (error: any) {
           console.error("[LIST_DOMAINS_API] Error:", error.response?.data || error.message);
           return NextResponse.json(
