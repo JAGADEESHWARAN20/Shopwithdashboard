@@ -1,25 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-interface Store {
-     id: string;
-     name: string;
-     storeUrl: string;
-     alternateUrls: string[];
-     isActive: boolean;
-}
+import { Billboard, Product, Store } from "@/types";
 
 interface StoreFrontProps {
-     initialStore: Store;
+     initialStore: {
+          id: string;
+          name: string;
+          storeUrl?: string; // Allow undefined
+          alternateUrls: string[];
+          isActive: boolean;
+          userId: string;
+     };
+     initialBillboard: Billboard | null;
+     initialProducts: Product[];
 }
 
 const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
      const [store, setStore] = useState<Store>(initialStore);
-     const [wsStatus, setWsStatus] = useState("Disconnected");
-     const [wsMessage, setWsMessage] = useState("");
+     const [wsStatus, setWsStatus] = useState<"Connecting" | "Connected" | "Disconnected">("Connecting");
+     const [wsMessage, setWsMessage] = useState<string | null>(null);
 
      useEffect(() => {
+          if (!initialStore || !initialStore.id) {
+               console.error("Invalid initialStore prop.");
+               return;
+          }
+
           const ws = new WebSocket("wss://admindashboardecom.vercel.app");
 
           ws.onopen = () => {
@@ -27,15 +34,19 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
           };
 
           ws.onmessage = (event) => {
-               const { type, data } = JSON.parse(event.data);
-               if (type === "storeUpdate" && data.storeId === store.id) {
-                    setWsMessage("Store settings updated successfully");
-                    setStore((prev) => ({
-                         ...prev,
-                         storeUrl: data.storeUrl,
-                         name: data.name || prev.name,
-                         alternateUrls: data.alternateUrls || prev.alternateUrls,
-                    }));
+               try {
+                    const { type, data } = JSON.parse(event.data);
+                    if (type === "storeUpdate" && data.storeId === store.id) {
+                         setWsMessage("Store settings updated successfully");
+                         setStore((prev) => ({
+                              ...prev,
+                              storeUrl: data.storeUrl,
+                              name: data.name || prev.name,
+                              alternateUrls: data.alternateUrls || prev.alternateUrls,
+                         }));
+                    }
+               } catch (error) {
+                    console.error("Error parsing WebSocket message:", error);
                }
           };
 
@@ -49,7 +60,7 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
           };
 
           return () => ws.close();
-     }, [store.id]);
+     }, [initialStore]);
 
      return (
           <div className="min-h-screen flex flex-col items-center justify-center">
@@ -57,7 +68,7 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
                <p className="text-lg">This is your e-commerce store at {store.storeUrl}</p>
                <div id="websocket-status" className="mt-4">
                     <span
-                         className={`w-4 h-4 rounded-full mr-2 inline-block ${wsStatus === "Connected" ? "bg-green-500" : "bg-red-500"
+                         className={`w-4 h-4 rounded-full mr-2 inline-block ${wsStatus === "Connected" ? "bg-green-500" : wsStatus === "Connecting" ? "bg-yellow-500" : "bg-red-500"
                               }`}
                     ></span>
                     <span>WebSocket {wsStatus}</span>

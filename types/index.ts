@@ -5,11 +5,14 @@ export interface Billboard {
      isFeatured: boolean;
 }
 
+// types.ts
 export interface Store {
      id: string;
      name: string;
-     storeUrl?: string;
+     storeUrl?: string; // Optional, as in your schema
      userId: string;
+     alternateUrls: string[]; // Add this line
+     isActive: boolean; // Add this line
 }
 
 export interface Product {

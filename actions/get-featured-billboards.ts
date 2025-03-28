@@ -18,7 +18,7 @@ export const getFeaturedBillboard = async (storeId: string): Promise<Billboard |
                id: billboard.id,
                label: billboard.label,
                imageUrl: billboard.imageUrl,
-               isFeatured: billboard.isFeatured ?? false, // Provide default value
+               isFeatured: billboard.isFeatured ?? false, // Or billboard.isFeatured, if optional type is used.
           };
      } catch (error) {
           console.error("[GET_FEATURED_BILLBOARD]", error);
