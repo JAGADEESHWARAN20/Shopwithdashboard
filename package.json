@@ -2,7 +2,6 @@
   "name": "ecommerce-admin",
   "version": "0.1.0",
   "private": true,
-  
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,6 +11,7 @@
     "postbuild": "next-sitemap"
   },
   "dependencies": {
+    "@clerk/backend": "^1.25.8",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.0.5",
