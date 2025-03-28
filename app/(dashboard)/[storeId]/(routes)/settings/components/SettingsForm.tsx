@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
+// Define the StoreUrl type (as previously used)
 interface StoreUrl {
   storeUrl: string;
   statusactive: boolean;
@@ -27,7 +28,7 @@ interface SettingsFormProps {
   initialData: {
     name: string;
     isActive: boolean;
-    storeUrl: StoreUrl | string; // Support both old string format and new object format
+    storeUrl: string | null | StoreUrl; // Allow null to match Prisma type
     alternateUrls: string[];
   };
 }
@@ -39,9 +40,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
   const [name, setName] = useState(initialData.name);
   const [isActive, setIsActive] = useState(initialData.isActive);
-  const [storeUrl, setStoreUrl] = useState<StoreUrl>(
-    typeof initialData.storeUrl === "string"
-      ? { storeUrl: initialData.storeUrl, statusactive: true, userId: userId || "" }
+  const [storeUrl, setStoreUrl] = useState<StoreUrl | string | null>(
+    typeof initialData.storeUrl === "string" || initialData.storeUrl === null
+      ? initialData.storeUrl
       : initialData.storeUrl
   );
   const [alternateUrls, setAlternateUrls] = useState<string[]>(initialData.alternateUrls || []);
@@ -123,6 +124,11 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     }
   };
 
+  // Helper to render storeUrl for display
+  const displayStoreUrl = typeof storeUrl === "string" || storeUrl === null
+    ? storeUrl
+    : storeUrl.storeUrl;
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center mb-4">
@@ -183,25 +189,33 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             <h3 className="text-lg font-semibold">Primary Store URL</h3>
             <Label>URL</Label>
             <Input
-              value={storeUrl.storeUrl}
-              onChange={(e) =>
-                setStoreUrl({ ...storeUrl, storeUrl: e.target.value })
-              }
+              value={typeof storeUrl === "string" ? storeUrl : storeUrl?.storeUrl || ""}
+              onChange={(e) => {
+                if (typeof storeUrl === "string" || storeUrl === null) {
+                  setStoreUrl(e.target.value);
+                } else {
+                  setStoreUrl({ ...storeUrl, storeUrl: e.target.value });
+                }
+              }}
               placeholder="Enter store URL"
             />
-            <Label className="mt-2">URL Active</Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                checked={storeUrl.statusactive}
-                onCheckedChange={(checked: boolean) =>
-                  setStoreUrl({ ...storeUrl, statusactive: checked })
-                }
-              />
-              <Label>Active</Label>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">
-              Associated User ID: {storeUrl.userId}
-            </p>
+            {typeof storeUrl === "object" && storeUrl !== null && (
+              <>
+                <Label className="mt-2">URL Active</Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={storeUrl.statusactive}
+                    onCheckedChange={(checked: boolean) =>
+                      setStoreUrl({ ...storeUrl, statusactive: checked })
+                    }
+                  />
+                  <Label>Active</Label>
+                </div>
+                <p className="mt-2 text-sm text-gray-600">
+                  Associated User ID: {storeUrl.userId}
+                </p>
+              </>
+            )}
           </div>
           <div>
             <h3 className="text-lg font-semibold">Alternate URLs</h3>
@@ -238,9 +252,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
           <div className="space-y-2">
             <Label>Store Preview</Label>
             <div className="relative w-full h-64 border rounded-md overflow-hidden">
-              {storeUrl.storeUrl ? (
+              {displayStoreUrl ? (
                 <iframe
-                  src={storeUrl.storeUrl}
+                  src={displayStoreUrl}
                   title="Store Preview"
                   className="w-full h-full border-none"
                   style={{
