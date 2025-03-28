@@ -5,8 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import {Label} from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,12 +14,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Input} from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
+interface StoreUrl {
+  storeUrl: string;
+  statusactive: boolean;
+  userId: string;
+}
 
 interface SettingsFormProps {
-  initialData: any; // Store data
+  initialData: {
+    name: string;
+    isActive: boolean;
+    storeUrl: StoreUrl | string; // Support both old string format and new object format
+    alternateUrls: string[];
+  };
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
@@ -29,54 +39,45 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
   const [name, setName] = useState(initialData.name);
   const [isActive, setIsActive] = useState(initialData.isActive);
-  const [domainToRemove, setDomainToRemove] = useState("");
-  const [domainToAdd, setDomainToAdd] = useState("");
-  const [currentDomains, setCurrentDomains] = useState<string[]>([]);
+  const [storeUrl, setStoreUrl] = useState<StoreUrl>(
+    typeof initialData.storeUrl === "string"
+      ? { storeUrl: initialData.storeUrl, statusactive: true, userId: userId || "" }
+      : initialData.storeUrl
+  );
+  const [alternateUrls, setAlternateUrls] = useState<string[]>(initialData.alternateUrls || []);
+  const [newAlternateUrl, setNewAlternateUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [domainLoading, setDomainLoading] = useState(false);
-  const [pendingDomain, setPendingDomain] = useState<string | null>(null);
+  const [notification, setNotification] = useState("");
+  const [wsStatus, setWsStatus] = useState("Disconnected");
 
   useEffect(() => {
-    const fetchDomains = async () => {
-      if (!userId || !params.storeId) {
-        console.error("Missing userId or storeId:", { userId, storeId: params.storeId });
-        toast.error("Invalid user or store ID");
-        return;
-      }
-
-      try {
-        const response = await axios.get(`/api/stores/${params.storeId}/list-domains?userId=${userId}`);
-        const domains = response.data.map((domain: any) => domain.name);
-        setCurrentDomains(domains);
-      } catch (error: any) {
-        console.error("Error fetching domains:", error.response?.data || error.message);
-        toast.error("Failed to fetch current domains");
+    const ws = new WebSocket("wss://admindashboardecom.vercel.app");
+    ws.onopen = () => setWsStatus("Connected");
+    ws.onmessage = (event) => {
+      const { type, data } = JSON.parse(event.data);
+      if (type === "storeUpdate") {
+        setNotification("Store settings updated successfully");
+        setStoreUrl(data.storeUrl);
+        setAlternateUrls(data.alternateUrls || []);
       }
     };
+    ws.onclose = () => setWsStatus("Disconnected");
+    ws.onerror = (error) => console.error("WebSocket error:", error);
+    return () => ws.close();
+  }, []);
 
-    if (userId) {
-      fetchDomains();
-    }
-  }, [userId, params.storeId]);
-  
   const onSubmit = async () => {
     try {
       setLoading(true);
-      const response = await axios.patch(`/api/stores/${params.storeId}`, {
+      await axios.patch(`/api/stores/${params.storeId}`, {
         name,
         isActive,
+        storeUrl,
+        alternateUrls,
         userId,
       });
-
-      // If the store name changes, calculate the new domain but don't apply it yet
-      if (name !== initialData.name) {
-        const newDomain = `${name.toLowerCase().replace(/\s+/g, "-")}-ecommercestore-online.vercel.app`;
-        setPendingDomain(newDomain); // Store the new domain temporarily
-        toast.success("Store name updated. Click 'Refresh URL' to update the store URL.");
-      } else {
-        toast.success("Store updated successfully");
-        router.refresh();
-      }
+      toast.success("Store updated successfully");
+      router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to update store");
     } finally {
@@ -84,72 +85,51 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     }
   };
 
-  const handleRefreshUrl = async () => {
-    if (!pendingDomain) {
-      toast.error("No pending domain to apply.");
+  const handleAddAlternateUrl = async () => {
+    if (!newAlternateUrl) {
+      toast.error("Please enter a valid URL");
       return;
     }
-
     try {
       setLoading(true);
-
-      // Extract the subdomain from pendingDomain
-      const subdomain = pendingDomain.replace(`-ecommercestore-online.vercel.app`, ``);
-
-      // Validate the new domain using the correct route
-      const validateResponse = await axios.get(
-        `/api/stores/${params.storeId}/${subdomain}`
-      );
-
-      if (validateResponse.status !== 200) {
-        toast.error("The new store name is invalid.");
-        return;
-      }
-
-      await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
+      const response = await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
         userId,
-        domainToRemove: initialData.storeUrl?.replace("https://", ""),
-        domainToAdd: pendingDomain,
+        domainToAdd: newAlternateUrl,
       });
-
-      toast.success("Store URL updated successfully");
-      setPendingDomain(null);
-      router.refresh();
+      setAlternateUrls([...alternateUrls, `https://${newAlternateUrl}`]);
+      setNewAlternateUrl("");
+      toast.success("Alternate URL added successfully");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update store URL");
+      toast.error(error.response?.data?.error || "Failed to add alternate URL");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleManageDomains = async () => {
+  const handleRemoveAlternateUrl = async (url: string) => {
     try {
-      setDomainLoading(true);
-      const response = await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
+      setLoading(true);
+      const domainToRemove = url.replace("https://", "");
+      await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
         userId,
-        domainToRemove: domainToRemove || undefined,
-        domainToAdd: domainToAdd || undefined,
+        domainToRemove,
       });
-      if (response.status === 200) {
-        toast.success("Domains managed successfully");
-        setDomainToRemove("");
-        setDomainToAdd("");
-        const domainsResponse = await axios.get(`/api/stores/${params.storeId}/list-domains?userId=${userId}`);
-        const domains = domainsResponse.data.map((domain: any) => domain.name);
-        setCurrentDomains(domains);
-        router.refresh();
-      } else {
-        toast.error("Failed to manage domains");
-      }
+      setAlternateUrls(alternateUrls.filter((u) => u !== url));
+      toast.success("Alternate URL removed successfully");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to manage domains");
+      toast.error(error.response?.data?.error || "Failed to remove alternate URL");
     } finally {
-      setDomainLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="space-y-6 p-6">
+      <div className="flex items-center mb-4">
+        <span className={`w-4 h-4 rounded-full mr-2 ${wsStatus === "Connected" ? "bg-green-500" : "bg-red-500"}`}></span>
+        <span>WebSocket {wsStatus}</span>
+      </div>
+
       {/* Store Settings Card */}
       <Card>
         <CardHeader>
@@ -175,37 +155,92 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             <Label htmlFor="is-active">Active</Label>
           </div>
           <Button onClick={onSubmit} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                </svg>
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Store URL and Preview Card */}
+      {/* Store URL Card */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Store URL</CardTitle>
-              <CardDescription>View and preview your store URL.</CardDescription>
-            </div>
-            {pendingDomain && (
-              <Button onClick={handleRefreshUrl} disabled={loading}>
-                {loading ? "Refreshing..." : "Refresh URL"}
-              </Button>
-            )}
-          </div>
+          <CardTitle>Store URL</CardTitle>
+          <CardDescription>View and manage your store URL.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Current URL</Label>
-            <p className="mt-1 text-sm text-gray-600">{initialData.storeUrl || "No URL set"}</p>
+            <h3 className="text-lg font-semibold">Primary Store URL</h3>
+            <Label>URL</Label>
+            <Input
+              value={storeUrl.storeUrl}
+              onChange={(e) =>
+                setStoreUrl({ ...storeUrl, storeUrl: e.target.value })
+              }
+              placeholder="Enter store URL"
+            />
+            <Label className="mt-2">URL Active</Label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={storeUrl.statusactive}
+                onCheckedChange={(checked: boolean) =>
+                  setStoreUrl({ ...storeUrl, statusactive: checked })
+                }
+              />
+              <Label>Active</Label>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              Associated User ID: {storeUrl.userId}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Alternate URLs</h3>
+            {alternateUrls.length > 0 ? (
+              <ul className="list-disc pl-5 mt-1 text-sm text-gray-600">
+                {alternateUrls.map((url) => (
+                  <li key={url} className="flex items-center">
+                    {url}
+                    <Button
+                      variant="link"
+                      className="text-red-500 ml-2"
+                      onClick={() => handleRemoveAlternateUrl(url)}
+                      disabled={loading}
+                    >
+                      Remove
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-gray-600">No alternate URLs found.</p>
+            )}
+            <div className="flex items-center space-x-2 mt-2">
+              <Input
+                value={newAlternateUrl}
+                onChange={(e) => setNewAlternateUrl(e.target.value)}
+                placeholder="Add Alternate URL"
+              />
+              <Button onClick={handleAddAlternateUrl} disabled={loading}>
+                Add
+              </Button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Store Preview</Label>
             <div className="relative w-full h-64 border rounded-md overflow-hidden">
-              {initialData.storeUrl ? (
+              {storeUrl.storeUrl ? (
                 <iframe
-                  src={initialData.storeUrl}
+                  src={storeUrl.storeUrl}
                   title="Store Preview"
                   className="w-full h-full border-none"
                   style={{
@@ -227,48 +262,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         </CardContent>
       </Card>
 
-      {/* Manage Domains Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Domains</CardTitle>
-          <CardDescription>Add or remove domains for your store.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Current Domains</Label>
-            {currentDomains.length > 0 ? (
-              <ul className="list-disc pl-5 mt-1 text-sm text-gray-600">
-                {currentDomains.map((domain) => (
-                  <li key={domain}>{domain}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-gray-600">No domains found.</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="domain-to-remove">Domain to Remove (optional)</Label>
-            <Input
-              id="domain-to-remove"
-              value={domainToRemove}
-              onChange={(e) => setDomainToRemove(e.target.value)}
-              placeholder="e.g., oldstore-ecommercestore-online.vercel.app"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="domain-to-add">Domain to Add (optional)</Label>
-            <Input
-              id="domain-to-add"
-              value={domainToAdd}
-              onChange={(e) => setDomainToAdd(e.target.value)}
-              placeholder="e.g., newstore-ecommercestore-online.vercel.app"
-            />
-          </div>
-          <Button onClick={handleManageDomains} disabled={domainLoading}>
-            {domainLoading ? "Managing Domains..." : "Manage Domains"}
-          </Button>
-        </CardContent>
-      </Card>
+      {notification && (
+        <div className="mt-4 p-2 bg-green-100 text-green-700">{notification}</div>
+      )}
     </div>
   );
 };
