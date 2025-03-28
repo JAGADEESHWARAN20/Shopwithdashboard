@@ -36,7 +36,7 @@ export async function GET(
           console.log(`Store found for subdomain: ${params.subdomain}, ID: ${store.id}, Name: ${store.name}`);
 
           // Ensure the storeUrl is properly formatted
-          const correctUrl = `https://${params.subdomain}.${STORE_BASE_DOMAIN}`;
+          const correctUrl = `https://${params.subdomain}-${STORE_BASE_DOMAIN}`;
           if (!store.storeUrl || store.storeUrl !== correctUrl) {
                console.log(`Updating store URL from: ${store.storeUrl} to ${correctUrl}`);
 

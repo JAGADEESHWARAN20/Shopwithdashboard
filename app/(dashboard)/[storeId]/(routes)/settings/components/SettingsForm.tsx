@@ -92,13 +92,28 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
     try {
       setLoading(true);
+
+      // Extract the subdomain from pendingDomain
+      const subdomain = pendingDomain.replace(`-ecommercestore-online.vercel.app`, ``);
+
+      // Validate the new domain using the correct route
+      const validateResponse = await axios.get(
+        `/api/stores/${params.storeId}/${subdomain}`
+      );
+
+      if (validateResponse.status !== 200) {
+        toast.error("The new store name is invalid.");
+        return;
+      }
+
       await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
         userId,
         domainToRemove: initialData.storeUrl?.replace("https://", ""),
         domainToAdd: pendingDomain,
       });
+
       toast.success("Store URL updated successfully");
-      setPendingDomain(null); // Clear the pending domain
+      setPendingDomain(null);
       router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to update store URL");
@@ -106,7 +121,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setLoading(false);
     }
   };
-
+  
   const handleManageDomains = async () => {
     try {
       setDomainLoading(true);
