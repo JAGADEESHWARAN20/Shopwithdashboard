@@ -11,7 +11,6 @@
     "postbuild": "next-sitemap"
   },
   "dependencies": {
-    "@clerk/backend": "^1.25.8",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -58,6 +57,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@clerk/backend": "^1.25.8",
     "@clerk/nextjs": "^5.7.5",
     "@eslint/config-array": "^0.19.2",
     "@eslint/object-schema": "^2.1.6",
