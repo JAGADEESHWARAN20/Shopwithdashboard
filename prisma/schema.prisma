@@ -12,21 +12,21 @@ datasource db {
 }
 
 model Store {
-  id         String     @id @default(uuid()) @map("_id")
-  name       String
-  userId     String
-  billboards Billboard[] @relation("StoreToBillboard")
-  categories Category[]  @relation("StoreToCategory")
-  sizes      Size[]      @relation("StoreToSize")
-  colors     Color[]     @relation("StoreToColor")
-  products   Product[]   @relation("StoreToProduct")
-  orders     Order[]     @relation("StoreToOrder")
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  isActive    Boolean     @default(true)
+  id              String      @id @default(uuid()) @map("_id")
+  name            String
+  userId          String
+  billboards      Billboard[] @relation("StoreToBillboard")
+  categories      Category[]  @relation("StoreToCategory")
+  sizes           Size[]      @relation("StoreToSize")
+  colors          Color[]     @relation("StoreToColor")
+  products        Product[]   @relation("StoreToProduct")
+  orders          Order[]     @relation("StoreToOrder")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  isActive        Boolean     @default(true)
   razorpayWebhookId String?
-  alternateUrls   String[] @default([])
-  storeUrl    String?     
+  alternateUrls   String[]    @default([])
+  storeUrl        String?
 }
 
 model Billboard {
@@ -43,15 +43,15 @@ model Billboard {
 }
 
 model Category {
-  id          String     @id @default(uuid()) @map("_id")
+  id          String    @id @default(uuid()) @map("_id")
   storeId     String
-  store       Store      @relation("StoreToCategory", fields: [storeId], references: [id])
+  store       Store     @relation("StoreToCategory", fields: [storeId], references: [id])
   billboardId String
-  billboard   Billboard  @relation(fields: [billboardId], references: [id])
-  products    Product[]  @relation("CategoryToProduct")
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  products    Product[] @relation("CategoryToProduct")
   name        String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([storeId])
   @@index([billboardId])
@@ -129,11 +129,11 @@ model Order {
   address       String      @default("")
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  name          String      @default("") 
-  email         String      @default("") 
-  age           Int         @default(0) 
-  location      String      @default("") 
-  deliveredTime DateTime?   
+  name          String      @default("")
+  email         String      @default("")
+  age           Int         @default(0)
+  location      String      @default("")
+  deliveredTime DateTime?
 
   @@index([storeId])
 }
@@ -144,7 +144,7 @@ model OrderItem {
   order     Order   @relation(fields: [orderId], references: [id])
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  
+
   @@index([orderId])
   @@index([productId])
 }

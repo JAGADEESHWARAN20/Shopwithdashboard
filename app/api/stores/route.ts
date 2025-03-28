@@ -102,24 +102,44 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET route (for fetching stores for the current user)
-export async function GET(req: NextRequest) {
+
+export async function GET(req: NextRequest, { params }: { params: { storeId: string } }) {
   try {
     const { userId } = getAuth(req);
+    const { storeId } = params;
 
     if (!userId) {
-      return new NextResponse("Not authenticated", { status: 401 });
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const stores = await prismadb.store.findMany({
+    if (!storeId) {
+      return new NextResponse("Store ID is required", { status: 400 });
+    }
+
+    // Verify if the user has access to the store
+    const store = await prismadb.store.findUnique({
       where: {
-        userId,
+        id: storeId,
+        userId: userId, // Ensure the user owns this store
+      },
+      select: {
+        id: true,
+        storeUrl: true,
+        name: true,
       },
     });
 
-    return NextResponse.json(stores, { status: 200 });
+    if (!store) {
+      return new NextResponse("Store not found or unauthorized", { status: 404 });
+    }
+
+    return NextResponse.json({
+      storeId: store.id,
+      storeUrl: store.storeUrl,
+      storeName: store.name,
+    });
   } catch (error) {
-    console.error("[STORES_GET]", error);
+    console.error("[STORE_GET]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }
