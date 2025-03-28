@@ -14,15 +14,15 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           console.log("params.storeId:", params.storeId);
           console.log("userId:", userId);
 
-          // Temporary hardcoded query for testing:
-          // const store = await prismadb.store.findFirst({
-          //     where: { id: "a81450db-e7e3-4d44-bd0a-ebcd13914054", userId: userId },
-          // });
-
-          // Original query:
+      
           const store = await prismadb.store.findFirst({
-               where: { id: params.storeId, userId },
+              where: { id: "a81450db-e7e3-4d44-bd0a-ebcd13914054", userId: userId },
           });
+
+          // // Original query:
+          // const store = await prismadb.store.findFirst({
+          //      where: { id: params.storeId, userId },
+          // });
 
           if (!store) {
                console.log("Store not found");
