@@ -10,26 +10,26 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
      try {
           const { userId, domainToRemove, domainToAdd } = await req.json();
 
-          if (!userId || !params.storeId) {
-               return NextResponse.json({ error: "Unauthorized or missing storeId" }, { status: 401 });
-          }
+          // Add console logs for debugging:
+          console.log("params.storeId:", params.storeId);
+          console.log("userId:", userId);
 
-          if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
-               return NextResponse.json(
-                    { error: "VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID is not configured" },
-                    { status: 500 }
-               );
-          }
+          // Temporary hardcoded query for testing:
+          // const store = await prismadb.store.findFirst({
+          //     where: { id: "a81450db-e7e3-4d44-bd0a-ebcd13914054", userId: userId },
+          // });
 
+          // Original query:
           const store = await prismadb.store.findFirst({
                where: { id: params.storeId, userId },
           });
 
           if (!store) {
+               console.log("Store not found");
                return NextResponse.json({ error: "Store not found" }, { status: 404 });
           }
 
-          let alternateUrls = store.alternateUrls || [];
+          let alternateUrls: string[] = store.alternateUrls || [];
 
           if (domainToRemove) {
                await axios.delete(`${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
                          Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
                     },
                });
-               alternateUrls = alternateUrls.filter((url) => url !== `https://${domainToRemove}`);
+               alternateUrls = alternateUrls.filter((url: string) => url !== `https://${domainToRemove}`);
           }
 
           if (domainToAdd) {

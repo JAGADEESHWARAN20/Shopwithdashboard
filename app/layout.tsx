@@ -6,6 +6,7 @@ import { ModalProvider } from "@/Providers/modal-provider";
 import { ToasterProvider } from "@/Providers/toast-provider";
 import Script from 'next/script';
 import { ReactNode } from "react";
+import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +40,7 @@ const DashboardLayout = ({ children, pageProps }: DashboardLayoutProps) => {
           {...pageProps}
         >
           {children}
+          <Analytics />
         </ClerkProvider>
       </body>
     </html>
