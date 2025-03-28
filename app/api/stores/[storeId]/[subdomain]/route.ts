@@ -1,5 +1,5 @@
-import prismadb from "@/lib/prismadb";
 import { NextResponse } from "next/server";
+import prismadb from "@/lib/prismadb";
 
 const STORE_BASE_DOMAIN = process.env.STORE_BASE_DOMAIN || "ecommercestore-online.vercel.app";
 
@@ -12,12 +12,10 @@ export async function GET(
                return new NextResponse("Subdomain is required", { status: 400 });
           }
 
-          // Convert subdomain to store name format
-          const storeName = params.subdomain.replace(/-/g, " ");
+          const storeName = params.subdomain.replace(/-/g, " ").trim().replace(/\s+/g, " ");
 
           console.log(`Validating store with subdomain: ${params.subdomain}, looking for store name: ${storeName}`);
 
-          // Find store by name and check if it's active
           const store = await prismadb.store.findFirst({
                where: {
                     name: {
@@ -30,29 +28,26 @@ export async function GET(
 
           if (!store) {
                console.log(`Store not found or inactive for subdomain: ${params.subdomain}`);
-               return new NextResponse("Store not found or inactive", { status: 404 });
+               return new NextResponse(`Store not found or inactive for subdomain: ${params.subdomain}`, { status: 404 });
           }
 
           console.log(`Store found for subdomain: ${params.subdomain}, ID: ${store.id}, Name: ${store.name}`);
 
-          // Ensure the storeUrl is properly formatted
           const correctUrl = `https://${params.subdomain}-${STORE_BASE_DOMAIN}`;
-          if (!store.storeUrl || store.storeUrl !== correctUrl) {
+          if (store.storeUrl !== correctUrl) {
                console.log(`Updating store URL from: ${store.storeUrl} to ${correctUrl}`);
 
-               // Fix the store URL in the database
                await prismadb.store.update({
                     where: { id: store.id },
                     data: { storeUrl: correctUrl },
                });
 
-               // Update the returned store object
                store.storeUrl = correctUrl;
           }
 
           return NextResponse.json(store);
      } catch (error) {
           console.error("[STORE_VALIDATE]", error);
-          return new NextResponse("Internal error", { status: 500 });
+          return new NextResponse("Internal server error while validating store", { status: 500 });
      }
 }

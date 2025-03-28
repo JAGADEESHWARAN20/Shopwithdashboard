@@ -3,12 +3,12 @@ import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import axios from "axios";
 import validator from "validator";
+import { broadcast } from "@/lib/websocket"; // Hypothetical WebSocket broadcast function
 
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
-// Function to add a domain to Vercel project
 async function addDomainToProject(projectId: string, domainName: string) {
     if (!VERCEL_ACCESS_TOKEN) {
         throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
@@ -52,6 +52,9 @@ async function addDomainToProject(projectId: string, domainName: string) {
             if (errorCode) {
                 errorMessage += ` (Error code: ${errorCode})`;
             }
+            if (error.response?.status === 429) {
+                throw new Error("Rate limit exceeded. Please try again later.");
+            }
             console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
             throw new Error(errorMessage);
         }
@@ -60,7 +63,6 @@ async function addDomainToProject(projectId: string, domainName: string) {
     }
 }
 
-// Function to remove a domain from Vercel project
 async function removeDomainFromProject(projectId: string, domainName: string) {
     if (!VERCEL_ACCESS_TOKEN) {
         throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
@@ -83,6 +85,9 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
             let errorMessage = `Failed to remove domain: ${error.message}`;
             if (errorCode) {
                 errorMessage += ` (Error code: ${errorCode})`;
+            }
+            if (error.response?.status === 429) {
+                throw new Error("Rate limit exceeded. Please try again later.");
             }
             console.error(`[STORE_PATCH] Vercel API error: ${errorMessage}`);
             throw new Error(errorMessage);
@@ -128,50 +133,85 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
             updatedData.name = name;
         }
 
-        if (storeUrl) {
-            if (!validator.isURL(storeUrl, { require_tld: false })) {
+        if (storeUrl !== undefined) {
+            if (storeUrl && !validator.isURL(storeUrl, { require_tld: false })) {
                 return new NextResponse("Invalid storeUrl format", { status: 400 });
             }
 
-            const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
-
-            if (store.storeUrl && store.storeUrl !== storeUrl) {
-                try {
-                    if (VERCEL_PROJECT_ID && store.storeUrl) {
-                        const oldDomain = store.storeUrl.replace(/^https?:\/\//, '').split('/')[0];
-                        await removeDomainFromProject(VERCEL_PROJECT_ID, oldDomain);
-                    }
-                    if (VERCEL_PROJECT_ID) {
-                        await addDomainToProject(VERCEL_PROJECT_ID, domainName);
-                    }
-                } catch (error: unknown) {
-                    if (error instanceof Error) {
-                        return new NextResponse(`Failed to update Vercel domain: ${error.message}`, {
-                            status: 500,
-                        });
-                    }
-                    return new NextResponse("Failed to update Vercel domain", { status: 500 });
-                }
-            } else if (!store.storeUrl && VERCEL_PROJECT_ID) {
-                await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+            if (storeUrl && !storeUrl.endsWith("ecommercestore-online.vercel.app")) {
+                return new NextResponse("Store URL must end with ecommercestore-online.vercel.app", { status: 400 });
             }
-            updatedData.storeUrl = storeUrl;
+
+            const domainName = storeUrl ? storeUrl.replace(/^https?:\/\//, '').split('/')[0] : "";
+
+            const updatedStore = await prismadb.$transaction(async (prisma) => {
+                if (store.storeUrl && store.storeUrl !== storeUrl) {
+                    try {
+                        if (VERCEL_PROJECT_ID && store.storeUrl) {
+                            const oldDomain = store.storeUrl.replace(/^https?:\/\//, '').split('/')[0];
+                            await removeDomainFromProject(VERCEL_PROJECT_ID, oldDomain);
+                        }
+                        if (VERCEL_PROJECT_ID && storeUrl) {
+                            await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+                        }
+                    } catch (error: any) {
+                        throw new Error(`Failed to update Vercel domain: ${error.message}`);
+                    }
+                } else if (!store.storeUrl && VERCEL_PROJECT_ID && storeUrl) {
+                    await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+                }
+
+                updatedData.storeUrl = storeUrl || "";
+
+                const updated = await prisma.store.update({
+                    where: {
+                        id: params.storeId,
+                    },
+                    data: updatedData,
+                });
+
+                // Broadcast the update via WebSocket
+                await broadcast({
+                    type: "storeUpdate",
+                    data: {
+                        storeId: params.storeId,
+                        storeUrl: updated.storeUrl,
+                        name: updated.name,
+                        alternateUrls: updated.alternateUrls,
+                    },
+                });
+
+                return updated;
+            });
+
+            return NextResponse.json(updatedStore);
         }
 
-        const updatedStore = await prismadb.$transaction(async (prisma) => {
-            const updatedStore = await prisma.store.update({
-                where: {
-                    id: params.storeId,
-                },
-                data: updatedData,
-            });
-            return updatedStore;
+        const updatedStore = await prismadb.store.update({
+            where: {
+                id: params.storeId,
+            },
+            data: updatedData,
+        });
+
+        // Broadcast the update via WebSocket
+        await broadcast({
+            type: "storeUpdate",
+            data: {
+                storeId: params.storeId,
+                storeUrl: updatedStore.storeUrl,
+                name: updatedStore.name,
+                alternateUrls: updatedStore.alternateUrls,
+            },
         });
 
         return NextResponse.json(updatedStore);
-    } catch (error) {
+    } catch (error: any) {
         console.error("[STORE_PATCH]", error);
-        return new NextResponse("Internal error", { status: 500 });
+        if (error.message.includes("Rate limit exceeded")) {
+            return new NextResponse("Rate limit exceeded. Please try again later.", { status: 429 });
+        }
+        return new NextResponse(`Internal error: ${error.message}`, { status: 500 });
     }
 }
 
