@@ -21,6 +21,8 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
         { href: `/${params.storeId}/products`, label: 'Products' },
         { href: `/${params.storeId}/orders`, label: 'Orders' },
         { href: `/${params.storeId}/settings`, label: 'Settings' },
+        { href: `/${params.storeId}/storefront`, label: 'StoreFront' },
+
     ];
 
     useEffect(() => {
