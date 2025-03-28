@@ -59,8 +59,14 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
                setWsStatus("Disconnected");
           };
 
-          return () => ws.close();
-     }, [initialStore]);
+          return () => {
+               ws.close();
+          };
+     }, [initialStore.id]); // Use initialStore.id as the dependency
+
+     useEffect(() => {
+          setStore(initialStore);
+     }, [initialStore])
 
      return (
           <div className="min-h-screen flex flex-col items-center justify-center">
