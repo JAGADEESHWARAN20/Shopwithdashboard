@@ -28,7 +28,7 @@ export default async function HomePage() {
 
           return (
                <StoreFront
-                    initialStore={params.storeId} // Corrected prop name
+                    initialStore={storeData} // Corrected prop name
                     initialBillboard={billboard}
                     initialProducts={products}
                />
