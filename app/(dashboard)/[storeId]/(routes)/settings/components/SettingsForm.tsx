@@ -34,6 +34,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const [currentDomains, setCurrentDomains] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [domainLoading, setDomainLoading] = useState(false);
+  const [pendingDomain, setPendingDomain] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDomains = async () => {
@@ -67,20 +68,40 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         userId,
       });
 
-      // If the store name changes, update the storeUrl and environment variables
+      // If the store name changes, calculate the new domain but don't apply it yet
       if (name !== initialData.name) {
         const newDomain = `${name.toLowerCase().replace(/\s+/g, "-")}-ecommercestore-online.vercel.app`;
-        await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
-          userId,
-          domainToRemove: initialData.storeUrl?.replace("https://", ""),
-          domainToAdd: newDomain,
-        });
+        setPendingDomain(newDomain); // Store the new domain temporarily
+        toast.success("Store name updated. Click 'Refresh URL' to update the store URL.");
+      } else {
+        toast.success("Store updated successfully");
+        router.refresh();
       }
-
-      toast.success("Store updated successfully");
-      router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to update store");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefreshUrl = async () => {
+    if (!pendingDomain) {
+      toast.error("No pending domain to apply.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await axios.post(`/api/stores/${params.storeId}/manage-domains`, {
+        userId,
+        domainToRemove: initialData.storeUrl?.replace("https://", ""),
+        domainToAdd: pendingDomain,
+      });
+      toast.success("Store URL updated successfully");
+      setPendingDomain(null); // Clear the pending domain
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to update store URL");
     } finally {
       setLoading(false);
     }
@@ -147,8 +168,17 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       {/* Store URL and Preview Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Store URL</CardTitle>
-          <CardDescription>View and preview your store URL.</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Store URL</CardTitle>
+              <CardDescription>View and preview your store URL.</CardDescription>
+            </div>
+            {pendingDomain && (
+              <Button onClick={handleRefreshUrl} disabled={loading}>
+                {loading ? "Refreshing..." : "Refresh URL"}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -164,13 +194,13 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
                   title="Store Preview"
                   className="w-full h-full border-none"
                   style={{
-                    transform: "scale(0.5)", // Scale down to 50% to show a mini view
+                    transform: "scale(0.5)",
                     transformOrigin: "top left",
-                    width: "200%", // Double the width to account for scaling
-                    height: "200%", // Double the height to account for scaling
-                    pointerEvents: "none", // Disable interaction with the iframe
+                    width: "200%",
+                    height: "200%",
+                    pointerEvents: "none",
                   }}
-                  scrolling="no" // Disable scrolling
+                  scrolling="no"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">

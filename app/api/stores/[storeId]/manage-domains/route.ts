@@ -21,65 +21,42 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
                );
           }
 
+          const store = await prismadb.store.findFirst({
+               where: { id: params.storeId, userId },
+          });
+
+          if (!store) {
+               return NextResponse.json({ error: "Store not found" }, { status: 404 });
+          }
+
+          let alternateUrls = store.alternateUrls || [];
+
           if (domainToRemove) {
-               try {
-                    console.log(`Removing domain ${domainToRemove} from project ${VERCEL_PROJECT_ID}...`);
-                    await axios.delete(`${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
-                         headers: {
-                              Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-                         },
-                    });
-                    console.log(`Domain ${domainToRemove} removed successfully`);
-               } catch (error: any) {
-                    console.error(`Error removing domain ${domainToRemove}:`, error.response?.data || error.message);
-                    return NextResponse.json(
-                         { error: `Failed to remove domain: ${error.response?.data?.error?.message || error.message}` },
-                         { status: 500 }
-                    );
-               }
+               await axios.delete(`${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
+                    headers: {
+                         Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                    },
+               });
+               alternateUrls = alternateUrls.filter((url) => url !== `https://${domainToRemove}`);
           }
 
           if (domainToAdd) {
-               try {
-                    console.log(`Adding domain ${domainToAdd} to project ${VERCEL_PROJECT_ID}...`);
-                    const response = await axios.post(
-                         `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
-                         { name: domainToAdd },
-                         {
-                              headers: {
-                                   Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-                              },
-                         }
-                    );
-                    console.log(`Domain ${domainToAdd} added successfully:`, response.data);
-
-                    await prismadb.store.update({
-                         where: { id: params.storeId, userId },
-                         data: { storeUrl: `https://${domainToAdd}` },
-                    });
-
-                    const envVars = [
-                         { key: "NEXT_PUBLIC_API_URL", value: `https://${domainToAdd}/api`, type: "plain" },
-                         { key: "NEXT_PUBLIC_STORE_ID", value: params.storeId, type: "plain" },
-                    ];
-
-                    await axios.patch(
-                         `${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/env`,
-                         { env: envVars },
-                         {
-                              headers: {
-                                   Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-                              },
-                         }
-                    );
-               } catch (error: any) {
-                    console.error(`Error adding domain ${domainToAdd}:`, error.response?.data || error.message);
-                    return NextResponse.json(
-                         { error: `Failed to add domain: ${error.response?.data?.error?.message || error.message}` },
-                         { status: 500 }
-                    );
-               }
+               const response = await axios.post(
+                    `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
+                    { name: domainToAdd },
+                    {
+                         headers: {
+                              Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                         },
+                    }
+               );
+               alternateUrls.push(`https://${domainToAdd}`);
           }
+
+          await prismadb.store.update({
+               where: { id: params.storeId, userId },
+               data: { alternateUrls },
+          });
 
           return NextResponse.json({
                message: "Domain management completed successfully",

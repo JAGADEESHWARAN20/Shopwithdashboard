@@ -25,6 +25,7 @@ model Store {
   updatedAt  DateTime   @updatedAt
   isActive    Boolean     @default(true)
   razorpayWebhookId String?
+  alternateUrls   String[] @default([])
   storeUrl    String?     
 }
 
