@@ -121,7 +121,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setLoading(false);
     }
   };
-  
+
   const handleManageDomains = async () => {
     try {
       setDomainLoading(true);
