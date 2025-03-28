@@ -62,11 +62,11 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
           return () => {
                ws.close();
           };
-     }, [initialStore.id]); // Use initialStore.id as the dependency
+     }, [initialStore.id]);
 
      useEffect(() => {
           setStore(initialStore);
-     }, [initialStore])
+     }, [initialStore]); // Added initialStore to the dependency array
 
      return (
           <div className="min-h-screen flex flex-col items-center justify-center">
