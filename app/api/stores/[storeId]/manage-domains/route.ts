@@ -19,7 +19,7 @@ async function removeDomainFromVercel(domainToRemove: string) {
 
      try {
           const response = await axios.delete(
-               `${VERCEL_API_URL}/v6/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`,
+               `${VERCEL_API_URL}/v6/domains/${domainToRemove}`,
                {
                     headers: {
                          Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
