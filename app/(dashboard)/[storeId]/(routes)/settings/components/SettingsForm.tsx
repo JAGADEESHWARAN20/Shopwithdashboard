@@ -339,7 +339,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState("");
   const [wsStatus, setWsStatus] = useState("Disconnected");
-  const [domainStatus, setDomainStatus] = useState<string | null>(null);
+ 
 
   useEffect(() => {
     const ws = new WebSocket("wss://admindashboardecom.vercel.app");
@@ -360,10 +360,10 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const checkDomainStatus = async (subdomain: string) => {
     try {
       const response = await axios.get(`/api/stores/${params.storeId}/${subdomain}`);
-      setDomainStatus(response.data.domainStatus);
+      setIsActive(response.data.domainStatus);
     } catch (error) {
       console.error("Error checking domain status:", error);
-      setDomainStatus("error");
+      setIsActive(false);
     }
   };
 
@@ -462,9 +462,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
               }}
               placeholder="Enter store name"
             />
-            {domainStatus && (
-              <p className={`mt-2 ${domainStatus === "active" ? "text-green-500" : "text-red-500"}`}>
-                Domain status: {domainStatus}
+            {isActive && (
+              <p className={`mt-2 ${isActive === true ? "text-green-500" : "text-red-500"}`}>
+                Domain status: {isActive}
               </p>
             )}
           </div>

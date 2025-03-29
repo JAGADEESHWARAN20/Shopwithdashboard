@@ -49,6 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           if (domainToRemove) {
                try {
                     await axios.delete(`${VERCEL_API_URL}/v6/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
+                         method:"DELETE",
                          headers: {
                               Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
                          },
@@ -69,16 +70,18 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           if (domainToAdd) {
                try {
                     const response: AxiosResponse<VercelDomainResponse> = await axios.post(
-                         `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
+                         `${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/domains`,
                          { name: domainToAdd },
                          {
                               headers: {
                                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
                               },
-                         }
+                         },
+                         
                     );
                     alternateUrls.push(`https://${domainToAdd}`);
                     newStoreUrl = `https://${domainToAdd}`; // Update primary storeUrl
+
                } catch (error: any) {
                     console.error("[MANAGE_DOMAINS_API] Error adding domain:", error.response?.data || error.message);
                     if (error.response?.status === 429) {
