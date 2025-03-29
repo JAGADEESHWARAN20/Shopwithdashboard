@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
 
           if (domainToRemove) {
                try {
-                    await axios.delete(`${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
+                    await axios.delete(`${VERCEL_API_URL}/v6/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
                          headers: {
                               Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
                          },
