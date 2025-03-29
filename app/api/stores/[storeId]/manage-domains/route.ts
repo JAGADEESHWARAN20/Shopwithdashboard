@@ -18,20 +18,31 @@ async function removeDomainFromVercel(domainToRemove: string) {
      }
 
      try {
-          await axios.delete(`${VERCEL_API_URL}/v6/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`, {
-               method: "DELETE",
-               headers: {
-                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-               },
-          });
+          const response = await axios.delete(
+               `${VERCEL_API_URL}/v6/projects/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`,
+               {
+                    headers: {
+                         Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                    },
+               }
+          );
+          console.log("[MANAGE_DOMAINS_API] Domain removed successfully:", response.data);
      } catch (error: any) {
           console.error("[MANAGE_DOMAINS_API] Error removing domain:", error.response?.data || error.message);
           if (error.response?.status === 429) {
                throw new Error("Rate limit exceeded. Please try again later.");
           }
+          if (error.response) {
+               throw new Error(
+                    `Vercel API Error: ${error.response.status} - ${JSON.stringify(
+                         error.response.data
+                    )}`
+               );
+          }
           throw error;
      }
 }
+
 
 async function addDomainToVercel(domainToAdd: string) {
      if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
