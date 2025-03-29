@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Input } from "@/components/ui/input";
 import {Switch} from "@/components/ui/switch"
 
@@ -204,7 +204,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
               <>
                 <Label className="mt-2">URL Active</Label>
                 <div className="flex items-center space-x-2">
-                  <Checkbox
+                  <Switch
                     checked={storeUrl.statusactive}
                     onCheckedChange={(checked: boolean) =>
                       setStoreUrl({ ...storeUrl, statusactive: checked })
