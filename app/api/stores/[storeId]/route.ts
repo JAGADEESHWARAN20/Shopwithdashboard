@@ -16,7 +16,7 @@ async function addDomainToProject(projectId: string, domainName: string) {
 
     try {
         const domainCheckResponse = await axios.get(
-            `${VERCEL_API_URL}/v9/projects/${projectId}/domains?domain=${domainName}`,
+            `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains?domain=${domainName}`,
             {
                 headers: {
                     Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
@@ -34,7 +34,7 @@ async function addDomainToProject(projectId: string, domainName: string) {
         }
 
         const domainAddResponse = await axios.post(
-            `${VERCEL_API_URL}/v9/projects/${projectId}/domains`,
+            `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
             { name: domainName },
             {
                 headers: {
@@ -70,7 +70,7 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
 
     try {
         const response = await axios.delete(
-            `${VERCEL_API_URL}/v9/projects/${projectId}/domains/${domainName}`,
+            `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains/${domainName}`,
             {
                 headers: {
                     Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,

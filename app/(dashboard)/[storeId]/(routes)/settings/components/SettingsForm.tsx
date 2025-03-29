@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {Switch} from "@/components/ui/switch"
 
 // Define the StoreUrl type (as previously used)
 interface StoreUrl {
@@ -153,7 +154,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox
+            <Switch
               id="is-active"
               checked={isActive}
               onCheckedChange={(checked: boolean) => setIsActive(checked)}
