@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 
 export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
     const [isOpen, setIsOpen] = useState(false);
-    const [menuWidth, setMenuWidth] = useState(0); // Add menu width state
+    
     const pathname = usePathname();
     const params = useParams();
 
@@ -25,19 +25,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
 
     ];
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (isOpen) {
-                setMenuWidth(window.innerWidth); // Update width on resize when open
-            }
-        };
-
-        handleResize(); // Initial width set
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, [isOpen]);
-
+ 
     return (
         <nav className={cn("relative w-full", className)} {...props}>
             <div className="flex items-center justify-start p-4 bg-white dark:bg-gray-900 border-b">
@@ -64,7 +52,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
             </div>
             {isOpen && (
                 <div
-                    className={`absolute top-full z-[99999] left-0 w-[${menuWidth}px] bg-white dark:bg-gray-900 shadow-md sm:hidden flex flex-col p-4 space-y-2`}
+                    className={`absolute top-full z-[99999] left-0 w-[${window.innerWidth - 60}px] bg-white dark:bg-gray-900 shadow-md sm:hidden flex flex-col p-4 space-y-2`}
                 >
                     {routes.map((route) => (
                         <Link
