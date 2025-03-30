@@ -3,11 +3,38 @@ import { getAuth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import axios from "axios";
 import validator from "validator";
-import { broadcast } from "@/lib/websocket"; // Hypothetical WebSocket broadcast function
 
+// Vercel API
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
+const VERCEL_DEPLOYMENT_URL = process.env.VERCEL_DEPLOYMENT_URL; // ecommercestore-online.vercel.app
+
+// Helper function to create alias for the domain
+async function createAlias(domain: string, deploymentUrl: string) {
+    if (!VERCEL_ACCESS_TOKEN) {
+        throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
+    }
+    try {
+        const aliasResponse = await axios.post(
+            `${VERCEL_API_URL}/v2/domains/${domain}/aliases`,
+            {
+                deploymentId: deploymentUrl, // Replace with your ecommercestore-online deployment URL
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        console.log(`[STORE_PATCH] Alias created for ${domain} to ${deploymentUrl}`);
+        return aliasResponse.data;
+    } catch (error: any) {
+        console.error(`[STORE_PATCH] Error creating alias for ${domain}:`, error.response?.data || error.message);
+        throw new Error(`Vercel API Error: ${error.response?.status} - ${JSON.stringify(error.response?.data)}`);
+    }
+}
 
 async function addDomainToProject(domainName: string) {
     if (!VERCEL_ACCESS_TOKEN) {
@@ -15,6 +42,7 @@ async function addDomainToProject(domainName: string) {
     }
 
     try {
+        // (1) Check if the domain exists
         const domainCheckResponse = await axios.get(
             `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains?domain=${domainName}`,
             {
@@ -30,21 +58,29 @@ async function addDomainToProject(domainName: string) {
 
         if (domainExists) {
             console.log(`[STORE_PATCH] Domain ${domainName} already exists in Vercel project.`);
-            return domainCheckResponse.data;
+        } else {
+
+            const domainAddResponse = await axios.post(
+                `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
+                { name: domainName },
+                {
+                    headers: {
+                        Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            console.log(`[STORE_PATCH] Domain ${domainName} added to Vercel project.`);
         }
 
-        const domainAddResponse = await axios.post(
-            `${VERCEL_API_URL}/v9/projects/${VERCEL_PROJECT_ID}/domains`,
-            { name: domainName },
-            {
-                headers: {
-                    Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        console.log(`[STORE_PATCH] Domain ${domainName} added to Vercel project.`);
-        return domainAddResponse.data;
+        // (3) Configure the domain to point to your deployment
+        if (VERCEL_DEPLOYMENT_URL) {
+            await createAlias(domainName, VERCEL_DEPLOYMENT_URL);
+        } else {
+            console.warn("[STORE_PATCH] VERCEL_DEPLOYMENT_URL is not set.  Cannot configure alias.");
+        }
+
+        return domainCheckResponse.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
             const errorCode = error.response?.data?.error?.code;
@@ -135,6 +171,11 @@ async function patchDomain(domainName: string, customNameservers: string[]) {
     }
 }
 
+// Mock Function for Broadcast Message
+async function broadcast(message: any) {
+    console.log("Sending broadcast message:", message);
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
     try {
         const { userId } = getAuth(req);
@@ -207,6 +248,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
                     },
                     data: updatedData,
                 });
+                console.log(
+                    `[STORE_PATCH] Broadcast - storeId: ${params.storeId}, storeUrl: ${updated.storeUrl}, name: ${updated.name}, alternateUrls: ${updated.alternateUrls}`
+                );
 
                 await broadcast({
                     type: "storeUpdate",
@@ -235,6 +279,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { storeId: s
             },
             data: updatedData,
         });
+        console.log(
+            `[STORE_PATCH] Broadcast - storeId: ${params.storeId}, storeUrl: ${updatedStore.storeUrl}, name: ${updatedStore.name}, alternateUrls: ${updatedStore.alternateUrls}`
+        );
 
         await broadcast({
             type: "storeUpdate",
