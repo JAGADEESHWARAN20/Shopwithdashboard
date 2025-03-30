@@ -51,6 +51,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState("");
   const [wsStatus, setWsStatus] = useState("Disconnected");
+  const [domainExists, setDomainExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     const ws = new WebSocket("wss://admindashboardecom.vercel.app");
@@ -128,10 +129,11 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     try {
       setLoading(true);
       const domainToRemove = url.replace("https://", "");
-      await axios.delete(`/api/stores/${params.storeId}/manage-domains`, {
+      await axios.delete(`/api/stores/remove-domain`, {
         data: {
-          userId,
-          domainToRemove,
+          storeId: params.storeId,
+          userId: userId,
+          domainToRemove: domainToRemove,
         },
       });
       setAlternateUrls(alternateUrls.filter((u) => u !== url));
@@ -143,7 +145,21 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setLoading(false);
     }
   };
+  const checkDomainAvailability = async (domainName: string) => {
+    if (!domainName) {
+      setDomainExists(null); // Clear previous state if input is empty
+      return;
+    }
 
+    try {
+      const response = await axios.get(`/api/check-domain?domainName=${domainName}`);
+      setDomainExists(response.data.exists);
+    } catch (error: any) {
+      console.error("Error checking domain availability:", error);
+      setDomainExists(null); // Set to null in case of error
+      toast.error(error.response?.data?.error || "Failed to check domain availability");
+    }
+  };
   // Helper to render storeUrl for display
   const displayStoreUrl = typeof storeUrl === "string" || storeUrl === null
     ? storeUrl
@@ -206,9 +222,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             )}
           </Button>
         </CardContent>
-      </Card>
-
-      {/* Store URL Card */}
+      </Card>... {/* Store URL Card */}
       <Card>
         <CardHeader>
           <CardTitle>Store URL</CardTitle>
@@ -271,9 +285,18 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             <div className="flex items-center space-x-2 mt-2">
               <Input
                 value={newAlternateUrl}
-                onChange={(e) => setNewAlternateUrl(e.target.value)}
+                onChange={(e) => {
+                  setNewAlternateUrl(e.target.value);
+                  checkDomainAvailability(e.target.value); // Check domain availability on input change
+                }}
                 placeholder="Add Alternate URL"
               />
+              {domainExists === true && (
+                <span className="text-red-500">Domain already exists!</span>
+              )}
+              {domainExists === false && (
+                <span className="text-green-500">Domain is available!</span>
+              )}
               <Button onClick={handleAddAlternateUrl} disabled={loading}>
                 Add
               </Button>

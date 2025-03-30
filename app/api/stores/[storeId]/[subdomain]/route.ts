@@ -37,7 +37,7 @@ export async function GET(
 
           if (!store) {
                console.log(`Store not found or inactive for subdomain: ${params.subdomain}`);
-               return new NextResponse(`Store not found or inactive for subdomain: ${params.subdomain}`, { status: 404 });
+               return NextResponse.json({ domainStatus: false, storeUrl: null }, { status: 404 });
           }
 
           console.log(`Store found for subdomain: ${params.subdomain}, ID: ${store.id}, Name: ${store.name}`);
@@ -55,6 +55,7 @@ export async function GET(
           }
 
           // Check Domain Status from Vercel API
+          let domainStatus = false;
           if (VERCEL_ACCESS_TOKEN && VERCEL_PROJECT_ID) {
                try {
                     const domainStatusResponse = await axios.get(
@@ -68,15 +69,15 @@ export async function GET(
 
                     const vercelDomains = domainStatusResponse.data.domains;
                     const domainExists = vercelDomains.some((d: any) => d.name === correctUrl.replace("https://", ""));
-                    store.isActive = domainExists ? true : false;
-                    console.log(`Domain status for ${correctUrl}: ${store.isActive}`);
+                    domainStatus = domainExists ? true : false;
+                    console.log(`Domain status for ${correctUrl}: ${domainStatus}`);
+
                } catch (vercelError) {
                     console.error("[STORE_VALIDATE] Error fetching domain status from Vercel:", vercelError);
-                    store.isActive = false;
+                    domainStatus = false;
                }
           }
-
-          return NextResponse.json(store);
+          return NextResponse.json({ domainStatus: domainStatus, storeUrl: store.storeUrl });
      } catch (error) {
           console.error("[STORE_VALIDATE]", error);
           return new NextResponse("Internal server error while validating store", { status: 500 });
