@@ -3,8 +3,8 @@ import prismadb from "@/lib/prismadb";
 import axios from "axios";
 
 const VERCEL_API_URL = "https://api.vercel.com/v10/projects";
-const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
+const VERCEL_ACCESS_TOKEN = process.env.TARGET_VERCEL_ACCESS_TOKEN;
+const VERCEL_PROJECT_ID = process.env.TARGET_VERCEL_PROJECT_ID;
 
 async function removeDomainFromVercel(domainToRemove: string) {
      if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
