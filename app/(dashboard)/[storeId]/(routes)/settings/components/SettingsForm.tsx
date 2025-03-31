@@ -194,7 +194,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             />
             {isActive && (
               <p className={`mt-2 ${isActive === true ? "text-green-500" : "text-red-500"}`}>
-                Domain status: {isActive}
+                Domain status: {String(isActive)}
               </p>
             )}
           </div>
