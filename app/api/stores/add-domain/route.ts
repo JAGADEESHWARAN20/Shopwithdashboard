@@ -38,7 +38,7 @@ async function addDomainToVercel(domainToAdd: string) {
 
 export async function POST(req: NextRequest, { params }: { params: { storeId: string } }): Promise<NextResponse> {
      try {
-          const { userId, domainToAdd } = await req.json();
+          const { storeId, userId, domainToAdd } = await req.json();
 
           if (!domainToAdd) {
                return NextResponse.json({ error: "Domain to add is required" }, { status: 400 });
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           }
 
           const store = await prismadb.store.findFirst({
-               where: { id: params.storeId, userId },
+               where: { id: storeId, userId },
           });
 
           if (!store) {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           const updatedAlternateUrls = [...(store.alternateUrls || []), `https://${domainToAdd}`];
 
           const updatedStore = await prismadb.store.update({
-               where: { id: params.storeId },
+               where: { id: storeId },
                data: {
                     storeUrl: `https://${domainToAdd}`,
                     alternateUrls: updatedAlternateUrls,
