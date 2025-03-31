@@ -131,7 +131,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setLoading(false);
     }
   };
-
   const handleRemoveAlternateUrl = async (url: string) => {
     try {
       setLoading(true);
@@ -143,7 +142,15 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
           domainToRemove: domainToRemove,
         },
       });
-      setAlternateUrls(alternateUrls.filter((u) => u !== url));
+
+      setAlternateUrls((prevUrls) => {
+        const updatedUrls = prevUrls.filter((u) => u !== url);
+        if (updatedUrls.length === 0) {
+          toast.error("You have no alternate URLs");
+        }
+        return updatedUrls;
+      });
+
       toast.success("Alternate URL removed successfully");
       router.refresh();
     } catch (error: any) {
@@ -152,6 +159,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setLoading(false);
     }
   };
+  
   const checkDomainAvailability = async (domainName: string) => {
     if (!domainName) {
       setDomainExists(null); // Clear previous state if input is empty
