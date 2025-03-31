@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
-const VERCEL_API_URL = "https://api.vercel.com/v10/projects/ecommercestore-online/";
+const VERCEL_API_URL = "https://api.vercel.com/v9/projects";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
@@ -40,7 +40,7 @@ export async function POST(
 
           // Add domain to Vercel
           const vercelResponse = await fetch(
-               `${VERCEL_API_URL}/domains`,
+               `${VERCEL_API_URL}/${VERCEL_PROJECT_ID}/domains`,
                {
                     method: "POST",
                     headers: {
