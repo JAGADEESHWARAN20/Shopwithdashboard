@@ -109,15 +109,21 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       toast.error("Please enter a valid URL");
       return;
     }
+
     try {
       setLoading(true);
-      const response = await axios.post(`/api/stores/${params.storeid}/add-domain`, {
-        userId,
+      // Corrected API endpoint: /api/stores/domains (no storeId in the path)
+      const response = await axios.post(`/api/stores/domains`, {
+        storeId: params.storeId, // Send storeId in the request body
+        userId: userId, // Send userId in the request body
         domainToAdd: newAlternateUrl,
       });
+
+      // Update your state based on the API response, if needed
       setAlternateUrls([...alternateUrls, `https://${newAlternateUrl}`]);
       setNewAlternateUrl("");
       toast.success("Alternate URL added successfully");
+
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to add alternate URL");
     } finally {
