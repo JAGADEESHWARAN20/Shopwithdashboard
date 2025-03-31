@@ -111,7 +111,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     }
     try {
       setLoading(true);
-      const response = await axios.post(`/api/stores/add-domain`, {
+      const response = await axios.post(`/api/stores/${params.storeid}/add-domain`, {
         userId,
         domainToAdd: newAlternateUrl,
       });
