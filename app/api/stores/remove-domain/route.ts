@@ -1,36 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
-import axios from "axios";
 
 const VERCEL_API_URL = "https://api.vercel.com/v10/projects";
-const VERCEL_ACCESS_TOKEN = process.env.TARGET_VERCEL_ACCESS_TOKEN;
-const VERCEL_PROJECT_ID = process.env.TARGET_VERCEL_PROJECT_ID;
+const TARGET_VERCEL_ACCESS_TOKEN = process.env.TARGET_VERCEL_ACCESS_TOKEN;
+const TARGET_VERCEL_PROJECT_ID = process.env.TARGET_VERCEL_PROJECT_ID;
 
 async function removeDomainFromVercel(domainToRemove: string) {
-     if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
-          throw new Error("VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID is not configured");
+     if (!TARGET_VERCEL_ACCESS_TOKEN || !TARGET_VERCEL_PROJECT_ID) {
+          throw new Error("TARGET_VERCEL_ACCESS_TOKEN or TARGET_VERCEL_PROJECT_ID is not configured");
      }
 
      try {
-          // Use the Vercel API to remove the domain from the project
           const response = await fetch(
-               `${VERCEL_API_URL}/${VERCEL_PROJECT_ID}/domains/${domainToRemove}`,
+               `${VERCEL_API_URL}/${TARGET_VERCEL_PROJECT_ID}/domains/${domainToRemove}`,
                {
                     method: "DELETE",
                     headers: {
-                         Authorization: `Bearer ${VERCEL_ACCESS_TOKEN}`,
+                         Authorization: `Bearer ${TARGET_VERCEL_ACCESS_TOKEN}`,
                     },
                }
           );
 
           if (!response.ok) {
                const errorData = await response.json();
-               throw new Error(errorData.error.message || "Failed to remove domain from Vercel");
+               throw new Error(errorData.error.message || "Failed to remove domain from Vercel target project");
           }
 
-          console.log("[MANAGE_DOMAINS_API] Domain removed successfully:", response.status);
+          console.log("[MANAGE_DOMAINS_API] Domain removed successfully from target project:", response.status);
      } catch (error: any) {
-          console.error("[MANAGE_DOMAINS_API] Error removing domain:", error.message);
+          console.error("[MANAGE_DOMAINS_API] Error removing domain from target project:", error.message);
           throw error;
      }
 }
@@ -44,11 +42,8 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
           }
 
           // Validate environment configuration
-          if (!VERCEL_ACCESS_TOKEN || !VERCEL_PROJECT_ID) {
-               return NextResponse.json(
-                    { error: "Server configuration error" },
-                    { status: 500 }
-               );
+          if (!TARGET_VERCEL_ACCESS_TOKEN || !TARGET_VERCEL_PROJECT_ID) {
+               return NextResponse.json({ error: "Target Server configuration error" }, { status: 500 });
           }
 
           // Verify store ownership
@@ -60,10 +55,10 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
                return NextResponse.json({ error: "Store not found" }, { status: 404 });
           }
 
-          // Remove domain from Vercel
+          // Remove domain from Vercel target Project
           await removeDomainFromVercel(domainToRemove);
 
-          // Update database
+          // Update database (remove from store.alternateUrls and storeUrl)
           let alternateUrls: string[] = store.alternateUrls || [];
           let newStoreUrl = store.storeUrl;
 
@@ -81,12 +76,12 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
           });
 
           return NextResponse.json({
-               message: "Domain removed successfully",
+               message: "Domain removed from target project successfully",
                storeUrl: updatedStore.storeUrl,
                alternateUrls: updatedStore.alternateUrls,
           });
      } catch (error: any) {
-          console.error("[DOMAIN_MANAGEMENT_ERROR]", error);
+          console.error("[TARGET_DOMAIN_MANAGEMENT_ERROR]", error);
           return NextResponse.json(
                {
                     error: error.message || "Operation failed",
