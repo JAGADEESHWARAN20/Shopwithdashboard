@@ -78,11 +78,12 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setIsActive(false);
     }
   };
-
+  
   useEffect(() => {
     if (name) {
       checkDomainStatus(name.replace(/\s+/g, '-').toLowerCase());
     }
+    console.log("displayStoreUrl:", displayStoreUrl); // Corrected console.log placement
   }, [name, params.storeId]);
 
   const onSubmit = async () => {
@@ -96,6 +97,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         userId,
       });
       toast.success("Store updated successfully");
+      setStoreUrl(storeUrl)
       router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to update store");
@@ -118,7 +120,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         userId: userId, // Send userId in the request body
         domainToAdd: newAlternateUrl,
       });
-
       // Update your state based on the API response, if needed
       setAlternateUrls([...alternateUrls, `https://${newAlternateUrl}`]);
       setNewAlternateUrl("");
@@ -169,7 +170,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   // Helper to render storeUrl for display
   const displayStoreUrl = typeof storeUrl === "string" || storeUrl === null
     ? storeUrl
-    : storeUrl.storeUrl;
+    : storeUrl?.storeUrl || "";
 
   return (
     <div className="space-y-6 p-6">
