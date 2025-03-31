@@ -40,7 +40,7 @@ export async function POST(
 
           // Add domain to Vercel
           const vercelResponse = await fetch(
-               `${VERCEL_API_URL}/${VERCEL_PROJECT_ID}/domains`,
+               `${VERCEL_API_URL}/prj_VYsUGitlHUjIUHZOJjVnXAOTmsGI/domains`,
                {
                     method: "POST",
                     headers: {
