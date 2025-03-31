@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
 const VERCEL_API_URL = "https://api.vercel.com/v10/projects";
-const TARGET_VERCEL_ACCESS_TOKEN = process.env.TARGET_VERCEL_ACCESS_TOKEN;
+const TARGET_VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const TARGET_VERCEL_PROJECT_ID = process.env.TARGET_VERCEL_PROJECT_ID;
 
 async function removeDomainFromVercel(domainToRemove: string) {
