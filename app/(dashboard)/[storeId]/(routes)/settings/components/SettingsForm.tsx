@@ -113,7 +113,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     try {
       setLoading(true);
       // Corrected API endpoint: /api/stores/domains (no storeId in the path)
-      const response = await axios.post(`/api/stores/domains`, {
+      const response = await axios.post(`/api/stores/${params.storeId}/add-domain`, {
         storeId: params.storeId, // Send storeId in the request body
         userId: userId, // Send userId in the request body
         domainToAdd: newAlternateUrl,
