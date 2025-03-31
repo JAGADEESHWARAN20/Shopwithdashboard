@@ -1,39 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
-const VERCEL_API_URL = "https://api.vercel.com/v9/projects";
+const VERCEL_API_URL = "https://api.vercel.com/v10/projects"; // Using v10, as specified
 const TARGET_VERCEL_ACCESS_TOKEN = process.env.TARGET_VERCEL_ACCESS_TOKEN;
 const TARGET_VERCEL_PROJECT_ID = process.env.TARGET_VERCEL_PROJECT_ID;
 
-export async function POST(
-     req: NextRequest,
-     { params }: { params: { storeId: string } }
-): Promise<NextResponse> {
+async function addDomainToVercel(domainToAdd: string) {
+     if (!TARGET_VERCEL_ACCESS_TOKEN || !TARGET_VERCEL_PROJECT_ID) {
+          throw new Error("TARGET_VERCEL_ACCESS_TOKEN or TARGET_VERCEL_PROJECT_ID is not configured");
+     }
+
      try {
-          // Extract required data from request
-          const { userId, domainToAdd } = await req.json();
-
-          // Validate environment configuration
-          if (!TARGET_VERCEL_ACCESS_TOKEN || !TARGET_VERCEL_PROJECT_ID) {
-               return NextResponse.json({ error: "Target Server configuration error" }, { status: 500 });
-          }
-
-          // Validate domain format
-          if (!domainToAdd.endsWith("ecommercestore-online.vercel.app")) {
-               return NextResponse.json({ error: "Invalid domain format" }, { status: 400 });
-          }
-
-          // Verify store ownership
-          const store = await prismadb.store.findFirst({
-               where: { id: params.storeId, userId },
-          });
-
-          if (!store) {
-               return NextResponse.json({ error: "Store not found" }, { status: 404 });
-          }
-
-          // Add domain to Vercel (target project)
-          const vercelResponse = await fetch(
+          const response = await fetch(
                `${VERCEL_API_URL}/${TARGET_VERCEL_PROJECT_ID}/domains`,
                {
                     method: "POST",
@@ -45,21 +23,41 @@ export async function POST(
                }
           );
 
-          if (!vercelResponse.ok) {
-               const errorData = await vercelResponse.json();
-               console.error("[TARGET_DOMAIN_MANAGEMENT_ERROR] Vercel API Error:", errorData);
-               return NextResponse.json(
-                    {
-                         error: errorData.error?.message || "Vercel domain addition failed (target project)",
-                         details: errorData, // Include Vercel error details
-                    },
-                    { status: vercelResponse.status }
-               );
+          if (!response.ok) {
+               const errorData = await response.json();
+               throw new Error(errorData.error?.message || "Failed to add domain to Vercel target project");
           }
 
-          const vercelResult = await vercelResponse.json();
+          console.log("[MANAGE_DOMAINS_API] Domain added successfully to target project:", response.status);
+          return await response.json(); // Return the response data
+     } catch (error: any) {
+          console.error("[MANAGE_DOMAINS_API] Error adding domain to target project:", error.message);
+          throw error;
+     }
+}
 
-          // Update database
+export async function POST(req: NextRequest, { params }: { params: { storeId: string } }): Promise<NextResponse> {
+     try {
+          const { userId, domainToAdd } = await req.json();
+
+          if (!domainToAdd) {
+               return NextResponse.json({ error: "Domain to add is required" }, { status: 400 });
+          }
+
+          if (!TARGET_VERCEL_ACCESS_TOKEN || !TARGET_VERCEL_PROJECT_ID) {
+               return NextResponse.json({ error: "Target Server configuration error" }, { status: 500 });
+          }
+
+          const store = await prismadb.store.findFirst({
+               where: { id: params.storeId, userId },
+          });
+
+          if (!store) {
+               return NextResponse.json({ error: "Store not found" }, { status: 404 });
+          }
+
+          const vercelData = await addDomainToVercel(domainToAdd);
+
           const updatedAlternateUrls = [...(store.alternateUrls || []), `https://${domainToAdd}`];
 
           const updatedStore = await prismadb.store.update({
@@ -74,7 +72,7 @@ export async function POST(
                message: "Domain added to target project successfully",
                storeUrl: updatedStore.storeUrl,
                alternateUrls: updatedStore.alternateUrls,
-               vercelData: vercelResult, // Include successful Vercel response
+               vercelData: vercelData, // Include the Vercel API response data
           });
      } catch (error: any) {
           console.error("[TARGET_DOMAIN_MANAGEMENT_ERROR]", error);
