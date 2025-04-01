@@ -7,7 +7,7 @@ const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3002", // Add your local dev frontend port
     "https://ecommercestore-online.vercel.app",
-    "https://kojol-ecommercestore-online.vercel.app", // Replace with your production frontend domain
+    "https://kajol-ecommercestore-online.vercel.app", // Replace with your production frontend domain
 ];
 
 const getCorsHeaders = (origin: string | null): Record<string, string> => {
