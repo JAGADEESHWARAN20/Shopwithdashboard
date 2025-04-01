@@ -11,7 +11,7 @@ const allowedOrigins = [
 ];
 
 const getCorsHeaders = (origin: string | null): Record<string, string> => {
-    const corsOrigin = origin && allowedOrigins.includes(origin) ? origin : "https://yourdomain.com";
+    const corsOrigin = origin && allowedOrigins.includes(origin) ? origin : "";
     return {
         "Access-Control-Allow-Origin": corsOrigin,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
