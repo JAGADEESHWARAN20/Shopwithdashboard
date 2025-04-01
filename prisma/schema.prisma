@@ -11,10 +11,79 @@ datasource db {
   relationMode = "prisma"
 }
 
+// Role enum for the User model
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+// User model
+model User {
+  id            String      @id @default(uuid()) @map("_id")
+  email         String      @unique // User's email (used for login)
+  password      String?     // Hashed password (optional if using Clerk)
+  name          String?     // User's name
+  role          Role        @default(CUSTOMER) // Role of the user (ADMIN or CUSTOMER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  emailVerified Boolean     @default(false) // Whether the user's email is verified
+  phone         String?     // User's phone number (optional)
+  address       String?     // User's address (optional)
+  image         String?     // URL to the user's profile image (optional)
+
+  // Relationships
+  stores        Store[]     @relation("UserToStore") // A user can own multiple stores
+  orders        Order[]     @relation("UserToOrder") // A user can have multiple orders
+  cart          Cart?       @relation("UserToCart")  // A user can have one cart
+  sessions      Session[]   @relation("UserToSession") // A user can have multiple sessions
+}
+
+// Session model (for authentication)
+model Session {
+  id        String   @id @default(uuid()) @map("_id")
+  userId    String   // Foreign key to the User
+  user      User     @relation("UserToSession", fields: [userId], references: [id])
+  token     String   @unique // JWT or session token
+  expiresAt DateTime // When the session expires
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Cart model (related to User)
+model Cart {
+  id        String     @id @default(uuid()) @map("_id")
+  userId    String     @unique // added unique attribute
+  user      User       @relation("UserToCart", fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relationships
+  cartItems CartItem[] @relation("CartToCartItem")
+}
+
+//CartItem and the rest of your models.
+model CartItem {
+  id        String    @id @default(uuid()) @map("_id")
+  cartId    String    // Foreign key to the Cart
+  cart      Cart      @relation("CartToCartItem", fields: [cartId], references: [id])
+  productId String    // Foreign key to the Product
+  product   Product   @relation("ProductToCartItem", fields: [productId], references: [id])
+  quantity  Int       // Quantity of the product in the cart
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([cartId])
+  @@index([productId])
+}
+
+// Store model (updated to include relationship with User)
 model Store {
   id              String      @id @default(uuid()) @map("_id")
   name            String
-  userId          String
+  userId          String      // Foreign key to the User who owns the store
+  user            User        @relation("UserToStore", fields: [userId], references: [id]) // Added relation
   billboards      Billboard[] @relation("StoreToBillboard")
   categories      Category[]  @relation("StoreToCategory")
   sizes           Size[]      @relation("StoreToSize")
@@ -27,8 +96,11 @@ model Store {
   razorpayWebhookId String?
   alternateUrls   String[]    @default([])
   storeUrl        String?
+
+  @@index([userId])
 }
 
+// Billboard model
 model Billboard {
   id         String     @id @default(uuid()) @map("_id")
   storeId    String
@@ -43,6 +115,7 @@ model Billboard {
   @@index([storeId])
 }
 
+// Category model
 model Category {
   id          String    @id @default(uuid()) @map("_id")
   storeId     String
@@ -58,6 +131,7 @@ model Category {
   @@index([billboardId])
 }
 
+// Size model
 model Size {
   id        String    @id @default(uuid()) @map("_id")
   storeId   String
@@ -71,6 +145,7 @@ model Size {
   @@index([storeId])
 }
 
+// Color model
 model Color {
   id        String    @id @default(uuid()) @map("_id")
   storeId   String
@@ -84,6 +159,7 @@ model Color {
   @@index([storeId])
 }
 
+// Product model (updated to include relationship with CartItem)
 model Product {
   id         String      @id @default(uuid()) @map("_id")
   storeId    String
@@ -100,6 +176,7 @@ model Product {
   color      Color       @relation(fields: [colorId], references: [id])
   images     Image[]
   orderItems OrderItem[]
+  cartItems  CartItem[]  @relation("ProductToCartItem") // Added relation
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
@@ -109,6 +186,7 @@ model Product {
   @@index([colorId])
 }
 
+// Image model
 model Image {
   id        String   @id @default(uuid()) @map("_id")
   productId String
@@ -120,10 +198,13 @@ model Image {
   @@index([productId])
 }
 
+// Order model (updated to include relationship with User)
 model Order {
   id            String      @id @default(uuid()) @map("_id")
   storeId       String
   store         Store       @relation("StoreToOrder", fields: [storeId], references: [id])
+  userId        String?     // Foreign key to the User who placed the order (optional for guest checkout)
+  user          User?       @relation("UserToOrder", fields: [userId], references: [id]) // Added relation
   orderItems    OrderItem[]
   isPaid        Boolean     @default(false)
   phone         String      @default("")
@@ -137,8 +218,10 @@ model Order {
   deliveredTime DateTime?
 
   @@index([storeId])
+  @@index([userId])
 }
 
+// OrderItem model
 model OrderItem {
   id        String  @id @default(uuid()) @map("_id")
   orderId   String
