@@ -59,6 +59,62 @@ export async function OPTIONS(request: NextRequest) {
      });
 }
 
+export async function GET(request: NextRequest) {
+     try {
+          const origin = request.headers.get("origin");
+          console.log("[CORS_DEBUG] Handling GET request for origin:", origin);
+
+          // Step 1: Extract the name from the query string
+          const { searchParams } = new URL(request.url);
+          const name = searchParams.get("name");
+
+          // Step 2: Validate the input
+          if (!name || typeof name !== "string") {
+               return NextResponse.json(
+                    { error: "Invalid or missing 'name' in query string" },
+                    { status: 400, headers: corsHeaders(origin) }
+               );
+          }
+
+          // Step 3: Query the database for a store with the matching name
+          const store = await prisma.store.findFirst({
+               where: {
+                    name: {
+                         equals: name,
+                         mode: "insensitive", // Case-insensitive search
+                    },
+               },
+               select: {
+                    id: true, // Only select the store ID
+               },
+          });
+
+          // Step 4: Check if a store was found
+          if (!store) {
+               return NextResponse.json(
+                    { error: `No store found with name: ${name}` },
+                    { status: 404, headers: corsHeaders(origin) }
+               );
+          }
+
+          // Step 5: Return the store ID
+          return NextResponse.json(
+               { storeId: store.id },
+               { status: 200, headers: corsHeaders(origin) }
+          );
+     } catch (error) {
+          console.error("Error in /api/stores/get-id-by-name (GET):", error);
+          const origin = request.headers.get("origin");
+          return NextResponse.json(
+               { error: "Internal server error" },
+               { status: 500, headers: corsHeaders(origin) }
+          );
+     } finally {
+          await prisma.$disconnect();
+     }
+}
+
+// Keep the POST handler for backward compatibility (optional)
 export async function POST(request: NextRequest) {
      try {
           const origin = request.headers.get("origin");
@@ -98,7 +154,7 @@ export async function POST(request: NextRequest) {
                { status: 200, headers: corsHeaders(origin) }
           );
      } catch (error) {
-          console.error("Error in /api/stores/get-id-by-name:", error);
+          console.error("Error in /api/stores/get-id-by-name (POST):", error);
           const origin = request.headers.get("origin");
           return NextResponse.json(
                { error: "Internal server error" },
