@@ -2,29 +2,17 @@ export interface Billboard {
      id: string;
      label: string;
      imageUrl: string;
-     isFeatured: boolean;
+     isFeatured: boolean | null;
 }
 
-// types.ts
 export interface Store {
      id: string;
      name: string;
-     storeUrl?: string; // Optional, as in your schema
+     storeUrl?: string | null;
      userId: string;
-     alternateUrls: string[]; // Add this line
-     isActive: boolean; // Add this line
-}
-
-export interface Product {
-     id: string;
-     category: Category;
-     name: string;
-     price: string; // Changed to string as per your definition
-     isFeatured: boolean;
-     isArchived: boolean; // Added from the first Product definition
-     size: Size;
-     color: Color;
-     images: Image[]; // Updated to use Image[] instead of string[]
+     alternateUrls: string[];
+     isActive: boolean;
+     razorpayWebhookId?: string | null;
 }
 
 export interface Category {
@@ -46,7 +34,42 @@ export interface Color {
      value: string;
 }
 
+export interface Product {
+     id: string;
+     category: Category;
+     name: string;
+     price: number;
+     isFeatured: boolean;
+     isArchived: boolean;
+     sizeId: string;
+     colorId: string;
+     images: Image[];
+}
+
 export interface Image {
      id: string;
      url: string;
+}
+
+export interface User {
+     id: string;
+     email: string;
+     name?: string | null;
+     role: 'ADMIN' | 'CUSTOMER';
+     createdAt: Date; // Change to Date
+     updatedAt: Date; // Change to Date
+     emailVerified: boolean;
+     phone?: string | null;
+     address?: string | null;
+     image?: string | null;
+     password?: string;
+}
+
+export interface Session {
+     id: string;
+     userId: string;
+     token: string;
+     expiresAt: Date; // Change to Date
+     createdAt: Date; // Change to Date
+     updatedAt: Date; // Change to Date
 }
