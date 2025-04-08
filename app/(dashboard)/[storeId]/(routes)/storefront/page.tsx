@@ -1,7 +1,7 @@
 // app/(dashboard)/[storeId]/(routes)/storefront/page.tsx
 
-import StoreFront from "@/components/StoreFront";
-import { getStoreData, getBillboard, getProducts } from "@/actions";
+import StoreFront from "../../../components/StoreFront";
+import { getStoreData, getBillboard, getProducts } from "../../actions";
 import { Store } from "@/types";
 
 const Page = async ({ params }) => {
