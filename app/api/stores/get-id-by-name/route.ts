@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 // CORS Configuration
 const allowedBaseDomains = ["ecommercestore-online.vercel.app"];
-const allowedExactOrigins = ["http://localhost:3000"];
+const allowedExactOrigins = ["http://localhost:3000", "https://kajol-ecommercestore-online.vercel.app"];
 
 const getCorsHeaders = (origin: string | null) => {
      const headers: Record<string, string> = {
