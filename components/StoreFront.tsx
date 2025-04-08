@@ -21,48 +21,48 @@ const StoreFront: React.FC<StoreFrontProps> = ({ initialStore }) => {
      const [wsStatus, setWsStatus] = useState<"Connecting" | "Connected" | "Disconnected">("Connecting");
      const [wsMessage, setWsMessage] = useState<string | null>(null);
 
-     useEffect(() => {
-          if (!initialStore || !initialStore.id) {
-               console.error("Invalid initialStore prop.");
-               return;
-          }
+    useEffect(() => {
+    if (!initialStore || !initialStore.id) {
+        console.error("Invalid initialStore prop.");
+        return;
+    }
 
-          const ws = new WebSocket("wss://admindashboardecom.vercel.app");
+    const ws = new WebSocket("wss://admindashboardecom.vercel.app");
 
-          ws.onopen = () => {
-               setWsStatus("Connected");
-          };
+    ws.onopen = () => {
+        setWsStatus("Connected");
+    };
 
-          ws.onmessage = (event) => {
-               try {
-                    const { type, data } = JSON.parse(event.data);
-                    if (type === "storeUpdate" && data.storeId === store.id) {
-                         setWsMessage("Store settings updated successfully");
-                         setStore((prev) => ({
-                              ...prev,
-                              storeUrl: data.storeUrl,
-                              name: data.name || prev.name,
-                              alternateUrls: data.alternateUrls || prev.alternateUrls,
-                         }));
-                    }
-               } catch (error) {
-                    console.error("Error parsing WebSocket message:", error);
-               }
-          };
+    ws.onmessage = (event) => {
+        try {
+            const { type, data } = JSON.parse(event.data);
+            if (type === "storeUpdate" && data.storeId === store.id) {
+                setWsMessage("Store settings updated successfully");
+                setStore((prev) => ({
+                    ...prev,
+                    storeUrl: data.storeUrl,
+                    name: data.name || prev.name,
+                    alternateUrls: data.alternateUrls || prev.alternateUrls,
+                }));
+            }
+        } catch (error) {
+            console.error("Error parsing WebSocket message:", error);
+        }
+    };
 
-          ws.onclose = () => {
-               setWsStatus("Disconnected");
-          };
+    ws.onclose = () => {
+        setWsStatus("Disconnected");
+    };
 
-          ws.onerror = (error) => {
-               console.error("WebSocket error:", error);
-               setWsStatus("Disconnected");
-          };
+    ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setWsStatus("Disconnected");
+    };
 
-          return () => {
-               ws.close();
-          };
-     }, [initialStore.id]);
+    return () => {
+        ws.close();
+    };
+}, [initialStore, store.id]); 
 
      useEffect(() => {
           setStore(initialStore);
