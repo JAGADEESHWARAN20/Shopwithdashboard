@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
           const updatedUser = await prisma.user.update({
                where: {
-                    id: userId,
+                    id: userId, // Matching against the Clerk User ID
                },
                data: {
                     name: name,
