@@ -19,11 +19,11 @@ export const getProducts = async (storeId: string): Promise<Product[]> => {
         return products.map((product) => ({
             id: product.id,
             name: product.name,
-            price: product.price.toString(), // Convert to string to match type
+            price: product.price, // Keep as number (Float)
             isFeatured: product.isFeatured,
             isArchived: product.isArchived,
-            sizeId: product.size.id, // Add sizeId
-            colorId: product.color.id, // Add colorId
+            sizeId: product.size.id,
+            colorId: product.color.id,
             category: {
                 id: product.category.id,
                 name: product.category.name,
