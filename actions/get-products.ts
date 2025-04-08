@@ -1,3 +1,5 @@
+// actions/get-products.ts
+
 import prismadb from "@/lib/prismadb";
 import { Product } from "@/types";
 
