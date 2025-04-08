@@ -1,40 +1,21 @@
-import { getFeaturedBillboard } from '../../../../../actions/get-featured-billboards';
-import { getStoreName } from '../../../../../actions/get-storename';
-import { getProducts } from '../../../../../actions/get-products';
-import { getStoreId } from '../../../../../utils/storeId';
-import { Billboard, Product, Store } from '@/types';
-import StoreFront from '../../../../../components/StoreFront';
+// app/(dashboard)/[storeId]/(routes)/storefront/page.tsx
 
-export default async function HomePage() {
-     // Extract store ID from subdomain
-     const storeId = await getStoreId();
+import StoreFront from "@/components/StoreFront";
+import { getStoreData, getBillboard, getProducts } from "@/actions";
+import { Store } from "@/types";
 
-     if (!storeId) {
-          return <div>Error: Store ID not found.</div>;
-     }
+const Page = async ({ params }) => {
+    const storeData: Store = await getStoreData(params.storeId);
+    const billboard = await getBillboard(params.storeId);
+    const products = await getProducts(params.storeId);
 
-     try {
-          // Fetch store information
-          const storeData = await getStoreName(storeId);
-          if (!storeData) {
-               return <div>Store information not found.</div>;
-          }
+    return (
+        <StoreFront
+            initialStore={storeData} // Corrected prop name
+            initialBillboard={billboard}
+            initialProducts={products}
+        />
+    );
+};
 
-          // Fetch featured billboard
-          const billboard = await getFeaturedBillboard(storeId);
-
-          // Fetch products
-          const products = await getProducts(storeId);
-
-          return (
-               <StoreFront
-                    initialStore={storeData} // Corrected prop name
-                    initialBillboard={billboard}
-                    initialProducts={products}
-               />
-          );
-     } catch (error) {
-          console.error("Error fetching data:", error);
-          return <div>Error loading store. Please try again later.</div>;
-     }
-}
+export default Page;
