@@ -42,7 +42,7 @@ model User {
   stores        Store[]   @relation("UserToStore")
   orders        Order[]   @relation("UserToOrder")
   cart          Cart?     @relation("UserToCart")
-  sessions      Session[] @relation("UserToSession") // Add the back relation
+  sessions      Session[] @relation("UserToSession") 
 }
 
 model Cart {
