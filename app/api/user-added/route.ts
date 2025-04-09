@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 
 // Function to check if the origin ends with the allowed domain
 function isAllowedOrigin(origin: string | null): boolean {
-     if (!origin) {
-          return false;
-     }
-     return origin?.endsWith("ecommercestore-online.vercel.app") || origin?.endsWith("kajol-ecommercestore-online.vercel.app") || false;
+    if (!origin) {
+        return false;
+    }
+    return origin.endsWith("ecommercestore-online.vercel.app") || origin.endsWith("kajol-ecommercestore-online.vercel.app") || false;
 }
 
 export async function POST(req: NextRequest) {
