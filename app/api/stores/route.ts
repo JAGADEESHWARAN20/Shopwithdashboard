@@ -216,3 +216,58 @@ export async function GET(
     return new NextResponse("Internal error", { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return new NextResponse("Unauthenticated", { status: 401 });
+    }
+
+    const body = await req.json();
+    const { name, storeUrl } = body;
+
+    if (!name) {
+      return new NextResponse("Store name is required", { status: 400 });
+    }
+
+    let finalStoreUrl: string | null = null;
+
+    if (storeUrl) {
+      if (!validator.isURL(storeUrl, { require_tld: false })) {
+        return new NextResponse("Invalid storeUrl format", { status: 400 });
+      }
+
+      if (!storeUrl.endsWith("ecommercestore-online.vercel.app")) {
+        return new NextResponse("Store URL must end with ecommercestore-online.vercel.app", { status: 400 });
+      }
+
+      const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
+
+      if (VERCEL_ACCESS_TOKEN && VERCEL_PROJECT_ID) {
+        try {
+          await addDomainToProject(VERCEL_PROJECT_ID, domainName);
+        } catch (error: any) {
+          console.error("[STORE_POST] Vercel domain error:", error);
+          return new NextResponse(`Domain registration failed: ${error?.response?.data?.error?.message || error.message}`, { status: 500 });
+        }
+      }
+
+      finalStoreUrl = storeUrl;
+    }
+
+    const store = await prismadb.store.create({
+      data: {
+        name,
+        userId,
+        storeUrl: finalStoreUrl,
+      },
+    });
+
+    return NextResponse.json(store);
+  } catch (error: any) {
+    console.error("[STORE_POST]", error);
+    return new NextResponse(`Internal error: ${error.message}`, { status: 500 });
+  }
+}
