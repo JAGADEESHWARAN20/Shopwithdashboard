@@ -38,6 +38,7 @@ export async function POST(req: Request) {
                     password: '',  // Assuming no password is needed since Clerk handles it
                },
           });
+          console.log(newUser);
 
           // Step 5: Return a successful response with the created user data
           return NextResponse.json({ message: 'User created successfully', user: newUser });
