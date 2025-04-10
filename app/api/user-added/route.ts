@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
-import prismadb from '@/lib/prismadb';  // Import Prisma client for database interaction
+import prismadb from '@/lib/prismadb';  // Import Prisma client
+import { setCorsHeaders } from '@/lib/corsfixer';  // Import the CORS header setter
 
 // POST method to save user data to Prisma DB
 export async function POST(req: Request) {
+     // Create NextResponse object to manipulate headers
+     const res = NextResponse.json({}, { status: 200 });
+
+     // Apply CORS headers and handle preflight OPTIONS request
+     if (req.method === 'OPTIONS') {
+          setCorsHeaders(res);
+          return res;  // Handle preflight request
+     }
+
+     // Apply CORS headers to regular request
+     setCorsHeaders(res);
+
      try {
           // Step 1: Parse the incoming JSON request body which contains user data
           const body = await req.json();
@@ -42,14 +55,11 @@ export async function POST(req: Request) {
 
           // Step 5: Return a successful response with the created user data
           return NextResponse.json({ message: 'User created successfully', user: newUser });
-
      } catch (error) {
           // TypeScript expects 'error' to be of type 'unknown', so we need to handle it properly
           if (error instanceof Error) {
-               // If the error is an instance of Error, we can safely access error.message
                return NextResponse.json({ error: 'Something went wrong', details: error.message }, { status: 500 });
           } else {
-               // If the error is not an instance of Error, handle it as an unknown type
                return NextResponse.json({ error: 'Something went wrong', details: 'Unknown error' }, { status: 500 });
           }
      }
