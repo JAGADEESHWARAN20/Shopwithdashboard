@@ -19,6 +19,7 @@ export async function POST(req: Request) {
      try {
           // Step 1: Parse the incoming JSON request body which contains user data
           const body = await req.json();
+          console.log(body)
 
           // Extract the necessary fields from the request body
           const { email, name, image, emailVerified, phone, role } = body;
