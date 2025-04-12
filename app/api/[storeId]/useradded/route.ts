@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import prismadb from '@/lib/prismadb';  // Import Prisma client
+import { setCorsHeaders } from '@/lib/corsfixer';  // Import the CORS header setter
 
 // POST method to save user data to Prisma DB
 export async function POST(req: Request) {
      // Create NextResponse object to manipulate headers
-   
+     const res = NextResponse.json({}, { status: 200 });
+
+     // Apply CORS headers and handle preflight OPTIONS request
+     if (req.method === 'OPTIONS') {
+          setCorsHeaders(res);
+          return res;  // Handle preflight request
+     }
+
+     // Apply CORS headers to regular request
+     setCorsHeaders(res);
 
      try {
           // Step 1: Parse the incoming JSON request body which contains user data
