@@ -3,8 +3,7 @@
 export const setCorsHeaders = (res: Response) => {
      const allowedOrigins = [
           'https://ecommercestore-online.vercel.app',
-          'https://kajol-ecommercestore-online.vercel.app',  
-          'http://localhost:3002', 
+          'https://kajol-ecommercestore-online.vercel.app',
      ];
 
      const origin = res.headers.get('Origin') || '';  // Get the Origin header from the request
