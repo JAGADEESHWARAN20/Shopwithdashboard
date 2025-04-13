@@ -38,7 +38,7 @@ model User {
   phone         String?
   address       String?
   image         String?
-  password      String
+  password      String?
   stores        Store[]   @relation("UserToStore")
   orders        Order[]   @relation("UserToOrder")
   cart          Cart?     @relation("UserToCart")
