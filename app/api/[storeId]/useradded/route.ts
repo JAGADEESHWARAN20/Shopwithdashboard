@@ -33,9 +33,9 @@ export async function POST(req: Request) {
                data: {
                     email,
                     name,
-                    image: image || '',  // If no image, default to empty string
-                    emailVerified: emailVerified || false,  // Default to false if not provided
-                    phone: phone || null,  // If no phone, set as null
+                    image: image ?? '',  // If no image, default to empty string
+                    emailVerified: emailVerified ?? false,  // Default to false if not provided
+                    phone: phone ?? null,  // If no phone, set as null
                     role: role || 'CUSTOMER',  // Default to 'CUSTOMER' if role is not provided
                     password: '',  // Assuming no password is needed since Clerk handles it
                },
