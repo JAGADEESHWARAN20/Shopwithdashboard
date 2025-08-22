@@ -86,6 +86,16 @@ export interface Billboard {
   isFeatured?: boolean | null;
 }
 
+// A lighter version of Billboard for API responses / UI use
+export interface BillboardDTO {
+  id: string;
+  label: string;
+  imageUrl: string;
+  isFeatured: boolean;
+}
+
+
+
 export interface Category {
   id: string;
   storeId: string;
