@@ -1,6 +1,6 @@
 "use client";
 
-import { Billboard } from "@prisma/client";
+
 import * as z from 'zod'
 import axios from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,7 @@ import { Input } from '../../../../../../../components/ui/input';
 import { AlertModel } from "../../../../../../../components/modals/alert-model";
 
 import ImageUpload from "../../../../../../../components/ui/image-upload";
+import { Billboard } from '@/types/index';
 
 const formSchema = z.object({
   label: z.string().min(1),
