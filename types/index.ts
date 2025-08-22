@@ -62,7 +62,7 @@ export interface User {
      phone?: string | null;
      address?: string | null;
      image?: string | null;
-     password?: string | null;
+     password?: string;
 }
 
 export interface Session {

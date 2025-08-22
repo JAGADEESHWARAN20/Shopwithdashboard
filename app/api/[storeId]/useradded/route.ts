@@ -37,7 +37,7 @@ export async function POST(req: Request) {
                     emailVerified: emailVerified ?? false,  // Default to false if not provided
                     phone: phone ?? null,  // If no phone, set as null
                     role: role || 'CUSTOMER',  // Default to 'CUSTOMER' if role is not provided
-                    password: null,  // Assuming no password is needed since Clerk handles it
+                    password: '',  // Assuming no password is needed since Clerk handles it
                },
           });
           console.log(newUser);

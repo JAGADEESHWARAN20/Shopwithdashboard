@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
-// Define the StoreUrl type (as previously used)
+// Define the StoreUrl type
 interface StoreUrl {
   storeUrl: string;
   statusactive: boolean;
@@ -29,7 +29,7 @@ interface SettingsFormProps {
   initialData: {
     name: string;
     isActive: boolean;
-    storeUrl: string | null | StoreUrl; // Allow null to match Prisma type
+    storeUrl: string | null | StoreUrl;
     alternateUrls: string[];
   };
 }
@@ -49,42 +49,23 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const [alternateUrls, setAlternateUrls] = useState<string[]>(initialData.alternateUrls || []);
   const [newAlternateUrl, setNewAlternateUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState("");
-  const [wsStatus, setWsStatus] = useState("Disconnected");
   const [domainExists, setDomainExists] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const ws = new WebSocket("wss://admindashboardecom.vercel.app");
-    ws.onopen = () => setWsStatus("Connected");
-    ws.onmessage = (event) => {
-      const { type, data } = JSON.parse(event.data);
-      if (type === "storeUpdate") {
-        setNotification("Store settings updated successfully");
-        setStoreUrl(data.storeUrl);
-        setAlternateUrls(data.alternateUrls || []);
+  const checkDomainStatus = useCallback(async (subdomain: string) => {
+      try {
+        const response = await axios.get(`/api/stores/${params.storeId}/${subdomain}`);
+        setIsActive(response.data.domainStatus);
+      } catch (error) {
+        console.error("Error checking domain status:", error);
+        setIsActive(false);
       }
-    };
-    ws.onclose = () => setWsStatus("Disconnected");
-    ws.onerror = (error) => console.error("WebSocket error:", error);
-    return () => ws.close();
-  }, []);
+    }, [params.storeId]);
 
-  const checkDomainStatus = async (subdomain: string) => {
-    try {
-      const response = await axios.get(`/api/stores/${params.storeId}/${subdomain}`);
-      setIsActive(response.data.domainStatus);
-    } catch (error) {
-      console.error("Error checking domain status:", error);
-      setIsActive(false);
-    }
-  };
-  
   useEffect(() => {
     if (name) {
-      checkDomainStatus(name.replace(/\s+/g, '-').toLowerCase());
+      checkDomainStatus(name.replace(/\s+/g, "-").toLowerCase());
     }
-    console.log("displayStoreUrl:", displayStoreUrl); // Corrected console.log placement
-  }, [name, params.storeId]);
+  }, [name, checkDomainStatus]);
 
   const onSubmit = async () => {
     try {
@@ -97,7 +78,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         userId,
       });
       toast.success("Store updated successfully");
-      setStoreUrl(storeUrl)
+      setStoreUrl(storeUrl);
       router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to update store");
@@ -114,23 +95,21 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
     try {
       setLoading(true);
-      // Corrected API endpoint: /api/stores/domains (no storeId in the path)
       const response = await axios.post(`/api/stores/${params.storeId}/add-domain`, {
-        storeId: params.storeId, // Send storeId in the request body
-        userId: userId, // Send userId in the request body
+        storeId: params.storeId,
+        userId: userId,
         domainToAdd: newAlternateUrl,
       });
-      // Update your state based on the API response, if needed
       setAlternateUrls([...alternateUrls, `https://${newAlternateUrl}`]);
       setNewAlternateUrl("");
       toast.success("Alternate URL added successfully");
-
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to add alternate URL");
     } finally {
       setLoading(false);
     }
   };
+
   const handleRemoveAlternateUrl = async (url: string) => {
     try {
       setLoading(true);
@@ -162,7 +141,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   
   const checkDomainAvailability = async (domainName: string) => {
     if (!domainName) {
-      setDomainExists(null); // Clear previous state if input is empty
+      setDomainExists(null);
       return;
     }
 
@@ -171,21 +150,17 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
       setDomainExists(response.data.exists);
     } catch (error: any) {
       console.error("Error checking domain availability:", error);
-      setDomainExists(null); // Set to null in case of error
+      setDomainExists(null);
       toast.error(error.response?.data?.error || "Failed to check domain availability");
     }
   };
-  // Helper to render storeUrl for display
+
   const displayStoreUrl = typeof storeUrl === "string" || storeUrl === null
     ? storeUrl
     : storeUrl?.storeUrl || "";
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center mb-4">
-        <span className={`w-4 h-4 rounded-full mr-2 ${wsStatus === "Connected" ? "bg-green-500" : "bg-red-500"}`}></span>
-        <span>WebSocket {wsStatus}</span>
-      </div>
 
       {/* Store Settings Card */}
       <Card>
@@ -237,7 +212,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
             )}
           </Button>
         </CardContent>
-      </Card>... {/* Store URL Card */}
+      </Card>
+
+      {/* Store URL Card */}
       <Card>
         <CardHeader>
           <CardTitle>Store URL</CardTitle>
@@ -302,7 +279,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
                 value={newAlternateUrl}
                 onChange={(e) => {
                   setNewAlternateUrl(e.target.value);
-                  checkDomainAvailability(e.target.value); // Check domain availability on input change
+                  checkDomainAvailability(e.target.value);
                 }}
                 placeholder="Add Alternate URL"
               />
@@ -324,16 +301,10 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
                 <iframe
                   src={displayStoreUrl}
                   title="Store Preview"
-                  className="w-full h-full border-none"
-                  style={{
-                    transform: "scale(0.5)",
-                    transformOrigin: "top left",
-                    width: "200%",
-                    height: "200%",
-                    pointerEvents: "none",
-                  }}
+                  className="w-full h-full border-none scale-50 origin-top-left  pointer-events-none"
                   scrolling="no"
                 />
+
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   No store URL available for preview.
@@ -343,10 +314,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
           </div>
         </CardContent>
       </Card>
-
-      {notification && (
-        <div className="mt-4 p-2 bg-green-100 text-green-700">{notification}</div>
-      )}
     </div>
   );
 };
