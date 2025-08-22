@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { User, Session } from "../../../../types"; // Adjust import path
+import type { User, Session } from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
           const { email, password } = await request.json();
 
           // Find the user by email
-          const user: User | null = await prisma.user.findUnique({
+          const user = await prisma.user.findUnique({
                where: { email },
           });
 
@@ -34,14 +34,12 @@ export async function POST(request: Request) {
           });
 
           // Create a session
-          const sessionData: Omit<Session, 'id' | 'createdAt' | 'updatedAt'> = {
+          const sessionData = {
                userId: userId,
                token,
                expiresAt: new Date(Date.now() + 60 * 60 * 1000),
           };
-          const session: Session = await prisma.session.create({
-               data: sessionData,
-          });
+         
 
           const userResponse: Pick<User, 'id' | 'email' | 'name'> = {
                id: user.id,
