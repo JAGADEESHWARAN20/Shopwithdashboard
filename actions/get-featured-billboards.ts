@@ -1,27 +1,27 @@
 import prismadb from "@/lib/prismadb";
-import { BillboardDTO } from "@/types";
+import { Billboard } from "@/types";
 
-export const getFeaturedBillboard = async (
-  storeId: string
-): Promise<BillboardDTO | null> => {
-  try {
-    const billboard = await prismadb.billboard.findFirst({
-      where: {
-        storeId,
-        isFeatured: true,
-      },
-    });
+export const getFeaturedBillboard = async (storeId: string): Promise<Billboard | any> => {
+     try {
+          const billboard = await prismadb.billboard.findFirst({
+               where: {
+                    storeId,
+                    isFeatured: true,
+               },
+          });
 
-    if (!billboard) return null;
+          if (!billboard) {
+               return null;
+          }
 
-    return {
-      id: billboard.id,
-      label: billboard.label,
-      imageUrl: billboard.imageUrl,
-      isFeatured: billboard.isFeatured ?? false,
-    };
-  } catch (error) {
-    console.error("[GET_FEATURED_BILLBOARD]", error);
-    return null;
-  }
+          return {
+               id: billboard.id,
+               label: billboard.label,
+               imageUrl: billboard.imageUrl,
+               isFeatured: billboard.isFeatured ?? false, // Or billboard.isFeatured, if optional type is used.
+          };
+     } catch (error) {
+          console.error("[GET_FEATURED_BILLBOARD]", error);
+          return null;
+     }
 };

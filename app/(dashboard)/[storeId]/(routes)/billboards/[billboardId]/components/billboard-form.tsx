@@ -26,7 +26,7 @@ import { Input } from '../../../../../../../components/ui/input';
 import { AlertModel } from "../../../../../../../components/modals/alert-model";
 
 import ImageUpload from "../../../../../../../components/ui/image-upload";
-import { BillboardDTO } from "@/types";
+import { Billboard } from '@/types/index';
 
 const formSchema = z.object({
   label: z.string().min(1),
@@ -38,7 +38,10 @@ const formSchema = z.object({
 type BillboardFormValues = z.infer<typeof formSchema>;
 
 interface BillboardFormProps {
-    initialData: BillboardDTO | null;
+  initialData: Billboard | async function name(params:type) {
+    
+  };
+
 }
 export const BillboardForm: React.FC<BillboardFormProps> = ({
   initialData
