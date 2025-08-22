@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  crossOrigin: 'anonymous',
+  crossOrigin: "anonymous",
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        pathname: '**',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "**",
       },
     ],
   },
@@ -15,7 +15,7 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: "https://kajol-ecommercestore-online.vercel.app" },
+          { key: "Access-Control-Allow-Origin", value: "*" }, // or restrict to prod domain
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
           { key: "Access-Control-Allow-Credentials", value: "true" },
