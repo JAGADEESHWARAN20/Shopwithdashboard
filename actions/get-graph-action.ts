@@ -35,40 +35,49 @@ export const fetchGraphData = async (
 
           const paidOrders = await prismadb.order.findMany({
                where: {
-                    storeId,
-                    isPaid: true,
-                    createdAt: {
-                         gte: startOfDayDate,
-                         lte: endOfDayDate,
-                    },
+               storeId,
+               isPaid: true,
+               createdAt: {
+                    gte: startOfDayDate,
+                    lte: endOfDayDate,
+               },
                },
                include: {
-                    orderItems: {
-                         include: {
-                              product: true,
-                         },
+               orderItems: {
+                    include: {
+                    product: true,
                     },
-               }, // Corrected: Added closing curly brace here
-          });
+               },
+               },
+               });
 
           // Initialize all dates in range with zero sales
           const dailyData: { [date: string]: number } = {};
-          eachDayOfInterval({ start: startOfDayDate, end: endOfDayDate }).forEach((date) => {
+               eachDayOfInterval({ start: startOfDayDate, end: endOfDayDate }).forEach((date) => {
                dailyData[format(date, "yyyy-MM-dd")] = 0;
-          });
+               });
 
-          paidOrders.forEach((order) => {
+               // Fixed forEach with explicit typing
+               paidOrders.forEach((order: {
+               createdAt: string | Date;
+               orderItems: {
+               product: {
+                    price: number;
+               };
+               }[];
+               }) => {
                const orderDate = new Date(order.createdAt);
                if (drillDownMonth !== undefined && orderDate.getMonth() !== drillDownMonth) {
-                    return; // Skip orders outside the specified month
+               return; // Skip orders outside the specified month
                }
 
                const dateKey = format(order.createdAt, "yyyy-MM-dd");
                const orderTotal = order.orderItems.reduce((sum, item) => sum + item.product.price, 0);
                dailyData[dateKey] += orderTotal;
-          });
+               });
 
-          return Object.entries(dailyData).map(([date, value]) => ({ date, value }));
+               return Object.entries(dailyData).map(([date, value]) => ({ date, value }));
+
      } catch (error) {
           console.error("Error fetching graph data:", error);
           return [];
