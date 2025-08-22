@@ -33,13 +33,7 @@ export async function POST(request: Request) {
                expiresIn: "1h",
           });
 
-          // Create a session
-          const sessionData = {
-               userId: userId,
-               token,
-               expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-          };
-         
+          
 
           const userResponse: Pick<User, 'id' | 'email' | 'name'> = {
                id: user.id,
