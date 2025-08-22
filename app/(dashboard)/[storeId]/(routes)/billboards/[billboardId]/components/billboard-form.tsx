@@ -26,7 +26,7 @@ import { Input } from '../../../../../../../components/ui/input';
 import { AlertModel } from "../../../../../../../components/modals/alert-model";
 
 import ImageUpload from "../../../../../../../components/ui/image-upload";
-import { Billboard } from '@prisma/client';
+import { BillboardDTO } from "@/types";
 
 const formSchema = z.object({
   label: z.string().min(1),
@@ -38,8 +38,7 @@ const formSchema = z.object({
 type BillboardFormValues = z.infer<typeof formSchema>;
 
 interface BillboardFormProps {
-  initialData: Billboard | null;
-
+    initialData: BillboardDTO | null;
 }
 export const BillboardForm: React.FC<BillboardFormProps> = ({
   initialData
