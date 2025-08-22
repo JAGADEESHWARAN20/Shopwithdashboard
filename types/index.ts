@@ -74,6 +74,16 @@ export interface Store {
   storeUrl?: string | null;
 }
 
+export interface StoreDTO {
+  id: string;
+  name: string;
+  storeUrl: string;
+  alternateUrls: string[];
+  isActive: boolean;
+  userId: string;
+}
+
+
 export interface Billboard {
   id: string;
   storeId: string;
