@@ -1,319 +1,189 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useState } from "react";
 import axios from "axios";
-import { toast } from "react-hot-toast";
-import { Label } from "@/components/ui/label";
+import { useParams, useRouter } from "next/navigation";
+import { Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-
-// Define the StoreUrl type
-interface StoreUrl {
-  storeUrl: string;
-  statusactive: boolean;
-  userId: string;
-}
 
 interface SettingsFormProps {
   initialData: {
     name: string;
     isActive: boolean;
-    storeUrl: string | null | StoreUrl;
+    storeUrl: string | null;
     alternateUrls: string[];
+    logoUrl?: string | null;
   };
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
-  const { userId } = useAuth();
   const params = useParams();
   const router = useRouter();
 
   const [name, setName] = useState(initialData.name);
   const [isActive, setIsActive] = useState(initialData.isActive);
-  const [storeUrl, setStoreUrl] = useState<StoreUrl | string | null>(
-    typeof initialData.storeUrl === "string" || initialData.storeUrl === null
-      ? initialData.storeUrl
-      : initialData.storeUrl
+  const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || "");
+  const [alternateUrls, setAlternateUrls] = useState(
+    initialData.alternateUrls || []
   );
-  const [alternateUrls, setAlternateUrls] = useState<string[]>(initialData.alternateUrls || []);
-  const [newAlternateUrl, setNewAlternateUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(
+    initialData.logoUrl || null
+  );
+
+  const [showPreview, setShowPreview] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [domainExists, setDomainExists] = useState<boolean | null>(null);
 
-  const checkDomainStatus = useCallback(async (subdomain: string) => {
-      try {
-        const response = await axios.get(`/api/stores/${params.storeId}/${subdomain}`);
-        setIsActive(response.data.domainStatus);
-      } catch (error) {
-        console.error("Error checking domain status:", error);
-        setIsActive(false);
+  const displayStoreUrl = storeUrl || alternateUrls[0] || "";
+
+  // 🔥 Upload Logo
+  const handleUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "YOUR_UPLOAD_PRESET"); // 🔥 replace
+    formData.append("cloud_name", "YOUR_CLOUD_NAME"); // 🔥 replace
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload",
+      {
+        method: "POST",
+        body: formData,
       }
-    }, [params.storeId]);
+    );
 
-  useEffect(() => {
-    if (name) {
-      checkDomainStatus(name.replace(/\s+/g, "-").toLowerCase());
-    }
-  }, [name, checkDomainStatus]);
+    const data = await res.json();
+    setLogoUrl(data.secure_url);
+  };
 
+  // 🔥 Submit
   const onSubmit = async () => {
     try {
       setLoading(true);
+
       await axios.patch(`/api/stores/${params.storeId}`, {
         name,
         isActive,
         storeUrl,
         alternateUrls,
-        userId,
+        logoUrl,
       });
-      toast.success("Store updated successfully");
-      setStoreUrl(storeUrl);
+
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update store");
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleAddAlternateUrl = async () => {
-    if (!newAlternateUrl) {
-      toast.error("Please enter a valid URL");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await axios.post(`/api/stores/${params.storeId}/add-domain`, {
-        storeId: params.storeId,
-        userId: userId,
-        domainToAdd: newAlternateUrl,
-      });
-      setAlternateUrls([...alternateUrls, `https://${newAlternateUrl}`]);
-      setNewAlternateUrl("");
-      toast.success("Alternate URL added successfully");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to add alternate URL");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveAlternateUrl = async (url: string) => {
-    try {
-      setLoading(true);
-      const domainToRemove = url.replace("https://", "");
-      await axios.delete(`/api/stores/remove-domain`, {
-        data: {
-          storeId: params.storeId,
-          userId: userId,
-          domainToRemove: domainToRemove,
-        },
-      });
-
-      setAlternateUrls((prevUrls) => {
-        const updatedUrls = prevUrls.filter((u) => u !== url);
-        if (updatedUrls.length === 0) {
-          toast.error("You have no alternate URLs");
-        }
-        return updatedUrls;
-      });
-
-      toast.success("Alternate URL removed successfully");
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to remove alternate URL");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const checkDomainAvailability = async (domainName: string) => {
-    if (!domainName) {
-      setDomainExists(null);
-      return;
-    }
-
-    try {
-      const response = await axios.get(`/api/check-domain?domainName=${domainName}`);
-      setDomainExists(response.data.exists);
-    } catch (error: any) {
-      console.error("Error checking domain availability:", error);
-      setDomainExists(null);
-      toast.error(error.response?.data?.error || "Failed to check domain availability");
-    }
-  };
-
-  const displayStoreUrl = typeof storeUrl === "string" || storeUrl === null
-    ? storeUrl
-    : storeUrl?.storeUrl || "";
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-8 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-xl">
 
-      {/* Store Settings Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Store Settings</CardTitle>
-          <CardDescription>Update your store name and status.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="store-name">Store Name</Label>
-            <Input
-              id="store-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (e.target.value) {
-                  checkDomainStatus(e.target.value.replace(/\s+/g, '-').toLowerCase());
-                }
-              }}
-              placeholder="Enter store name"
-            />
-            {isActive && (
-              <p className={`mt-2 ${isActive === true ? "text-green-500" : "text-red-500"}`}>
-                Domain status: {String(isActive)}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is-active"
-              checked={isActive}
-              onCheckedChange={(checked: boolean) => setIsActive(checked)}
-            />
-            <Label htmlFor="is-active">Active</Label>
-          </div>
-          <Button onClick={onSubmit} disabled={loading}>
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 mr-2"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                </svg>
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+      {/* 🔹 Store Name */}
+      <div className="space-y-2">
+        <Label>Store Name</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
 
-      {/* Store URL Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Store URL</CardTitle>
-          <CardDescription>View and manage your store URL.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">Primary Store URL</h3>
-            <Label>URL</Label>
-            <Input
-              value={typeof storeUrl === "string" ? storeUrl : storeUrl?.storeUrl || ""}
-              onChange={(e) => {
-                if (typeof storeUrl === "string" || storeUrl === null) {
-                  setStoreUrl(e.target.value);
-                } else {
-                  setStoreUrl({ ...storeUrl, storeUrl: e.target.value });
-                }
-              }}
-              placeholder="Enter store URL"
-            />
-            {typeof storeUrl === "object" && storeUrl !== null && (
-              <>
-                <Label className="mt-2">URL Active</Label>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={storeUrl.statusactive}
-                    onCheckedChange={(checked: boolean) =>
-                      setStoreUrl({ ...storeUrl, statusactive: checked })
-                    }
-                  />
-                  <Label>Active</Label>
-                </div>
-                <p className="mt-2 text-sm text-gray-600">
-                  Associated User ID: {storeUrl.userId}
-                </p>
-              </>
-            )}
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Alternate URLs</h3>
-            {alternateUrls.length > 0 ? (
-              <ul className="list-disc pl-5 mt-1 text-sm text-gray-600">
-                {alternateUrls.map((url) => (
-                  <li key={url} className="flex items-center">
-                    {url}
-                    <Button
-                      variant="link"
-                      className="text-red-500 ml-2"
-                      onClick={() => handleRemoveAlternateUrl(url)}
-                      disabled={loading}
-                    >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-gray-600">No alternate URLs found.</p>
-            )}
-            <div className="flex items-center space-x-2 mt-2">
-              <Input
-                value={newAlternateUrl}
-                onChange={(e) => {
-                  setNewAlternateUrl(e.target.value);
-                  checkDomainAvailability(e.target.value);
-                }}
-                placeholder="Add Alternate URL"
+      {/* 🔹 Active Toggle */}
+      <div className="flex items-center justify-between">
+        <Label>Store Active</Label>
+        <Switch checked={isActive} onCheckedChange={setIsActive} />
+      </div>
+
+      {/* 🔹 Logo Upload */}
+      <div className="space-y-3">
+        <Label>Store Logo</Label>
+
+        <div className="flex items-center gap-4">
+
+          {/* Preview */}
+          <div className="w-20 h-20 rounded-xl border border-white/10 bg-black/20 flex items-center justify-center overflow-hidden">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="logo"
+                className="object-cover w-full h-full"
               />
-              {domainExists === true && (
-                <span className="text-red-500">Domain already exists!</span>
-              )}
-              {domainExists === false && (
-                <span className="text-green-500">Domain is available!</span>
-              )}
-              <Button onClick={handleAddAlternateUrl} disabled={loading}>
-                Add
-              </Button>
-            </div>
+            ) : (
+              <span className="text-xs text-gray-400">No Logo</span>
+            )}
           </div>
-          <div className="space-y-2">
-            <Label>Store Preview</Label>
-            <div className="relative w-full h-64 border rounded-md overflow-hidden">
-              {displayStoreUrl ? (
-                <iframe
-                  src={displayStoreUrl}
-                  title="Store Preview"
-                  className="w-full h-full border-none scale-50 origin-top-left  pointer-events-none"
-                  scrolling="no"
-                />
 
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  No store URL available for preview.
-                </div>
-              )}
-            </div>
+          {/* Upload Button */}
+          <label className="cursor-pointer px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-white border border-white/10 transition">
+            Upload Logo
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleUpload(file);
+              }}
+            />
+          </label>
+
+          {/* Remove */}
+          {logoUrl && (
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={() => setLogoUrl(null)}
+            >
+              <Trash size={16} />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 🔹 Store URL */}
+      <div className="space-y-2">
+        <Label>Store URL</Label>
+        <Input
+          value={storeUrl}
+          onChange={(e) => setStoreUrl(e.target.value)}
+        />
+      </div>
+
+      {/* 🔹 Preview Toggle */}
+      <div className="space-y-3">
+        <Label>Preview Site</Label>
+
+        <div className="flex items-center gap-3">
+          <Switch checked={showPreview} onCheckedChange={setShowPreview} />
+          <span className="text-sm text-gray-300">
+            {showPreview ? "Preview Enabled" : "Preview Disabled"}
+          </span>
+        </div>
+
+        {showPreview && (
+          <div className="relative w-full h-64 rounded-xl overflow-hidden border border-white/10 bg-black">
+            {displayStoreUrl ? (
+              <iframe
+                src={displayStoreUrl}
+                className="w-full h-full border-none scale-50 origin-top-left pointer-events-none"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                No preview available
+              </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* 🔹 Submit */}
+      <Button
+        disabled={loading}
+        onClick={onSubmit}
+        className="w-full bg-white text-black hover:bg-gray-200"
+      >
+        Save Changes
+      </Button>
     </div>
   );
 };

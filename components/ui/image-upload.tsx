@@ -1,61 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CldUploadWidget } from "next-cloudinary";
+import {
+    CldUploadWidget,
+    type CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 
 interface ImageUploadProps {
     disabled?: boolean;
+    value?: string;
     onChange: (value: string) => void;
-    onRemove: (value: string) => void;
-    value: string[];
+    onRemove: () => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ disabled, onChange, onRemove, value }) => {
-    const [isMounted, setIsMounted] = useState(false);
+const ImageUpload: React.FC<ImageUploadProps> = ({
+    disabled,
+    value,
+    onChange,
+    onRemove,
+}) => {
+    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    useEffect(() => setMounted(true), []);
+    if (!mounted) return null;
 
-    const onUpload = (result: any) => {
-        onChange(result.info.secure_url);
+    const handleUpload = (result: CloudinaryUploadWidgetResults) => {
+        const info = result?.info;
+
+        if (typeof info === "object" && info && "secure_url" in info) {
+            onChange(info.secure_url as string);
+        }
     };
 
-    if (!isMounted) {
-        return null;
-    }
-
     return (
-        <div className="flex flex-col items-start justify-start space-y-5">
-            <div className="flex flex-row space-x-3 w-full">
-                {value.map((url) => (
-                    <div key={url} className="relative w-[400px] h-[400px] rounded-md overflow-hidden">
-                        <div className="z-10 absolute top-2 right-2">
-                            <Button type="button" onClick={() => onRemove(url)} variant="destructive" size="icon">
-                                <Trash className="h-4 w-4" />
-                            </Button>
-                        </div>
+        <div className="space-y-4">
+            {value && (
+                <div className="relative w-40 h-40 rounded-md overflow-hidden border">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 z-10"
+                        onClick={onRemove}
+                        disabled={disabled}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
 
-                        <Image fill src={url} className="object-cover" alt="Uploaded image" />
-                    </div>
-                ))}
-            </div>
-            <CldUploadWidget onUpload={onUpload} uploadPreset="tudfiosw">
+                    <Image src={value} alt="image" fill className="object-cover" />
+                </div>
+            )}
+
+            <CldUploadWidget uploadPreset="tudfiosw" onSuccess={handleUpload}>
                 {({ open }) => (
                     <Button
                         type="button"
                         variant="secondary"
                         disabled={disabled}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            open();
-                        }}
+                        onClick={() => open()}
                     >
                         <ImagePlus className="h-4 w-4 mr-2" />
-                        Upload an Image
+                        Upload Image
                     </Button>
                 )}
             </CldUploadWidget>

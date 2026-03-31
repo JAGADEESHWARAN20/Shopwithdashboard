@@ -29,9 +29,12 @@ const SettingsPage: React.FC<SettingsPageProps> = async ({ params }) => {
 
     // Ensure storeUrl is a string (or StoreUrl) by providing a fallback if null
     const initialData = {
-        ...store,
-        storeUrl: store.storeUrl || "", // Fallback to empty string if null
-    };
+        name: store.name,
+        isActive: store.isActive,
+        storeUrl: store.storeUrl || "",
+        alternateUrls: store.alternateUrls || [],
+        logoUrl: store.logoUrl || null, // ✅ FIX
+        };
 
     return (
         <div className="flex-col">

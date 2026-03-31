@@ -88,6 +88,7 @@ model Store {
   razorpayWebhookId String?
   alternateUrls   String[]    @default([])
   storeUrl        String?
+  logoUrl         String?
 
   @@index([userId])
 }

@@ -25,58 +25,48 @@ export async function GET(
     }
 };
 
-
 export async function PATCH(
-    req: Request,
-    { params }: { params: { storeId: string, billboardId: string } }
+  req: Request,
+  { params }: { params: { storeId: string, billboardId: string } }
 ) {
-    try {
-        const { userId } = auth();
-        const body = await req.json();
-        const { label, imageUrl } = body;
+  try {
+    const { userId } = auth();
+    const body = await req.json();
 
-        if (!userId) {
-            return new NextResponse("Unauthoricated", { status: 401 });
-        }
+    // 1. Ensure imageUrl is extracted from the body
+    const { label, imageUrl } = body;
 
-        if (!label) {
-            return new NextResponse("Label is required", { status: 400 })
-        }
-        if (!imageUrl) {
-            return new NextResponse("image URL is required", { status: 400 })
-        }
+    if (!userId) return new NextResponse("Unauthenticated", { status: 403 });
+    if (!label) return new NextResponse("Label is required", { status: 400 });
+    
+    // 2. Validate imageUrl
+    if (!imageUrl) return new NextResponse("Image URL is required", { status: 400 });
 
-        if (!params.billboardId) {
-            return new NextResponse("Billboard id is Required", { status: 400 })
-        }
-        const storeByUserId = await prismadb.store.findFirst({
-            where: {
-                id: params.storeId,
-                userId
-            }
-        });
+    if (!params.billboardId) return new NextResponse("Billboard id is required", { status: 400 });
 
-        if (!storeByUserId) {
-            return new NextResponse("Unauthorized", { status: 403 })
-        }
+    const storeByUserId = await prismadb.store.findFirst({
+      where: { id: params.storeId, userId }
+    });
 
-        const billboard = await prismadb.billboard.updateMany({
-            where: {
-                id: params.billboardId,
-            },
-            data: {
-                label,
-                imageUrl
-            }
-        });
+    if (!storeByUserId) return new NextResponse("Unauthorized", { status: 405 });
 
-        return NextResponse.json(billboard);
+    // 3. Ensure imageUrl is passed to the database update
+    const billboard = await prismadb.billboard.update({
+      where: {
+        id: params.billboardId,
+      },
+      data: {
+        label,
+        imageUrl // <--- THIS WAS LIKELY MISSING
+      }
+    });
 
-    } catch (error) {
-        console.log('[BILLBOARD_PATCH]', error);
-        return new NextResponse('Internal error', { status: 500 });
-    }
-};
+    return NextResponse.json(billboard);
+  } catch (error) {
+    console.log('[BILLBOARD_PATCH]', error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+}
 
 
 
