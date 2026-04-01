@@ -14,6 +14,7 @@ interface ImageUploadProps {
     value?: string;
     onChange: (value: string) => void;
     onRemove: () => void;
+    folder?: string; // ✅ NEW
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -21,6 +22,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     value,
     onChange,
     onRemove,
+    folder,
 }) => {
     const [mounted, setMounted] = useState(false);
 
@@ -29,10 +31,20 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     const handleUpload = (result: CloudinaryUploadWidgetResults) => {
         const info = result?.info;
+        if (!info) return;
 
-        if (typeof info === "object" && info && "secure_url" in info) {
-            onChange(info.secure_url as string);
+        if (typeof info === "string") {
+            if (info.startsWith("http")) onChange(info);
+            return;
         }
+
+        const url =
+            "secure_url" in info && info.secure_url
+                ? info.secure_url
+                : "url" in info && info.url
+                    ? info.url
+                    : undefined;
+        if (url) onChange(url);
     };
 
     return (
@@ -50,11 +62,25 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         <Trash className="h-4 w-4" />
                     </Button>
 
-                    <Image src={value} alt="image" fill className="object-cover" />
+                    <Image
+                        src={value}
+                        alt="Upload preview"
+                        fill
+                        className="object-cover"
+                        sizes="160px"
+                    />
                 </div>
             )}
 
-            <CldUploadWidget uploadPreset="tudfiosw" onSuccess={handleUpload}>
+                <CldUploadWidget
+                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tudfiosw"}
+                onSuccess={handleUpload}
+                options={{
+                    maxFiles: 1,
+                    resourceType: "image",
+                    folder: folder || "default", // ✅ dynamic
+                }}
+                >
                 {({ open }) => (
                     <Button
                         type="button"

@@ -168,8 +168,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AlertModel } from "@/components/modals/alert-model";
 
-// Import the new VideoUpload component
-import VideoUpload from "@/components/ui/video-upload"; 
+import ImageUpload from "@/components/ui/image-upload"; 
 
 const formSchema = z.object({
   label: z.string().min(1),
@@ -264,9 +263,9 @@ export const BillboardForm: React.FC<BillboardFormProps> = ({
             name="imageUrl" // We keep this name so the API receives it correctly
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Background Video</FormLabel>
+                <FormLabel>Background Image</FormLabel>
                 <FormControl>
-                  <VideoUpload 
+                  <ImageUpload 
                     value={field.value} 
                     disabled={loading} 
                     onChange={(url) => field.onChange(url)} 

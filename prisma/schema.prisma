@@ -82,6 +82,7 @@ model Store {
   colors          Color[]     @relation("StoreToColor")
   products        Product[]   @relation("StoreToProduct")
   orders          Order[]     @relation("StoreToOrder")
+  designCollections DesignCollection[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   isActive        Boolean     @default(true)
@@ -91,6 +92,42 @@ model Store {
   logoUrl         String?
 
   @@index([userId])
+}
+
+model DesignCollection {
+  id          String        @id @default(uuid()) @map("_id")
+  storeId     String
+  store       Store         @relation(fields: [storeId], references: [id])
+
+  label       String        // "Lehanga", "Blouse", etc
+  coverImage  String        // homepage thumbnail
+  slug        String        @unique // for routing (lehanga, blouse, etc)
+
+  isFeatured  Boolean       @default(false)
+
+  designs     DesignItem[]  @relation("CollectionToDesign")
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([storeId])
+}
+
+model DesignItem {
+  id            String           @id @default(uuid()) @map("_id")
+  collectionId  String
+  collection    DesignCollection @relation("CollectionToDesign", fields: [collectionId], references: [id], onDelete: Cascade)
+
+  title         String           // "Back Neck Style 1"
+  imageUrl      String           // design image
+  description   String?
+
+  tags          String[]         @default([]) // optional filtering (neck, sleeve, etc)
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([collectionId])
 }
 
 model Billboard {

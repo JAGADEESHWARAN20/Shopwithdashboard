@@ -24,20 +24,20 @@ import {
 } from "@/components/ui/table"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[],
-  SearchKey: string,
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  searchKey: keyof TData;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  SearchKey,
+  searchKey,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
   )
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -62,9 +62,9 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center">
           <Input
             placeholder="Search"
-            value={(table.getColumn(SearchKey)?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn(searchKey as string)?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn(SearchKey)?.setFilterValue(event.target.value)
+              table.getColumn(searchKey as string)?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
