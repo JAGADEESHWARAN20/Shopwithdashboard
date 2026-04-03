@@ -4,7 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import { Trash } from "lucide-react";
-
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,11 +104,14 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
           {/* Preview */}
           <div className="w-20 h-20 rounded-xl border border-white/10 bg-black/20 flex items-center justify-center overflow-hidden">
             {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="logo"
-                className="object-cover w-full h-full"
-              />
+              <div className="relative w-20 h-20 rounded-xl border border-white/10 bg-black/20 overflow-hidden">
+                  <Image
+                    src={logoUrl}
+                    alt="logo"
+                    fill
+                    className="object-cover"
+                  />
+             </div>
             ) : (
               <span className="text-xs text-gray-400">No Logo</span>
             )}
