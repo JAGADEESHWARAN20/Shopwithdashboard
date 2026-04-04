@@ -25,6 +25,6 @@ export async function PATCH(req: Request, { params }: { params: { collectionId: 
   return setCors(NextResponse.json(updated));
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(req: Request) {
   return setCors(new NextResponse(null, { status: 204 }));
 }

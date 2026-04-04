@@ -1,7 +1,7 @@
 export const setCorsHeaders = (res: Response) => {
      const allowedOrigins = [
           'https://nwtailormadestudio.vercel.app',
-          'https://nwtailormadestudioadmin.vercel.app', // Add the admin dashboard origin here
+
      ];
 
      const origin = res.headers.get('Origin') || '';  // Get the Origin header from the request
