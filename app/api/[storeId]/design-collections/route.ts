@@ -23,7 +23,7 @@ export async function GET(_: Request, { params }: any) {
         storeId: params.storeId,
       },
       include: {
-        designs: true, // ✅ FIXED
+        designs: true, 
       },
       orderBy: {
         createdAt: "desc",

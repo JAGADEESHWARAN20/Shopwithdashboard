@@ -8,9 +8,17 @@ export async function GET(_: Request, { params }: any) {
 
   const response = NextResponse.json(count);
   
-  // Add these lines to fix the "Fetch failed" errors in the browser
   response.headers.set("Access-Control-Allow-Origin", "*"); 
   response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   
+  return response;
+}
+
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 204 });
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   return response;
 }

@@ -5,19 +5,37 @@ import prismadb from "@/lib/prismadb";
 // Define allowed origins for CORS
 const allowedOrigins = [
     "http://localhost:3000",
-    "http://localhost:3002", // Add your local dev frontend port
-    "https://ecommercestore-online.vercel.app",
-    "https://kajol-ecommercestore-online.vercel.app", // Replace with your production frontend domain
-];
-
-const getCorsHeaders = (origin: string | null): Record<string, string> => {
-    const corsOrigin = origin && allowedOrigins.includes(origin) ? origin : "";
-    return {
-        "Access-Control-Allow-Origin": corsOrigin,
+    "http://localhost:3001",
+    "http://localhost:3002",
+  
+    "https://nwtailormadestudioadmin.vercel.app",
+    "https://nwtailormadestudio.vercel.app", // ✅ ADD THIS
+  ];
+  const getCorsHeaders = (origin: string | null): Record<string, string> => {
+    if (!origin) {
+      return {
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      };
+    }
+  
+    if (allowedOrigins.includes(origin)) {
+      return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      };
+    }
+  
+    console.warn("Blocked CORS origin:", origin);
+  
+    return {
+      "Access-Control-Allow-Origin": origin, // 👈 TEMP allow for debugging
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
-};
+  };
 
 export async function OPTIONS(req: Request): Promise<NextResponse> {
     const origin = req.headers.get("origin");
