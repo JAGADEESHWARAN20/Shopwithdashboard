@@ -5,8 +5,8 @@ import prismadb from "@/lib/prismadb";
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3002",
-    "https://ecommercestore-online.vercel.app",
-    "https://kajol-ecommercestore-online.vercel.app",
+    "https://nwtailormadestudio.vercel.app",
+    "https://nwtailormadestudioadmin.vercel.app",
 ];
 
 const getCorsHeaders = (origin: string | null): Record<string, string> => {

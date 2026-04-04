@@ -4,12 +4,11 @@ import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 import { NextResponse } from "next/server";
 
 export async function OPTIONS(req: Request) {
-  return new NextResponse(null, {
-    status: 204,
-    headers: getCorsHeaders(req.headers.get("origin")),
-  });
-}
-
+    return new Response(null, {
+      status: 204,
+      headers: getCorsHeaders(req.headers.get("origin")),
+    });
+  }
 export async function GET(req: Request, { params }: { params: { storeId: string } }) {
   const origin = req.headers.get("origin");
 

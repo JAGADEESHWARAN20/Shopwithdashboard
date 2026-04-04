@@ -4,7 +4,7 @@
 const prismadb = require('@/lib/prismadb'); // Adjust the path as needed
 
 module.exports = {
-     siteUrl: process.env.SITE_URL || 'https://admindashboardecom.vercel.app/',
+     siteUrl: process.env.SITE_URL || 'https://nwtailormadestudioadmin.vercel.app/',
      generateRobotsTxt: true,
      exclude: ['/api/*', '/server-sitemap.xml'],
      transform: async (config, path) => {

@@ -92,7 +92,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
           let newStoreUrl = store.storeUrl;
 
           // Validate domains
-          if (domainToAdd && !domainToAdd.endsWith("ecommercestore-online.vercel.app")) {
+          if (domainToAdd && !domainToAdd.endsWith("nwtailormadestudio.vercel.app")) {
                return NextResponse.json({ error: "Invalid domain to add" }, { status: 400 });
           }
 
@@ -142,7 +142,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { storeId: 
           let newStoreUrl = store.storeUrl;
 
           // Validate domains
-          if (domainToRemove && !domainToRemove.endsWith("ecommercestore-online.vercel.app")) {
+          if (domainToRemove && !domainToRemove.endsWith("nwtailormadestudio.vercel.app")) {
                return NextResponse.json({ error: "Invalid domain to remove" }, { status: 400 });
           }
 

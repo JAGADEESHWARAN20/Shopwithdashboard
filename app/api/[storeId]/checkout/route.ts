@@ -3,7 +3,7 @@ import { razorpay } from "@/lib/razorpay";
 import prismadb from "@/lib/prismadb";
 
 const corsHeaders = {
-     "Access-Control-Allow-Origin": "https://ecommercestore-online.vercel.app",
+     "Access-Control-Allow-Origin": "https://nwtailormadestudio.vercel.app",
      "Access-Control-Allow-Methods": "POST,GET,PUT,DELETE,OPTIONS",
      "Access-Control-Allow-Headers": "Content-Type, Authorization",
      "Access-Control-Allow-Credentials": "true"

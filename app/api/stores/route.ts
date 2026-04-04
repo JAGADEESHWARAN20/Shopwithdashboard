@@ -239,8 +239,8 @@ export async function POST(req: NextRequest) {
         return new NextResponse("Invalid storeUrl format", { status: 400 });
       }
 
-      if (!storeUrl.endsWith("ecommercestore-online.vercel.app")) {
-        return new NextResponse("Store URL must end with ecommercestore-online.vercel.app", { status: 400 });
+      if (!storeUrl.endsWith("nwtailormadestudio.vercel.app")) {
+        return new NextResponse("Store URL must end with nwtailormadestudio.vercel.app", { status: 400 });
       }
 
       const domainName = storeUrl.replace(/^https?:\/\//, '').split('/')[0];
