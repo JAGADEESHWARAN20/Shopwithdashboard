@@ -1,100 +1,60 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
+import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
+import { NextResponse } from "next/server";
 
-// Define allowed origins for CORS
-const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-  
-    "https://nwtailormadestudioadmin.vercel.app",
-    "https://nwtailormadestudio.vercel.app", // ✅ ADD THIS
-  ];
-  const getCorsHeaders = (origin: string | null): Record<string, string> => {
-    if (!origin) {
-      return {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      };
-    }
-  
-    if (allowedOrigins.includes(origin)) {
-      return {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      };
-    }
-  
-    console.warn("Blocked CORS origin:", origin);
-  
-    return {
-      "Access-Control-Allow-Origin": origin, // 👈 TEMP allow for debugging
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
-  };
+export async function OPTIONS(req: Request) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(req.headers.get("origin")),
+  });
+}
 
-export async function OPTIONS(req: Request): Promise<NextResponse> {
-    const origin = req.headers.get("origin");
-    return new NextResponse(null, {
-        status: 204,
-        headers: getCorsHeaders(origin),
+export async function GET(req: Request, { params }: { params: { storeId: string } }) {
+  const origin = req.headers.get("origin");
+
+  try {
+    if (!params.storeId) {
+      return errorResponse("Store ID required", origin, 400);
+    }
+
+    const categories = await prismadb.category.findMany({
+      where: { storeId: params.storeId },
     });
+
+    return corsResponse(categories, origin);
+  } catch (err) {
+    console.error("[CATEGORIES_GET]", err);
+    return errorResponse("Internal error", origin);
+  }
 }
 
-export async function POST(
-    req: Request,
-    { params }: { params: { storeId: string } }
-): Promise<NextResponse> {
-    try {
-        const origin = req.headers.get("origin");
-        const { userId } = auth();
-        const body = await req.json();
-        const { name, billboardId } = body;
+export async function POST(req: Request, { params }: { params: { storeId: string } }) {
+  const origin = req.headers.get("origin");
 
-        if (!userId) return new NextResponse("Unauthorized", { status: 401, headers: getCorsHeaders(origin) });
-        if (!name) return new NextResponse("Name is required", { status: 400, headers: getCorsHeaders(origin) });
-        if (!billboardId) return new NextResponse("Billboard Id is required", { status: 400, headers: getCorsHeaders(origin) });
-        if (!params.storeId) return new NextResponse("Store ID is required", { status: 400, headers: getCorsHeaders(origin) });
+  try {
+    const { userId } = auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
 
-        const storeByUserId = await prismadb.store.findFirst({
-            where: { id: params.storeId, userId },
-        });
+    const { name, billboardId } = await req.json();
 
-        if (!storeByUserId) return new NextResponse("Unauthorized", { status: 403, headers: getCorsHeaders(origin) });
-
-        const category = await prismadb.category.create({
-            data: { name, billboardId, storeId: params.storeId },
-        });
-
-        return NextResponse.json(category, { headers: getCorsHeaders(origin) });
-    } catch (error) {
-        console.error("[CATEGORIES_POST]", error);
-        return new NextResponse("Internal error", { status: 500, headers: getCorsHeaders(origin) });
+    if (!name || !billboardId) {
+      return errorResponse("Missing fields", origin, 400);
     }
-}
 
-export async function GET(
-    req: Request,
-    { params }: { params: { storeId: string } }
-): Promise<NextResponse> {
-    try {
-        const origin = req.headers.get("origin");
+    const store = await prismadb.store.findFirst({
+      where: { id: params.storeId, userId },
+    });
 
-        if (!params.storeId) {
-            return new NextResponse("Store ID is required", { status: 400, headers: getCorsHeaders(origin) });
-        }
+    if (!store) return errorResponse("Unauthorized", origin, 403);
 
-        const categories = await prismadb.category.findMany({
-            where: { storeId: params.storeId },
-        });
+    const category = await prismadb.category.create({
+      data: { name, billboardId, storeId: params.storeId },
+    });
 
-        return NextResponse.json(categories, { headers: getCorsHeaders(origin) });
-    } catch (error) {
-        console.error("[CATEGORIES_GET]", error);
-        return new NextResponse("Internal error", { status: 500, headers: getCorsHeaders(origin) });
-    }
+    return corsResponse(category, origin);
+  } catch (err) {
+    console.error("[CATEGORIES_POST]", err);
+    return errorResponse("Internal error", origin);
+  }
 }
