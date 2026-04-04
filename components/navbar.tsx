@@ -1,8 +1,8 @@
 "use client";
 
-import { UserButton, useAuth } from "@clerk/nextjs";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
+// import { usePathname, useRouter } from "next/navigation";
+// import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { MainNav } from "./mainNav";
@@ -14,9 +14,9 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ store, stores }) => {
-    const { userId } = useAuth();
-    const pathname = usePathname();
-    const router = useRouter();
+    // const { userId } = useAuth();
+    // const pathname = usePathname();
+    // const router = useRouter();
 
     return (
         <div className="border-b">

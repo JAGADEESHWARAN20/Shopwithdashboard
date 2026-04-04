@@ -1,22 +1,38 @@
 import prismadb from "@/lib/prismadb";
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
-
-export async function POST(req: Request, { params }: any) {
-  const body = await req.json();
-
-  const collection = await prismadb.designCollection.create({
-    data: {
-      ...body,
-      storeId: params.storeId
-    }
+// Handle Preflight OPTIONS request
+export async function OPTIONS(req: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: getCorsHeaders(req.headers.get("origin")),
   });
-
-  return NextResponse.json(collection);
 }
 
+export async function POST(req: NextRequest, { params }: { params: { storeId: string } }) {
+  const origin = req.headers.get("origin");
 
-export async function GET(_: Request, { params }: any) {
+  try {
+    const body = await req.json();
+
+    const collection = await prismadb.designCollection.create({
+      data: {
+        ...body,
+        storeId: params.storeId
+      }
+    });
+
+    return corsResponse(collection, origin);
+  } catch (error) {
+    console.error("[COLLECTIONS_POST]", error);
+    return errorResponse("Internal error", origin);
+  }
+}
+
+export async function GET(req: NextRequest, { params }: { params: { storeId: string } }) {
+  const origin = req.headers.get("origin");
+
   try {
     const collections = await prismadb.designCollection.findMany({
       where: {
@@ -30,9 +46,9 @@ export async function GET(_: Request, { params }: any) {
       },
     });
 
-    return NextResponse.json(collections);
+    return corsResponse(collections, origin);
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    return errorResponse("Internal error", origin);
   }
 }
