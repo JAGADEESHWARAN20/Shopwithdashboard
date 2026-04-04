@@ -1,16 +1,33 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
-import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
-// Handle Preflight OPTIONS request
+// ✅ Your frontend domain
+const ALLOWED_ORIGIN = "https://nwtailormadestudio.vercel.app";
+
+// ✅ CORS headers
+function corsHeaders(origin?: string | null) {
+  return {
+    "Access-Control-Allow-Origin": origin || ALLOWED_ORIGIN,
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+// ✅ Handle preflight request (VERY IMPORTANT)
 export async function OPTIONS(req: Request) {
+  const origin = req.headers.get("origin");
+
   return new Response(null, {
-    status: 204,
-    headers: getCorsHeaders(req.headers.get("origin")),
+    status: 200,
+    headers: corsHeaders(origin),
   });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { storeId: string } }) {
+// ✅ POST
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { storeId: string } }
+) {
   const origin = req.headers.get("origin");
 
   try {
@@ -19,18 +36,33 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
     const collection = await prismadb.designCollection.create({
       data: {
         ...body,
-        storeId: params.storeId
-      }
+        storeId: params.storeId,
+      },
     });
 
-    return corsResponse(collection, origin);
+    return new Response(JSON.stringify(collection), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders(origin),
+      },
+    });
+
   } catch (error) {
     console.error("[COLLECTIONS_POST]", error);
-    return errorResponse("Internal error", origin);
+
+    return new Response("Internal Server Error", {
+      status: 500,
+      headers: corsHeaders(origin),
+    });
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { storeId: string } }) {
+// ✅ GET
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { storeId: string } }
+) {
   const origin = req.headers.get("origin");
 
   try {
@@ -39,16 +71,27 @@ export async function GET(req: NextRequest, { params }: { params: { storeId: str
         storeId: params.storeId,
       },
       include: {
-        designs: true, 
+        designs: true,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return corsResponse(collections, origin);
+    return new Response(JSON.stringify(collections), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders(origin),
+      },
+    });
+
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
-    return errorResponse("Internal error", origin);
+
+    return new Response("Internal Server Error", {
+      status: 500,
+      headers: corsHeaders(origin),
+    });
   }
 }

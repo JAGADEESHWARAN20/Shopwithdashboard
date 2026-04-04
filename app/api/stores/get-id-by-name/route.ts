@@ -1,76 +1,173 @@
 // app/api/stores/get-id-by-name/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+import { NextRequest } from "next/server";
+import prismadb from "@/lib/prismadb";
 
-// CORS Configuration
-const allowedBaseDomains = ["nwtailormadestudio.vercel.app"];
-const allowedExactOrigins = ["http://localhost:3000", "https://nwtailormadestudio.vercel.app", "https://nwtailormadestudioadmin.vercel.app"];
+// ✅ Allowed origins
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://nwtailormadestudio.vercel.app",
+  "https://nwtailormadestudioadmin.vercel.app",
+];
 
-const getCorsHeaders = (origin: string | null) => {
-     const headers: Record<string, string> = {
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-     };
-
-     if (origin && (allowedExactOrigins.includes(origin) || allowedBaseDomains.some(domain => origin.endsWith(domain)))) {
-          headers["Access-Control-Allow-Origin"] = origin;
-     } else {
-          headers["Access-Control-Allow-Origin"] = allowedExactOrigins[0];
-     }
-
-     return headers;
-};
-
-// Handle OPTIONS Request
-export async function OPTIONS(request: NextRequest) {
-     return new NextResponse(null, {
-          status: 204,
-          headers: getCorsHeaders(request.headers.get("origin")),
-     });
+// ✅ CORS headers
+function corsHeaders(origin?: string | null) {
+  return {
+    "Access-Control-Allow-Origin":
+      origin && ALLOWED_ORIGINS.includes(origin)
+        ? origin
+        : ALLOWED_ORIGINS[1], // fallback to production frontend
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
 }
 
-// Fetch Store ID by Name
-async function fetchStoreId(name: string) {
-     return prisma.store.findFirst({
-          where: { name: { equals: name, mode: "insensitive" } },
-          select: { id: true },
-     });
+// ✅ Handle preflight (VERY IMPORTANT)
+export async function OPTIONS(req: Request) {
+  const origin = req.headers.get("origin");
+
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders(origin),
+  });
 }
 
-// Common Handler for GET and POST
-async function handleRequest(request: NextRequest, method: "GET" | "POST") {
-     const origin = request.headers.get("origin");
-     try {
-          const name = method === "GET"
-               ? new URL(request.url).searchParams.get("name")
-               : (await request.json()).name;
+// ✅ GET
+export async function GET(req: NextRequest) {
+  const origin = req.headers.get("origin");
 
-          if (!name || typeof name !== "string") {
-               return NextResponse.json({ error: "Invalid or missing 'name'" }, { status: 400, headers: getCorsHeaders(origin) });
-          }
+  try {
+    const { searchParams } = new URL(req.url);
+    const name = searchParams.get("name");
 
-          const store = await fetchStoreId(name);
-          if (!store) {
-               return NextResponse.json({ error: `No store found with name: ${name}` }, { status: 404, headers: getCorsHeaders(origin) });
-          }
+    if (!name) {
+      return new Response(
+        JSON.stringify({ error: "Missing 'name' query param" }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(origin),
+          },
+        }
+      );
+    }
 
-          return NextResponse.json({ storeId: store.id }, { status: 200, headers: getCorsHeaders(origin) });
-     } catch (error) {
-          console.error(`[ERROR] in /api/stores/get-id-by-name (${method}):`, error);
-          return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: getCorsHeaders(origin) });
-     } finally {
-          await prisma.$disconnect();
-     }
+    const store = await prismadb.store.findFirst({
+      where: {
+        name: {
+          equals: name,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!store) {
+      return new Response(
+        JSON.stringify({ error: `No store found with name: ${name}` }),
+        {
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(origin),
+          },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ storeId: store.id }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders(origin),
+      },
+    });
+
+  } catch (error) {
+    console.error("[STORE_ID_GET]", error);
+
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders(origin),
+        },
+      }
+    );
+  }
 }
 
-// GET Request Handler
-export async function GET(request: NextRequest) {
-     return handleRequest(request, "GET");
-}
+// ✅ POST
+export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
 
-// POST Request Handler
-export async function POST(request: NextRequest) {
-     return handleRequest(request, "POST");
+  try {
+    const body = await req.json();
+    const name = body?.name;
+
+    if (!name) {
+      return new Response(
+        JSON.stringify({ error: "Missing 'name' in body" }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(origin),
+          },
+        }
+      );
+    }
+
+    const store = await prismadb.store.findFirst({
+      where: {
+        name: {
+          equals: name,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!store) {
+      return new Response(
+        JSON.stringify({ error: `No store found with name: ${name}` }),
+        {
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(origin),
+          },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ storeId: store.id }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders(origin),
+      },
+    });
+
+  } catch (error) {
+    console.error("[STORE_ID_POST]", error);
+
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders(origin),
+        },
+      }
+    );
+  }
 }
