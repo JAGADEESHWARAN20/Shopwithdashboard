@@ -15,7 +15,7 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" }, // or restrict to prod domain
+          { key: "Access-Control-Allow-Origin", value: "https://nwtailormadestudio.vercel.app" }, // or restrict to prod domain
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
           { key: "Access-Control-Allow-Credentials", value: "true" },
