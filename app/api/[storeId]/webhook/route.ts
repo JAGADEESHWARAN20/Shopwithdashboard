@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import prismadb from "@/lib/prismadb";
@@ -25,8 +24,7 @@ export async function POST(req: Request, { params }: { params: { storeId: string
 
         // Get the raw body and headers for signature verification
         const body = await req.text();
-        const headersList = headers();
-        const razorpaySignature = headersList.get("x-razorpay-signature");
+        const razorpaySignature = req.headers.get("x-razorpay-signature");
 
         if (!razorpaySignature) {
             console.error("[WEBHOOK_ERROR] Missing Razorpay signature");
