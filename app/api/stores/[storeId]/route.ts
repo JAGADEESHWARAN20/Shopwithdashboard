@@ -6,17 +6,17 @@ import { getAuth } from "@clerk/nextjs/server";
 const ALLOWED = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",") || [];
 
 function corsHeaders(origin?: string | null) {
-  if (origin && ALLOWED.includes(origin)) {
-    return {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
-  }
-
-  return {
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
   };
+
+  if (origin && ALLOWED.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+    headers["Access-Control-Allow-Methods"] = "GET, PATCH, OPTIONS";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+  }
+
+  return headers;
 }
 
 // ✅ OPTIONS (VERY IMPORTANT for CORS)
