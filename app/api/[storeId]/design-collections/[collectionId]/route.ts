@@ -1,5 +1,6 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
 export async function OPTIONS(req: Request) {
@@ -9,14 +10,32 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-export async function GET(req: NextRequest, { params }: { params: { collectionId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { collectionId: string; storeId: string } }
+) {
   const origin = req.headers.get("origin");
+
   try {
-    const collection = await prismadb.designCollection.findUnique({
-      where: { id: params.collectionId },
-      include: { designs: true }
+    if (!params.collectionId || !params.storeId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const collection = await prismadb.designCollection.findFirst({
+      where: { id: params.collectionId, storeId: params.storeId },
+      include: {
+        designs: {
+          include: {
+            variations: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        },
+      },
     });
-    
+
     if (!collection) {
       return errorResponse("Collection not found", origin, 404);
     }
@@ -28,17 +47,79 @@ export async function GET(req: NextRequest, { params }: { params: { collectionId
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { collectionId: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { collectionId: string; storeId: string } }
+) {
   const origin = req.headers.get("origin");
+
   try {
-    const body = await req.json();
+    const { userId } = auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    if (!params.collectionId || !params.storeId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const { label, coverImage, slug, isFeatured } = await req.json();
+
+    if (!label || !coverImage || !slug) {
+      return errorResponse("label, coverImage and slug are required", origin, 400);
+    }
+
+    const store = await prismadb.store.findFirst({
+      where: { id: params.storeId, userId },
+    });
+
+    if (!store) return errorResponse("Unauthorized", origin, 403);
+
     const updated = await prismadb.designCollection.update({
       where: { id: params.collectionId },
-      data: body
+      data: {
+        label,
+        coverImage,
+        slug,
+        isFeatured: Boolean(isFeatured),
+      },
     });
+
     return corsResponse(updated, origin);
   } catch (error) {
     console.error("[COLLECTION_PATCH]", error);
+    return errorResponse("Internal error", origin);
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { collectionId: string; storeId: string } }
+) {
+  const origin = req.headers.get("origin");
+
+  try {
+    const { userId } = auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    if (!params.collectionId || !params.storeId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const store = await prismadb.store.findFirst({
+      where: { id: params.storeId, userId },
+    });
+
+    if (!store) return errorResponse("Unauthorized", origin, 403);
+
+    const deleted = await prismadb.designCollection.deleteMany({
+      where: {
+        id: params.collectionId,
+        storeId: params.storeId,
+      },
+    });
+
+    return corsResponse(deleted, origin);
+  } catch (error) {
+    console.error("[COLLECTION_DELETE]", error);
     return errorResponse("Internal error", origin);
   }
 }
