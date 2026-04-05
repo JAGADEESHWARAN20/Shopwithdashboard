@@ -66,6 +66,7 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       router.push(`/${params.storeId}/design-collections`);
       router.refresh();
       toast.success("Collection saved");
+
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -116,8 +117,8 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       <Heading
         title={initialData ? "Collection" : "Create Collection"}
         description={
-          initialData
-            ? "Manage collection and add relevant design items by label and image"
+          initialData            ? "Manage collection and add relevant design items by label and image"
+
             : "Create a collection first, then add designs"
         }
       />
