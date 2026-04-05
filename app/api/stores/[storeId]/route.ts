@@ -3,20 +3,19 @@ import prismadb from "@/lib/prismadb";
 import { getAuth } from "@clerk/nextjs/server";
 
 // ✅ Allowed origins (frontend + localhost)
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "https://nwtailormadestudio.vercel.app",
-];
+const ALLOWED = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",") || [];
 
-// ✅ CORS headers
 function corsHeaders(origin?: string | null) {
+  if (origin && ALLOWED.includes(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+  }
+
   return {
-    "Access-Control-Allow-Origin":
-      origin && ALLOWED_ORIGINS.includes(origin)
-        ? origin
-        : ALLOWED_ORIGINS[1],
-    "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Origin": "*",
   };
 }
 
