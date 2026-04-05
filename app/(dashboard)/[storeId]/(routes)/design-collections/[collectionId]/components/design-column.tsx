@@ -6,25 +6,25 @@ import { DesignCellAction } from "./design-cell-action";
 export type DesignRow = {
   id: string;
   categoryLabel: string;
-  variationName: string;
-  imageUrl: string;
+  previewImage: string;
+  variationCount: number;
   createdAt: string;
 };
 
 export const designColumns: ColumnDef<DesignRow>[] = [
   {
     accessorKey: "categoryLabel",
-    header: "Design Category",
+    header: "Design Group",
   },
   {
-    accessorKey: "variationName",
-    header: "Variation",
+    accessorKey: "variationCount",
+    header: "Variations",
   },
   {
-    accessorKey: "imageUrl",
-    header: "Image",
+    accessorKey: "previewImage",
+    header: "Preview",
     cell: ({ row }) => {
-      const image = row.original.imageUrl;
+      const image = row.original.previewImage;
       return (
         <a href={image} target="_blank" rel="noreferrer" className="text-blue-600 underline">
           View

@@ -1,6 +1,18 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
-import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
+import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
+
+
+function cachedJson(data: unknown, origin: string | null) {
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      ...getCorsHeaders(origin),
+    },
+  });
+}
 
 function slugify(value: string) {
   return value
@@ -34,7 +46,13 @@ export async function GET(
         storeId: params.storeId,
       },
       include: {
-        designs: true,
+        designs: {
+          include: {
+            variations: {
+              where: { isActive: true },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -46,12 +64,12 @@ export async function GET(
       label: collection.label,
       slug: collection.slug,
       previewImage: collection.coverImage,
-      designsCount: collection.designs.length,
+      designsCount: collection.designs.reduce((sum, d) => sum + d.variations.length, 0),
       href: `/collections/${collection.slug}`,
-      variationCount: new Set(collection.designs.map((d) => slugify(d.title || "other"))).size,
+      variationCount: collection.designs.length,
     }));
 
-    return corsResponse(payload, origin);
+    return cachedJson(payload, origin);
   } catch (error) {
     console.error("[SHOWCASE_COLLECTIONS_GET]", error);
     return errorResponse("Internal error", origin);

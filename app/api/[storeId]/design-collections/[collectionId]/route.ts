@@ -23,7 +23,17 @@ export async function GET(
 
     const collection = await prismadb.designCollection.findFirst({
       where: { id: params.collectionId, storeId: params.storeId },
-      include: { designs: true },
+      include: {
+        designs: {
+          include: {
+            variations: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!collection) {

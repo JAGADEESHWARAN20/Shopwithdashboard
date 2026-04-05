@@ -23,6 +23,13 @@ export async function GET(
         collectionId: params.collectionId,
         collection: { storeId: params.storeId },
       },
+      include: {
+        variations: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
+      },
     });
 
     if (!design) return errorResponse("Design not found", origin, 404);
@@ -44,7 +51,7 @@ export async function PATCH(
     const { userId } = auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
-    const { label, imageUrl, description, tags, values } = await req.json();
+    const { label, imageUrl, description, tags, values, variations } = await req.json();
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
@@ -66,13 +73,48 @@ export async function PATCH(
 
     if (!existing) return errorResponse("Design not found", origin, 404);
 
-    const updated = await prismadb.designItem.update({
+    const normalizedVariations = Array.isArray(variations)
+      ? variations
+          .filter((item: any) => item?.label && item?.imageUrl)
+          .map((item: any, index: number) => ({
+            label: String(item.label),
+            imageUrl: String(item.imageUrl),
+            value: item.value ? String(item.value) : null,
+            sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
+            isActive: item.isActive !== false,
+          }))
+      : [];
+
+    await prismadb.designItem.update({
       where: { id: params.designId },
       data: {
         title: label,
         imageUrl,
         description,
         tags: Array.isArray(values) ? values : Array.isArray(tags) ? tags : [],
+        variations: {
+          deleteMany: {},
+        },
+      },
+    });
+
+    const updated = await prismadb.designItem.update({
+      where: { id: params.designId },
+      data: {
+        variations: normalizedVariations.length
+          ? {
+              createMany: {
+                data: normalizedVariations,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        variations: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
       },
     });
 

@@ -15,7 +15,6 @@ import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import ImageUpload from "@/components/ui/image-upload";
 import { AlertModel } from "@/components/modals/alert-model";
-import { DesignItem } from "@prisma/client";
 
 const formSchema = z.object({
   label: z.string().min(1),
@@ -26,8 +25,14 @@ const formSchema = z.object({
 
 type DesignFormValues = z.infer<typeof formSchema>;
 
+type VariationInput = {
+  label: string;
+  imageUrl: string;
+  value: string;
+};
+
 interface DesignFormProps {
-  initialData: DesignItem | null;
+  initialData: any;
 }
 
 export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
@@ -37,6 +42,16 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const [variations, setVariations] = useState<VariationInput[]>(
+    initialData?.variations?.length
+      ? initialData.variations.map((variation: any) => ({
+          label: variation.label,
+          imageUrl: variation.imageUrl,
+          value: variation.value || "",
+        }))
+      : [{ label: "Variation 1", imageUrl: "", value: "" }]
+  );
+
   const form = useForm<DesignFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
@@ -44,7 +59,7 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
           label: initialData.title,
           imageUrl: initialData.imageUrl,
           description: initialData.description || "",
-          tags: initialData.tags.join(", "),
+          tags: initialData.tags?.join(", ") || "",
         }
       : {
           label: "",
@@ -54,12 +69,44 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
         },
   });
 
+  const updateVariation = (index: number, key: keyof VariationInput, value: string) => {
+    setVariations((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [key]: value };
+      return next;
+    });
+  };
+
+  const addVariation = () => {
+    setVariations((prev) => [...prev, { label: `Variation ${prev.length + 1}`, imageUrl: "", value: "" }]);
+  };
+
+  const removeVariation = (index: number) => {
+    setVariations((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const onSubmit = async (data: DesignFormValues) => {
+    const preparedVariations = variations
+      .filter((item) => item.label && item.imageUrl)
+      .map((item, index) => ({
+        label: item.label,
+        imageUrl: item.imageUrl,
+        value: item.value || null,
+        sortOrder: index,
+        isActive: true,
+      }));
+
+    if (!preparedVariations.length) {
+      toast.error("At least one variation image is required");
+      return;
+    }
+
     try {
       setLoading(true);
 
       const payload = {
         ...data,
+        variations: preparedVariations,
         tags: data.tags
           ? data.tags
               .split(",")
@@ -120,8 +167,8 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
 
       <div className="flex items-center justify-between">
         <Heading
-          title={initialData ? "Edit Design Variation" : "Create Design Variation"}
-          description="Add a variation under category label (front/back/etc.)"
+          title={initialData ? "Edit Design Group" : "Create Design Group"}
+          description="One group (front/back/skirt) can contain many variation images"
         />
         {initialData && (
           <Button type="button" variant="destructive" size="sm" onClick={() => setOpen(true)}>
@@ -132,8 +179,8 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
       <Separator />
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Input placeholder="Design Category (Front Blouse / Back Blouse)" {...form.register("label")} />
-        <Input placeholder="Variation name (optional)" {...form.register("description")} />
+        <Input placeholder="Design group label (Lehanga Blouse Front)" {...form.register("label")} />
+        <Input placeholder="Group description (optional)" {...form.register("description")} />
         <Input placeholder="Tags comma-separated (optional filters)" {...form.register("tags")} />
 
         <ImageUpload
@@ -143,6 +190,51 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
           onChange={(url) => form.setValue("imageUrl", url)}
           onRemove={() => form.setValue("imageUrl", "")}
         />
+
+        <Separator />
+
+        <Heading title="Variations" description="Add all variation images and labels" />
+
+        <div className="space-y-6">
+          {variations.map((variation, index) => (
+            <div key={index} className="space-y-3 rounded-md border p-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <Input
+                  placeholder="Variation label (e.g. V-01)"
+                  value={variation.label}
+                  onChange={(e) => updateVariation(index, "label", e.target.value)}
+                  disabled={loading}
+                />
+                <Input
+                  placeholder="Value/tag (optional)"
+                  value={variation.value}
+                  onChange={(e) => updateVariation(index, "value", e.target.value)}
+                  disabled={loading}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={loading || variations.length === 1}
+                  onClick={() => removeVariation(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+
+              <ImageUpload
+                value={variation.imageUrl}
+                disabled={loading}
+                folder="designs"
+                onChange={(url) => updateVariation(index, "imageUrl", url)}
+                onRemove={() => updateVariation(index, "imageUrl", "")}
+              />
+            </div>
+          ))}
+        </div>
+
+        <Button type="button" variant="secondary" onClick={addVariation} disabled={loading}>
+          Add Another Variation
+        </Button>
 
         <Button disabled={loading} type="submit">
           Save

@@ -1,6 +1,18 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
-import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
+import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
+
+
+function cachedJson(data: unknown, origin: string | null) {
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      ...getCorsHeaders(origin),
+    },
+  });
+}
 
 function slugify(value: string) {
   return value
@@ -17,7 +29,7 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-// Variation detail: all design items for one variation in a collection.
+// Variation detail: all variation images + labels for a selected design group.
 export async function GET(
   req: NextRequest,
   { params }: { params: { storeId: string; slug: string; variationSlug: string } }
@@ -36,8 +48,11 @@ export async function GET(
       },
       include: {
         designs: {
-          orderBy: {
-            createdAt: "desc",
+          include: {
+            variations: {
+              where: { isActive: true },
+              orderBy: { sortOrder: "asc" },
+            },
           },
         },
       },
@@ -47,20 +62,36 @@ export async function GET(
       return errorResponse("Collection not found", origin, 404);
     }
 
-    const designs = collection.designs.filter(
+    const selected = collection.designs.find(
       (design) => slugify(design.title || "other") === params.variationSlug
     );
 
-    return corsResponse(
+    if (!selected) {
+      return errorResponse("Variation group not found", origin, 404);
+    }
+
+    const items = selected.variations.map((variation) => ({
+      id: variation.id,
+      label: variation.label,
+      value: variation.value,
+      imageUrl: variation.imageUrl,
+      sortOrder: variation.sortOrder,
+    }));
+
+    return cachedJson(
       {
         collection: {
           id: collection.id,
           label: collection.label,
           slug: collection.slug,
         },
-        variationSlug: params.variationSlug,
-        variationLabel: designs[0]?.title || "Other",
-        items: designs,
+        group: {
+          id: selected.id,
+          label: selected.title,
+          imageUrl: selected.imageUrl,
+          description: selected.description,
+        },
+        items,
       },
       origin
     );

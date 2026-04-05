@@ -15,6 +15,16 @@ const DesignItemPage = async ({
             collectionId: params.collectionId,
             collection: { storeId: params.storeId },
           },
+          include: {
+            variations: {
+              where: {
+                isActive: true,
+              },
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
         });
 
   return (
