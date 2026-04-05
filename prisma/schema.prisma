@@ -118,11 +118,11 @@ model DesignItem {
   collectionId  String
   collection    DesignCollection @relation("CollectionToDesign", fields: [collectionId], references: [id], onDelete: Cascade)
 
-  title         String           // "Back Neck Style 1"
+  title         String           // variation category label (e.g. "Lehanga Blouse Front")
   imageUrl      String           // design image
-  description   String?
+  description   String?          // optional variation name/code (e.g. "V-01")
 
-  tags          String[]         @default([]) // optional filtering (neck, sleeve, etc)
+  tags          String[]         @default([]) // optional filters/metadata
 
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
