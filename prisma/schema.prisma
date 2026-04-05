@@ -113,21 +113,63 @@ model DesignCollection {
   @@index([storeId])
 }
 
+model DesignVariation {
+  id           String      @id @default(uuid()) @map("_id")
+
+  designItemId String
+  designItem   DesignItem  @relation(fields: [designItemId], references: [id], onDelete: Cascade)
+
+  title        String      // e.g. "Deep Neck V", "Boat Neck", etc
+  imageUrl     String      // variation image
+  code         String?     // optional (V1, V2, etc)
+  price        Float?      // optional pricing per variation
+
+  isDefault    Boolean     @default(false)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([designItemId])
+}
+
+
 model DesignItem {
   id            String           @id @default(uuid()) @map("_id")
   collectionId  String
   collection    DesignCollection @relation("CollectionToDesign", fields: [collectionId], references: [id], onDelete: Cascade)
 
-  title         String           // variation category label (e.g. "Lehanga Blouse Front")
-  imageUrl      String           // design image
-  description   String?          // optional variation name/code (e.g. "V-01")
+  title         String
+  imageUrl      String
+  description   String?
 
-  tags          String[]         @default([]) // optional filters/metadata
+  tags          String[]         @default([])
+
+  variations    DesignVariation[] // ✅ NEW RELATION
 
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
   @@index([collectionId])
+}
+
+model RecentWork {
+  id          String    @id @default(uuid()) @map("_id")
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  title       String    // e.g. "Bridal Lehanga 2026"
+  imageUrl    String
+  description String?
+
+  tags        String[]  @default([])
+
+  isFeatured  Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
 }
 
 model Billboard {
@@ -151,13 +193,18 @@ model Category {
   billboardId String
   billboard   Billboard @relation(fields: [billboardId], references: [id])
   products    Product[] @relation("CategoryToProduct")
+
   name        String
+
+  recentWorks RecentWork[] // ✅ NEW RELATION
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([storeId])
   @@index([billboardId])
 }
+
 
 model Size {
   id        String    @id @default(uuid()) @map("_id")
