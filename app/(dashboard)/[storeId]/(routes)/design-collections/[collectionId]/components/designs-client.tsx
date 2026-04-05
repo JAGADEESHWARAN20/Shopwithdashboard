@@ -10,11 +10,17 @@ import { DataTable } from "@/components/ui/data-table";
 
 import { DesignRow, designColumns } from "./design-column";
 
-interface DesignsClientProps {
-  data: DesignRow[];
+interface DesignGroupSummary {
+  label: string;
+  count: number;
 }
 
-export const DesignsClient: React.FC<DesignsClientProps> = ({ data }) => {
+interface DesignsClientProps {
+  data: DesignRow[];
+  groups: DesignGroupSummary[];
+}
+
+export const DesignsClient: React.FC<DesignsClientProps> = ({ data, groups }) => {
   const router = useRouter();
   const params = useParams();
 
@@ -23,7 +29,7 @@ export const DesignsClient: React.FC<DesignsClientProps> = ({ data }) => {
       <div className="flex items-center justify-between">
         <Heading
           title={`Designs (${data.length})`}
-          description="Manage model designs in this collection"
+          description="Manage all design variations inside this collection"
         />
         <Button
           onClick={() =>
@@ -35,10 +41,20 @@ export const DesignsClient: React.FC<DesignsClientProps> = ({ data }) => {
         </Button>
       </div>
 
+      {groups.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {groups.map((group) => (
+            <div key={group.label} className="rounded-full border px-3 py-1 text-sm">
+              {group.label}: {group.count}
+            </div>
+          ))}
+        </div>
+      )}
+
       <Separator />
 
       <DataTable<DesignRow, unknown>
-        searchKey="label"
+        searchKey="categoryLabel"
         columns={designColumns}
         data={data}
       />

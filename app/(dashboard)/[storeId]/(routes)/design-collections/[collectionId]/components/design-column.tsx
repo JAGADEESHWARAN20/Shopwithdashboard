@@ -5,15 +5,20 @@ import { DesignCellAction } from "./design-cell-action";
 
 export type DesignRow = {
   id: string;
-  label: string;
+  categoryLabel: string;
+  variationName: string;
   imageUrl: string;
   createdAt: string;
 };
 
 export const designColumns: ColumnDef<DesignRow>[] = [
   {
-    accessorKey: "label",
-    header: "Label",
+    accessorKey: "categoryLabel",
+    header: "Design Category",
+  },
+  {
+    accessorKey: "variationName",
+    header: "Variation",
   },
   {
     accessorKey: "imageUrl",

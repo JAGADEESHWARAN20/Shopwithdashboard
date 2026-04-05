@@ -25,16 +25,25 @@ const CollectionPage = async ({
   const formattedDesigns =
     collection?.designs.map((item) => ({
       id: item.id,
-      label: item.title,
+      categoryLabel: item.title,
+      variationName: item.description || "-",
       imageUrl: item.imageUrl,
       createdAt: format(item.createdAt, "MMMM do, yyyy"),
     })) || [];
+
+  const designGroups = Object.entries(
+    (collection?.designs || []).reduce<Record<string, number>>((acc, item) => {
+      const key = item.title?.trim() || "Other";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {})
+  ).map(([label, count]) => ({ label, count }));
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-8 p-8 pt-6">
         <DesignCollectionForm initialData={collection} />
-        {collection && <DesignsClient data={formattedDesigns} />}
+        {collection && <DesignsClient data={formattedDesigns} groups={designGroups} />}
       </div>
     </div>
   );

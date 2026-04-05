@@ -32,9 +32,9 @@ export const DesignCollectionForm = ({ initialData }: any) => {
   const [loading, setLoading] = useState(false);
   const [designLoading, setDesignLoading] = useState(false);
 
-  const [designLabel, setDesignLabel] = useState("");
+  const [designCategoryLabel, setDesignCategoryLabel] = useState("");
+  const [designVariationName, setDesignVariationName] = useState("");
   const [designImageUrl, setDesignImageUrl] = useState("");
-  const [designValues, setDesignValues] = useState("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -66,7 +66,6 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       router.push(`/${params.storeId}/design-collections`);
       router.refresh();
       toast.success("Collection saved");
-
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -80,8 +79,8 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       return;
     }
 
-    if (!designLabel || !designImageUrl) {
-      toast.error("Design label and image are required");
+    if (!designCategoryLabel || !designImageUrl) {
+      toast.error("Design category and image are required");
       return;
     }
 
@@ -91,19 +90,16 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       await axios.post(
         `/api/${params.storeId}/design-collections/${params.collectionId}/designs`,
         {
-          label: designLabel,
+          label: designCategoryLabel,
           imageUrl: designImageUrl,
-          values: designValues
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
+          description: designVariationName,
         }
       );
 
-      setDesignLabel("");
+      setDesignCategoryLabel("");
+      setDesignVariationName("");
       setDesignImageUrl("");
-      setDesignValues("");
-      toast.success("Design added to collection");
+      toast.success("Design variation added");
       router.refresh();
     } catch {
       toast.error("Failed to add design");
@@ -117,15 +113,15 @@ export const DesignCollectionForm = ({ initialData }: any) => {
       <Heading
         title={initialData ? "Collection" : "Create Collection"}
         description={
-          initialData            ? "Manage collection and add relevant design items by label and image"
-
+          initialData
+            ? "Collection stores only preview image. Add multiple design variations below."
             : "Create a collection first, then add designs"
         }
       />
       <Separator />
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Input placeholder="Collection label" {...form.register("label")} />
+        <Input placeholder="Collection label (e.g. Blouse)" {...form.register("label")} />
         <Input placeholder="Slug" {...form.register("slug")} />
 
         <div className="flex items-center space-x-3 rounded-md border p-3">
@@ -156,22 +152,22 @@ export const DesignCollectionForm = ({ initialData }: any) => {
 
           <div className="space-y-4 rounded-md border p-4">
             <Heading
-              title="Quick Add Design"
-              description="Add relevant design to this collection (example: Front Design)"
+              title="Quick Add Design Variation"
+              description="Examples: Category = Front Blouse, variation = V-01, V-02 ..."
             />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
-                placeholder="Design label (e.g., Front Design)"
-                value={designLabel}
-                onChange={(e) => setDesignLabel(e.target.value)}
+                placeholder="Design Category (Front Blouse / Back Blouse / Sleeve)"
+                value={designCategoryLabel}
+                onChange={(e) => setDesignCategoryLabel(e.target.value)}
                 disabled={designLoading}
               />
 
               <Input
-                placeholder="Values (comma separated)"
-                value={designValues}
-                onChange={(e) => setDesignValues(e.target.value)}
+                placeholder="Variation name (optional)"
+                value={designVariationName}
+                onChange={(e) => setDesignVariationName(e.target.value)}
                 disabled={designLoading}
               />
             </div>
@@ -185,7 +181,7 @@ export const DesignCollectionForm = ({ initialData }: any) => {
             />
 
             <Button type="button" onClick={onAddDesignToCollection} disabled={designLoading}>
-              Add Design to Collection
+              Add Variation
             </Button>
           </div>
         </>

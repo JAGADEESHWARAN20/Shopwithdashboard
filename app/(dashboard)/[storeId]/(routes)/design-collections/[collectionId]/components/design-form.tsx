@@ -120,8 +120,8 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
 
       <div className="flex items-center justify-between">
         <Heading
-          title={initialData ? "Edit Design" : "Create Design"}
-          description="Add design item to this collection"
+          title={initialData ? "Edit Design Variation" : "Create Design Variation"}
+          description="Add a variation under category label (front/back/etc.)"
         />
         {initialData && (
           <Button type="button" variant="destructive" size="sm" onClick={() => setOpen(true)}>
@@ -132,9 +132,9 @@ export const DesignForm: React.FC<DesignFormProps> = ({ initialData }) => {
       <Separator />
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Input placeholder="Design Label" {...form.register("label")} />
-        <Input placeholder="Short description (optional)" {...form.register("description")} />
-        <Input placeholder="Tags comma-separated (optional)" {...form.register("tags")} />
+        <Input placeholder="Design Category (Front Blouse / Back Blouse)" {...form.register("label")} />
+        <Input placeholder="Variation name (optional)" {...form.register("description")} />
+        <Input placeholder="Tags comma-separated (optional filters)" {...form.register("tags")} />
 
         <ImageUpload
           value={form.watch("imageUrl")}
