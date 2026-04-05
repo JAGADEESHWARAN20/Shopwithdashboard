@@ -10,7 +10,7 @@ const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
 async function addDomainToProject(projectId: string, domainName: string) {
   if (!VERCEL_ACCESS_TOKEN) {
-    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
+    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables");
   }
 
   try {

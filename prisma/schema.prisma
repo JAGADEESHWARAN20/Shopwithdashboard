@@ -113,6 +113,28 @@ model DesignCollection {
   @@index([storeId])
 }
 
+model DesignVariation {
+  id           String      @id @default(uuid()) @map("_id")
+
+  designItemId String
+  designItem   DesignItem  @relation(fields: [designItemId], references: [id], onDelete: Cascade)
+
+  label        String      // e.g. "Deep Neck V", "Boat Neck", etc
+  imageUrl     String      // variation image
+  value        String?     // optional (V1, V2, etc)
+  price        Float?      // optional pricing per variation
+
+  isActive     Boolean     @default(true)
+  isDefault    Boolean     @default(false)
+  sortOrder    Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([designItemId])
+}
+
+
 model DesignItem {
   id            String           @id @default(uuid()) @map("_id")
   collectionId  String
@@ -169,13 +191,18 @@ model Category {
   billboardId String
   billboard   Billboard @relation(fields: [billboardId], references: [id])
   products    Product[] @relation("CategoryToProduct")
+
   name        String
+
+  recentWorks RecentWork[] // ✅ NEW RELATION
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([storeId])
   @@index([billboardId])
 }
+
 
 model Size {
   id        String    @id @default(uuid()) @map("_id")
