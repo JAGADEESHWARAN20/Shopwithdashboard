@@ -44,7 +44,9 @@ export async function PATCH(
     const { userId } = auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
-    const { label, imageUrl, description, tags } = await req.json();
+
+    const { label, imageUrl, description, tags, values } = await req.json();
+
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
@@ -72,7 +74,7 @@ export async function PATCH(
         title: label,
         imageUrl,
         description,
-        tags: Array.isArray(tags) ? tags : [],
+        tags: Array.isArray(values) ? values : Array.isArray(tags) ? tags : [],
       },
     });
 
