@@ -10,17 +10,11 @@ import { DataTable } from "@/components/ui/data-table";
 
 import { DesignRow, designColumns } from "./design-column";
 
-interface DesignGroupSummary {
-  label: string;
-  count: number;
-}
-
 interface DesignsClientProps {
   data: DesignRow[];
-  groups: DesignGroupSummary[];
 }
 
-export const DesignsClient: React.FC<DesignsClientProps> = ({ data, groups }) => {
+export const DesignsClient: React.FC<DesignsClientProps> = ({ data }) => {
   const router = useRouter();
   const params = useParams();
 
@@ -28,8 +22,8 @@ export const DesignsClient: React.FC<DesignsClientProps> = ({ data, groups }) =>
     <>
       <div className="flex items-center justify-between">
         <Heading
-          title={`Designs (${data.length})`}
-          description="Manage all design variations inside this collection"
+          title={`Design Groups (${data.length})`}
+          description="Each group contains multiple variation images for frontend showcase"
         />
         <Button
           onClick={() =>
@@ -37,19 +31,9 @@ export const DesignsClient: React.FC<DesignsClientProps> = ({ data, groups }) =>
           }
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Design
+          Add Group
         </Button>
       </div>
-
-      {groups.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {groups.map((group) => (
-            <div key={group.label} className="rounded-full border px-3 py-1 text-sm">
-              {group.label}: {group.count}
-            </div>
-          ))}
-        </div>
-      )}
 
       <Separator />
 

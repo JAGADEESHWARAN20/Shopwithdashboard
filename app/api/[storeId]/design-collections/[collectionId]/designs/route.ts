@@ -28,6 +28,13 @@ export async function GET(
           storeId: params.storeId,
         },
       },
+      include: {
+        variations: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -54,7 +61,7 @@ export async function POST(
       return errorResponse("storeId and collectionId are required", origin, 400);
     }
 
-    const { label, imageUrl, description, tags, values } = await req.json();
+    const { label, imageUrl, description, tags, values, variations } = await req.json();
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
@@ -77,6 +84,18 @@ export async function POST(
       return errorResponse("Collection not found", origin, 404);
     }
 
+    const normalizedVariations = Array.isArray(variations)
+      ? variations
+          .filter((item: any) => item?.label && item?.imageUrl)
+          .map((item: any, index: number) => ({
+            label: String(item.label),
+            imageUrl: String(item.imageUrl),
+            value: item.value ? String(item.value) : null,
+            sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
+            isActive: item.isActive !== false,
+          }))
+      : [];
+
     const design = await prismadb.designItem.create({
       data: {
         collectionId: params.collectionId,
@@ -84,6 +103,20 @@ export async function POST(
         imageUrl,
         description,
         tags: Array.isArray(values) ? values : Array.isArray(tags) ? tags : [],
+        variations: normalizedVariations.length
+          ? {
+              createMany: {
+                data: normalizedVariations,
+              },
+            }
+          : undefined,
+      },
+      include: {
+        variations: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
       },
     });
 

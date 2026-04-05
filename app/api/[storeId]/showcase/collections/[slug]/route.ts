@@ -1,6 +1,18 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
-import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
+import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
+
+
+function cachedJson(data: unknown, origin: string | null) {
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      ...getCorsHeaders(origin),
+    },
+  });
+}
 
 function slugify(value: string) {
   return value
@@ -17,7 +29,7 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-// Collection detail groups (image3): Front Blouse / Back Blouse / Skirt etc.
+// Collection detail cards: one card per design group (front/back/skirt...)
 export async function GET(
   req: NextRequest,
   { params }: { params: { storeId: string; slug: string } }
@@ -36,9 +48,13 @@ export async function GET(
       },
       include: {
         designs: {
-          orderBy: {
-            createdAt: "desc",
+          include: {
+            variations: {
+              where: { isActive: true },
+              orderBy: { sortOrder: "asc" },
+            },
           },
+          orderBy: { createdAt: "desc" },
         },
       },
     });
@@ -47,28 +63,16 @@ export async function GET(
       return errorResponse("Collection not found", origin, 404);
     }
 
-    const grouped = new Map<string, {
-      label: string;
-      variationSlug: string;
-      count: number;
-      previewImage: string;
-    }>();
+    const variations = collection.designs.map((design) => ({
+      id: design.id,
+      label: design.title,
+      variationSlug: slugify(design.title || "other"),
+      previewImage: design.imageUrl,
+      count: design.variations.length,
+      href: `/collections/${collection.slug}/${slugify(design.title || "other")}`,
+    }));
 
-    for (const design of collection.designs) {
-      const key = slugify(design.title || "other");
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          label: design.title || "Other",
-          variationSlug: key,
-          count: 1,
-          previewImage: design.imageUrl,
-        });
-      } else {
-        grouped.get(key)!.count += 1;
-      }
-    }
-
-    return corsResponse(
+    return cachedJson(
       {
         collection: {
           id: collection.id,
@@ -76,7 +80,7 @@ export async function GET(
           slug: collection.slug,
           coverImage: collection.coverImage,
         },
-        variations: Array.from(grouped.values()),
+        variations,
       },
       origin
     );

@@ -34,6 +34,7 @@ export const DesignCollectionForm = ({ initialData }: any) => {
 
   const [designCategoryLabel, setDesignCategoryLabel] = useState("");
   const [designVariationName, setDesignVariationName] = useState("");
+  const [designVariationValue, setDesignVariationValue] = useState("");
   const [designImageUrl, setDesignImageUrl] = useState("");
 
   const form = useForm<FormValues>({
@@ -92,12 +93,22 @@ export const DesignCollectionForm = ({ initialData }: any) => {
         {
           label: designCategoryLabel,
           imageUrl: designImageUrl,
-          description: designVariationName,
+          description: `Primary variation: ${designVariationName || "Variation 1"}`,
+          variations: [
+            {
+              label: designVariationName || "Variation 1",
+              value: designVariationValue || null,
+              imageUrl: designImageUrl,
+              sortOrder: 0,
+              isActive: true,
+            },
+          ],
         }
       );
 
       setDesignCategoryLabel("");
       setDesignVariationName("");
+      setDesignVariationValue("");
       setDesignImageUrl("");
       toast.success("Design variation added");
       router.refresh();
@@ -156,7 +167,7 @@ export const DesignCollectionForm = ({ initialData }: any) => {
               description="Examples: Category = Front Blouse, variation = V-01, V-02 ..."
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <Input
                 placeholder="Design Category (Front Blouse / Back Blouse / Sleeve)"
                 value={designCategoryLabel}
@@ -165,9 +176,15 @@ export const DesignCollectionForm = ({ initialData }: any) => {
               />
 
               <Input
-                placeholder="Variation name (optional)"
+                placeholder="Variation label (e.g. V-01)"
                 value={designVariationName}
                 onChange={(e) => setDesignVariationName(e.target.value)}
+                disabled={designLoading}
+              />
+              <Input
+                placeholder="Variation value/tag (optional)"
+                value={designVariationValue}
+                onChange={(e) => setDesignVariationValue(e.target.value)}
                 disabled={designLoading}
               />
             </div>
@@ -181,7 +198,7 @@ export const DesignCollectionForm = ({ initialData }: any) => {
             />
 
             <Button type="button" onClick={onAddDesignToCollection} disabled={designLoading}>
-              Add Variation
+              Add Group + Variation
             </Button>
           </div>
         </>

@@ -65,7 +65,15 @@ export async function GET(
         storeId: params.storeId,
       },
       include: {
-        designs: true,
+        designs: {
+          include: {
+            variations: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",

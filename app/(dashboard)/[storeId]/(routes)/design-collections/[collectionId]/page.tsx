@@ -15,6 +15,16 @@ const CollectionPage = async ({
     },
     include: {
       designs: {
+        include: {
+          variations: {
+            where: {
+              isActive: true,
+            },
+            orderBy: {
+              sortOrder: "asc",
+            },
+          },
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -26,24 +36,16 @@ const CollectionPage = async ({
     collection?.designs.map((item) => ({
       id: item.id,
       categoryLabel: item.title,
-      variationName: item.description || "-",
-      imageUrl: item.imageUrl,
+      previewImage: item.imageUrl,
+      variationCount: item.variations.length,
       createdAt: format(item.createdAt, "MMMM do, yyyy"),
     })) || [];
-
-  const designGroups = Object.entries(
-    (collection?.designs || []).reduce<Record<string, number>>((acc, item) => {
-      const key = item.title?.trim() || "Other";
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([label, count]) => ({ label, count }));
 
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-8 p-8 pt-6">
         <DesignCollectionForm initialData={collection} />
-        {collection && <DesignsClient data={formattedDesigns} groups={designGroups} />}
+        {collection && <DesignsClient data={formattedDesigns} />}
       </div>
     </div>
   );
