@@ -19,12 +19,12 @@ export async function POST(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-    const { storeId } = await params; // ✅ FIX
-    const { userId } = await auth(); // ✅ FIX
+    const { storeId } = await params;
+    const { userId } = await auth();
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId) return errorResponse("Store ID required", origin, 400);
+<<<<<<< HEAD
 
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
@@ -37,6 +37,8 @@ export async function POST(
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId) return errorResponse("Store ID required", origin, 400);
+>>>>>>> 95f3d2a (new update)
+=======
 >>>>>>> 95f3d2a (new update)
 
     const { label, coverImage, slug, isFeatured } = await req.json();
@@ -53,7 +55,10 @@ export async function POST(
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     });
@@ -68,7 +73,10 @@ export async function POST(
         isFeatured: Boolean(isFeatured),
         storeId,
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
       },
@@ -90,11 +98,19 @@ export async function GET(
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     const { storeId } = await params;
 
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);
 
+=======
+    const { storeId } = await params;
+
+    if (!storeId) {
+      return errorResponse("Store ID required", origin, 400);
+    }
+>>>>>>> 95f3d2a (new update)
 =======
     const { storeId } = await params;
 
@@ -110,8 +126,12 @@ export async function GET(
           include: {
             variations: {
 <<<<<<< HEAD
+<<<<<<< HEAD
               orderBy: { sortOrder: "asc" }
 
+=======
+              orderBy: { sortOrder: "asc" },
+>>>>>>> 95f3d2a (new update)
 =======
               orderBy: { sortOrder: "asc" },
 >>>>>>> 95f3d2a (new update)
@@ -122,6 +142,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     return corsResponse(collections, origin); // ✅ ARRAY
   } catch (error) {
@@ -135,6 +156,11 @@ export async function GET(
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
 
+=======
+    return corsResponse(collections, origin); // ✅ ALWAYS ARRAY
+  } catch (error) {
+    console.error("[COLLECTIONS_GET]", error);
+>>>>>>> 95f3d2a (new update)
 =======
     return corsResponse(collections, origin); // ✅ ALWAYS ARRAY
   } catch (error) {

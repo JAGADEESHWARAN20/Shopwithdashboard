@@ -52,8 +52,13 @@ export async function PATCH(
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { userId } = await auth(); // ✅ FIX
 
+=======
+    const { storeId, collectionId, designId } = await params;
+    const { userId } = await auth();
+>>>>>>> 95f3d2a (new update)
 =======
     const { storeId, collectionId, designId } = await params;
     const { userId } = await auth();

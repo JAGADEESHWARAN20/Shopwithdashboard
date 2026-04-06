@@ -53,6 +53,7 @@ export async function PATCH(
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { storeId, categoryId } = await params; // ✅ FIX
     const { userId } = await auth();
 
@@ -62,6 +63,11 @@ export async function PATCH(
     const { userId } = await auth();
 >>>>>>> 95f3d2a (new update)
 
+=======
+    const { storeId, categoryId } = await params;
+    const { userId } = await auth();
+
+>>>>>>> 95f3d2a (new update)
     if (!userId) {
       return errorResponse("Unauthorized", origin, 401);
     }
@@ -114,6 +120,7 @@ export async function DELETE(
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { storeId, categoryId } = await params; // ✅ FIX
     const { userId } = await auth();
 
@@ -123,6 +130,11 @@ export async function DELETE(
     const { storeId, categoryId } = await params;
     const { userId } = await auth();
 
+=======
+    const { storeId, categoryId } = await params;
+    const { userId } = await auth();
+
+>>>>>>> 95f3d2a (new update)
     if (!userId) {
       return errorResponse("Unauthorized", origin, 401);
     }
@@ -134,6 +146,9 @@ export async function DELETE(
         400
       );
     }
+<<<<<<< HEAD
+>>>>>>> 95f3d2a (new update)
+=======
 >>>>>>> 95f3d2a (new update)
 
     const store = await prismadb.store.findFirst({

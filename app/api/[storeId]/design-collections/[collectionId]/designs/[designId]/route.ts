@@ -15,8 +15,11 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
 ) {
@@ -34,6 +37,7 @@ export async function GET(
       include: {
         variations: { orderBy: { sortOrder: "asc" } },
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     const design = await prismadb.designItem.findFirst({
       where: {
@@ -49,6 +53,8 @@ export async function GET(
         },
 =======
 >>>>>>> 95f3d2a (new update)
+=======
+>>>>>>> 95f3d2a (new update)
       },
     });
 
@@ -58,7 +64,10 @@ export async function GET(
   } catch (error) {
     console.error("[DESIGN_GET]", error);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     return errorResponse("Internal error", origin);
@@ -66,26 +75,35 @@ export async function GET(
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { storeId: string; collectionId: string; designId: string } }
 
 =======
+=======
+>>>>>>> 95f3d2a (new update)
 // PATCH DESIGN
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+<<<<<<< HEAD
+>>>>>>> 95f3d2a (new update)
+=======
 >>>>>>> 95f3d2a (new update)
 ) {
   const origin = req.headers.get("origin");
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { label, imageUrl, description, tags, values, variations } = await req.json();
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     const { storeId, collectionId, designId } = await params;
@@ -96,12 +114,15 @@ export async function PATCH(
     const body = await req.json();
     const { label, imageUrl, description, tags, values, variations } = body;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { label, imageUrl, description, tags, values, variations } = await req.json();
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
 
@@ -111,8 +132,12 @@ export async function PATCH(
 
     const store = await prismadb.store.findFirst({
 <<<<<<< HEAD
+<<<<<<< HEAD
       where: { id: params.storeId, userId },
 
+=======
+      where: { id: storeId, userId },
+>>>>>>> 95f3d2a (new update)
 =======
       where: { id: storeId, userId },
 >>>>>>> 95f3d2a (new update)
@@ -144,6 +169,7 @@ export async function PATCH(
 
     await prismadb.designItem.update({
 <<<<<<< HEAD
+<<<<<<< HEAD
       where: { id: params.designId },
     const normalizedVariations = Array.isArray(variations)
       ? variations
@@ -165,6 +191,9 @@ export async function PATCH(
 =======
       where: { id: designId },
 >>>>>>> 95f3d2a (new update)
+=======
+      where: { id: designId },
+>>>>>>> 95f3d2a (new update)
       data: {
         title: label,
         imageUrl,
@@ -178,6 +207,7 @@ export async function PATCH(
 
     const updated = await prismadb.designItem.update({
       where: { id: designId },
+<<<<<<< HEAD
       data: {
         variations: normalizedVariations.length
           ? {
@@ -201,6 +231,8 @@ export async function PATCH(
 
     const updated = await prismadb.designItem.update({
       where: { id: params.designId },
+=======
+>>>>>>> 95f3d2a (new update)
       data: {
         variations: normalizedVariations.length
           ? {

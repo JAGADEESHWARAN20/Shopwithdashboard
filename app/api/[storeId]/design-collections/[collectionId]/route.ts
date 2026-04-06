@@ -18,6 +18,7 @@ export async function GET(
 ) {
   const origin = req.headers.get("origin");
 <<<<<<< HEAD
+<<<<<<< HEAD
 
   try {
     if (!params.collectionId || !params.storeId) {
@@ -43,6 +44,8 @@ export async function GET(
       return errorResponse("Collection not found", origin, 404);
     }
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
 
@@ -81,8 +84,12 @@ export async function GET(
 export async function PATCH(
   req: NextRequest,
 <<<<<<< HEAD
+<<<<<<< HEAD
   { params }: { params: Promise<{ collectionId: string; storeId: string }> }
 
+=======
+  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+>>>>>>> 95f3d2a (new update)
 =======
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 >>>>>>> 95f3d2a (new update)
@@ -90,6 +97,7 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
 <<<<<<< HEAD
     const { collectionId, storeId } = await params; // ✅ FIX
     const { userId } = await auth(); // ✅ FIX
@@ -106,6 +114,13 @@ export async function PATCH(
     if (!params.collectionId || !params.storeId) {
 
 =======
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    if (!storeId || !collectionId) {
+>>>>>>> 95f3d2a (new update)
+=======
+    const { storeId, collectionId } = await params;
+    const { userId } = await auth();
+
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId || !collectionId) {
 >>>>>>> 95f3d2a (new update)
@@ -139,6 +154,7 @@ export async function PATCH(
     });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       where: { id: params.storeId, userId },
     });
 
@@ -155,6 +171,8 @@ export async function PATCH(
     });
 
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     return corsResponse(updated, origin);

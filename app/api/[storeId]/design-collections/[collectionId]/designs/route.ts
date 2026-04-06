@@ -16,7 +16,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
 ) {
@@ -40,6 +43,7 @@ export async function GET(
         },
       },
       orderBy: { createdAt: "desc" },
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     if (!params.storeId || !params.collectionId) {
@@ -66,13 +70,18 @@ export async function GET(
 
 =======
 >>>>>>> 95f3d2a (new update)
+=======
+>>>>>>> 95f3d2a (new update)
     });
 
     return corsResponse(designs, origin); // ✅ ARRAY
   } catch (error) {
     console.error("[DESIGNS_GET]", error);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     return errorResponse("Internal error", origin);
@@ -83,8 +92,12 @@ export async function GET(
 export async function POST(
   req: NextRequest,
 <<<<<<< HEAD
+<<<<<<< HEAD
  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 
+=======
+  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+>>>>>>> 95f3d2a (new update)
 =======
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 >>>>>>> 95f3d2a (new update)
@@ -93,7 +106,11 @@ export async function POST(
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { storeId, collectionId } = await params; // ✅ FIX
+=======
+    const { storeId, collectionId } = await params;
+>>>>>>> 95f3d2a (new update)
 =======
     const { storeId, collectionId } = await params;
 >>>>>>> 95f3d2a (new update)
@@ -106,9 +123,14 @@ export async function POST(
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { label, imageUrl, description, tags, values, variations } =
       await req.json();
 
+=======
+    const body = await req.json();
+    const { label, imageUrl, description, tags, values, variations } = body;
+>>>>>>> 95f3d2a (new update)
 =======
     const body = await req.json();
     const { label, imageUrl, description, tags, values, variations } = body;
@@ -122,7 +144,10 @@ export async function POST(
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
     });
@@ -135,7 +160,10 @@ export async function POST(
         id: collectionId,
         storeId,
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
 =======
 >>>>>>> 95f3d2a (new update)
       },
@@ -146,8 +174,12 @@ export async function POST(
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
+=======
+    // 🔥 normalize variations
+>>>>>>> 95f3d2a (new update)
 =======
     // 🔥 normalize variations
 >>>>>>> 95f3d2a (new update)
@@ -166,8 +198,12 @@ export async function POST(
     const design = await prismadb.designItem.create({
       data: {
 <<<<<<< HEAD
+<<<<<<< HEAD
         collectionId: collectionId,
 
+=======
+        collectionId,
+>>>>>>> 95f3d2a (new update)
 =======
         collectionId,
 >>>>>>> 95f3d2a (new update)

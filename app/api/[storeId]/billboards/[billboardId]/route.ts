@@ -32,8 +32,11 @@ export async function PATCH(
 ) {
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { userId } =await auth();
 =======
+=======
+>>>>>>> 95f3d2a (new update)
     const { storeId, billboardId } = await params;
     const { userId } = await auth();
 >>>>>>> 95f3d2a (new update)
@@ -72,8 +75,11 @@ export async function DELETE(
 ) {
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
         const { userId } =await auth();
 =======
+=======
+>>>>>>> 95f3d2a (new update)
         const { storeId, billboardId } = await params;
         const { userId } = await auth();
 >>>>>>> 95f3d2a (new update)

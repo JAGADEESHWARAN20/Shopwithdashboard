@@ -12,6 +12,7 @@ export async function POST(
   }
 ) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     try {
         // Ensure user is authenticated
         const { userId } =await auth();
@@ -21,6 +22,11 @@ export async function POST(
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
+=======
+  try {
+    const { storeId } = await params;
+    const { userId } = await auth();
+>>>>>>> 95f3d2a (new update)
 =======
   try {
     const { storeId } = await params;
