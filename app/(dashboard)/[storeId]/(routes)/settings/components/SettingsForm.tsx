@@ -153,41 +153,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
         />
       </div>
 
-      {/* 🔹 Preview Toggle */}
-      <div className="space-y-3">
-        <Label>Preview Site</Label>
-
-        <div className="flex items-center gap-3">
-          <Switch checked={showPreview} onCheckedChange={setShowPreview} />
-          <span className="text-sm text-gray-300">
-            {showPreview ? "Preview Enabled" : "Preview Disabled"}
-          </span>
-        </div>
-
-        {showPreview && (
-          <div className="relative w-full h-64 rounded-xl overflow-hidden border border-white/10 bg-black">
-            {displayStoreUrl ? (
-              <iframe
-                src={displayStoreUrl}
-                className="w-full h-full border-none scale-50 origin-top-left pointer-events-none"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No preview available
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 🔹 Submit */}
-      <Button
-        disabled={loading}
-        onClick={onSubmit}
-        className="w-full bg-white text-black hover:bg-gray-200"
-      >
-        Save Changes
-      </Button>
+     
     </div>
   );
 };
