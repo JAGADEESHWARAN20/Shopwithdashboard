@@ -6,13 +6,13 @@ import { DesignsClient } from "./components/designs-client";
 const CollectionPage = async ({
   params,
 }: {
-  params: { collectionId: string; storeId: string };
+  params: Promise<{ collectionId: string; storeId: string }>;
 }) => {
-  const { storeId, collectionId } = await params; // ✅ FIX
+  const resolvedParams = await params;
   const collection = await prismadb.designCollection.findFirst({
     where: {
-      id: collectionId,
-      storeId,
+      id: resolvedParams.collectionId,
+      storeId: resolvedParams.storeId,
     },
     include: {
       designs: {

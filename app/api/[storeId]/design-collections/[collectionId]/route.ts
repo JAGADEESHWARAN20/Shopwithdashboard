@@ -12,9 +12,39 @@ export async function OPTIONS(req: Request) {
 
 export async function GET(
   req: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 ) {
   const origin = req.headers.get("origin");
+=======
+  { params }: { params: { collectionId: string; storeId: string } }
+) {
+  const origin = req.headers.get("origin");
+
+  try {
+    if (!params.collectionId || !params.storeId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const collection = await prismadb.designCollection.findFirst({
+      where: { id: params.collectionId, storeId: params.storeId },
+      include: {
+        designs: {
+          include: {
+            variations: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!collection) {
+      return errorResponse("Collection not found", origin, 404);
+    }
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 
   try {
     const { storeId, collectionId } = await params;
@@ -42,16 +72,27 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ collectionId: string; storeId: string }> }
+=======
+  { params }: { params: { collectionId: string; storeId: string } }
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { collectionId, storeId } = await params; // ✅ FIX
     const { userId } = await auth(); // ✅ FIX
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!collectionId || !storeId) {
+=======
+    const { userId } = await auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    if (!params.collectionId || !params.storeId) {
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
       return errorResponse("storeId and collectionId are required", origin, 400);
     }
 
@@ -62,6 +103,7 @@ export async function PATCH(
     }
 
     const store = await prismadb.store.findFirst({
+<<<<<<< HEAD
       where: { id: storeId, userId },
     });
 
@@ -77,6 +119,23 @@ export async function PATCH(
       },
     });
 
+=======
+      where: { id: params.storeId, userId },
+    });
+
+    if (!store) return errorResponse("Unauthorized", origin, 403);
+
+    const updated = await prismadb.designCollection.update({
+      where: { id: params.collectionId },
+      data: {
+        label,
+        coverImage,
+        slug,
+        isFeatured: Boolean(isFeatured),
+      },
+    });
+
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
     return corsResponse(updated, origin);
   } catch (error) {
     console.error("[COLLECTION_PATCH]", error);

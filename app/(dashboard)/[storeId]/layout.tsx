@@ -9,15 +9,16 @@ export default async function DashboardLayout({
   params,
 }: {
   children: ReactNode;
-  params: Promise<{ storeId: string }>; // ✅ FIX TYPE
+  params: Promise<{ storeId: string }>;
 }) {
-  const { storeId } = await params; // ✅ FIX (IMPORTANT)
+  const { storeId } = await params;
+
 
 
   const store = await prismadb.store.findFirst({
     where: {
-      id: storeId, // ✅ FIXED
-     
+      id: storeId,
+      
     },
   });
 

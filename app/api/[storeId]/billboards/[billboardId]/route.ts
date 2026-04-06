@@ -31,10 +31,10 @@ export async function PATCH(
   { params }: { params: Promise<{ storeId: string; billboardId: string }> }
 ) {
   try {
-    const { storeId, billboardId } = await params; // ✅ FIX
     const { userId } = await auth();
-
     const body = await req.json();
+
+   
     const { label, imageUrl } = body;
 
     if (!userId) return new NextResponse("Unauthenticated", { status: 403 });
@@ -64,9 +64,8 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ storeId: string; billboardId: string }> }
 ) {
-  try {
-    const { storeId, billboardId } = await params; // ✅ FIX
-    const { userId } = await auth();
+    try {
+        const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });

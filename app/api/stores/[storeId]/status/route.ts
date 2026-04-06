@@ -6,7 +6,11 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
      try {
+<<<<<<< HEAD
           const { userId } = auth();
+=======
+          const { userId } = await auth();
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
           const { storeId } = params;
           const body = await req.json();
           const { isActive } = body;

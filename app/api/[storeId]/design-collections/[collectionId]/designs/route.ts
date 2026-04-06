@@ -12,11 +12,16 @@ export async function OPTIONS(req: Request) {
 
 export async function GET(
   req: NextRequest,
+<<<<<<< HEAD
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+=======
+  { params }: { params: { storeId: string; collectionId: string } }
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { storeId, collectionId } = await params;
 
     const designs = await prismadb.designItem.findMany({
@@ -28,22 +33,54 @@ export async function GET(
         variations: { orderBy: { sortOrder: "asc" } },
       },
       orderBy: { createdAt: "desc" },
+=======
+    if (!params.storeId || !params.collectionId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const designs = await prismadb.designItem.findMany({
+      where: {
+        collectionId: params.collectionId,
+        collection: {
+          storeId: params.storeId,
+        },
+      },
+      include: {
+        variations: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
     });
 
     return corsResponse(designs, origin);
   } catch (error) {
+<<<<<<< HEAD
     console.error("[DESIGNS_GET]", error);
+=======
+    console.error("[COLLECTION_DESIGNS_GET]", error);
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
     return errorResponse("Internal error", origin);
   }
 }
 
 export async function POST(
   req: NextRequest,
+<<<<<<< HEAD
  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+=======
+  { params }: { params: { storeId: string; collectionId: string } }
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { storeId, collectionId } = await params; // ✅ FIX
     const { userId } = await auth();
 
@@ -55,21 +92,40 @@ export async function POST(
 
     const { label, imageUrl, description, tags, values, variations } =
       await req.json();
+=======
+    const { userId } = await auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    if (!params.storeId || !params.collectionId) {
+      return errorResponse("storeId and collectionId are required", origin, 400);
+    }
+
+    const { label, imageUrl, description, tags, values, variations } = await req.json();
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
     }
 
     const store = await prismadb.store.findFirst({
+<<<<<<< HEAD
       where: { id: storeId, userId },
+=======
+      where: { id: params.storeId, userId },
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const collection = await prismadb.designCollection.findFirst({
       where: {
+<<<<<<< HEAD
         id: collectionId,
         storeId,
+=======
+        id: params.collectionId,
+        storeId: params.storeId,
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
       },
     });
 
@@ -77,7 +133,10 @@ export async function POST(
       return errorResponse("Collection not found", origin, 404);
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
     const normalizedVariations = Array.isArray(variations)
       ? variations
           .filter((item: any) => item?.label && item?.imageUrl)
@@ -92,7 +151,11 @@ export async function POST(
 
     const design = await prismadb.designItem.create({
       data: {
+<<<<<<< HEAD
         collectionId: collectionId,
+=======
+        collectionId: params.collectionId,
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
         title: label,
         imageUrl,
         description,

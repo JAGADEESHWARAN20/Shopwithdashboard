@@ -85,7 +85,11 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } = await auth(); // ✅ FIX
+=======
+    const { userId } = await auth();
+>>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
 
     if (!userId) {
       return json({ error: "Unauthenticated" }, 401, origin);

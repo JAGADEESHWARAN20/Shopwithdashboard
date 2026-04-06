@@ -10,7 +10,7 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = async ({ params }) => {
-    const { userId } =await auth();
+    const { userId } = await auth();
 
     if (!userId) {
         redirect("/sign-in");
