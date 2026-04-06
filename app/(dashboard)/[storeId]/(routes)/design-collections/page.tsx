@@ -19,13 +19,18 @@ const DesignCollectionsPage = async ({
     }
   });
 
-  const formatted: DesignCollectionColumn[] = collections.map((item) => ({
-    id: item.id,
-    label: item.label,
-    slug: item.slug,
-    isFeatured: item.isFeatured,
-    createdAt: format(item.createdAt, "MMMM do, yyyy")
-  }));
+ const formatted: DesignCollectionColumn[] = collections.map((item: { id: any; label: any; slug: any; isFeatured: any; createdAt: string | number | Date; }) => ({
+  id: item.id,
+  label: item.label,
+  slug: item.slug,
+  isFeatured: item.isFeatured,
+  createdAt: format(
+    item.createdAt instanceof Date
+      ? item.createdAt
+      : new Date(item.createdAt),
+    "MMMM do, yyyy"
+  ),
+}));
 
   return (
     <div className="flex-col">

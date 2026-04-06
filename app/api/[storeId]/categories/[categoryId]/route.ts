@@ -2,12 +2,13 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse } from "@/lib/api-utils";
 
-export async function GET(req: Request, { params }: any) {
+export async function GET(req: Request,{ params }: { params: Promise<{ storeId: string, categoryId: string }> }) {
   const origin = req.headers.get("origin");
+  const { storeId, categoryId } = await params;
 
   try {
     const category = await prismadb.category.findUnique({
-      where: { id: params.categoryId },
+      where: { id: categoryId },
       include: { billboard: true },
     });
 
@@ -18,23 +19,32 @@ export async function GET(req: Request, { params }: any) {
   }
 }
 
-export async function PATCH(req: Request, { params }: any) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ storeId: string; categoryId: string }> }
+) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } = await auth();
+=======
+    const { storeId, categoryId } = await params; // ✅ FIX
+    const { userId } = await auth();
+
+>>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { name, billboardId } = await req.json();
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const updated = await prismadb.category.update({
-      where: { id: params.categoryId },
+      where: { id: categoryId },
       data: { name, billboardId },
     });
 
@@ -45,21 +55,30 @@ export async function PATCH(req: Request, { params }: any) {
   }
 }
 
-export async function DELETE(req: Request, { params }: any) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ storeId: string; categoryId: string }> }
+) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } =await auth();
+=======
+    const { storeId, categoryId } = await params; // ✅ FIX
+    const { userId } = await auth();
+
+>>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     await prismadb.category.delete({
-      where: { id: params.categoryId },
+      where: { id: categoryId },
     });
 
     return corsResponse({ success: true }, origin);

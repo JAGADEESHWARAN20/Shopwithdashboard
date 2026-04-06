@@ -1,9 +1,12 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 
-// ✅ Allowed origins (frontend + localhost)
-const ALLOWED = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",") || [];
+// =========================
+// 🌐 CORS CONFIG
+// =========================
+const ALLOWED =
+  process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",").map(o => o.trim()) || [];
 
 function corsHeaders(origin?: string | null) {
   const headers: Record<string, string> = {
@@ -13,142 +16,110 @@ function corsHeaders(origin?: string | null) {
   if (origin && ALLOWED.includes(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Methods"] = "GET, PATCH, OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    headers["Access-Control-Allow-Headers"] =
+      "Content-Type, Authorization";
   }
 
   return headers;
 }
 
-// ✅ OPTIONS (VERY IMPORTANT for CORS)
+function json(data: unknown, status = 200, origin?: string | null) {
+  return new NextResponse(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...corsHeaders(origin),
+    },
+  });
+}
+
+// =========================
+// ✅ OPTIONS (CORS PREFLIGHT)
+// =========================
 export async function OPTIONS(req: Request) {
   const origin = req.headers.get("origin");
-
-  return new Response(null, {
-    status: 200,
+  return new NextResponse(null, {
+    status: 204,
     headers: corsHeaders(origin),
   });
 }
 
-// =====================================================
-// 📥 GET STORE (PUBLIC - frontend can access)
-// =====================================================
+// =========================
+// 📥 GET STORE (PUBLIC)
+// =========================
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.storeId) {
-      return new Response(
-        JSON.stringify({ error: "Store ID is required" }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders(origin),
-          },
-        }
-      );
+    const { storeId } = await params; // ✅ FIX
+
+    if (!storeId) {
+      return json({ error: "Store ID is required" }, 400, origin);
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId },
+      where: { id: storeId },
     });
 
     if (!store) {
-      return new Response(
-        JSON.stringify({ error: "Store not found" }),
-        {
-          status: 404,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders(origin),
-          },
-        }
-      );
+      return json({ error: "Store not found" }, 404, origin);
     }
 
-    return new Response(JSON.stringify(store), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders(origin),
-      },
-    });
-
+    return json(store, 200, origin);
   } catch (error) {
     console.error("[STORE_GET]", error);
-
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders(origin),
-        },
-      }
-    );
+    return json({ error: "Internal server error" }, 500, origin);
   }
 }
 
-// =====================================================
+// =========================
 // ✏️ PATCH STORE (PROTECTED)
-// =====================================================
+// =========================
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } =await auth();
+=======
+    const { userId } = await auth(); // ✅ FIX
+>>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
 
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: "Unauthenticated" }),
-        {
-          status: 401,
-          headers: corsHeaders(origin),
-        }
-      );
+      return json({ error: "Unauthenticated" }, 401, origin);
     }
 
-    if (!params.storeId) {
-      return new Response(
-        JSON.stringify({ error: "Store ID is required" }),
-        {
-          status: 400,
-          headers: corsHeaders(origin),
-        }
-      );
+    const { storeId } = await params; // ✅ FIX
+
+    if (!storeId) {
+      return json({ error: "Store ID is required" }, 400, origin);
     }
 
     const body = await req.json();
+
     const { name, storeUrl, isActive, alternateUrls, logoUrl } = body;
 
     // 🔎 Ownership check
     const store = await prismadb.store.findFirst({
       where: {
-        id: params.storeId,
+        id: storeId,
         userId,
       },
     });
 
     if (!store) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        {
-          status: 403,
-          headers: corsHeaders(origin),
-        }
-      );
+      return json({ error: "Unauthorized" }, 403, origin);
     }
 
-    // 🧠 Update only provided fields
+    // 🧠 Safe update (no mass assignment)
     const updatedStore = await prismadb.store.update({
-      where: { id: params.storeId },
+      where: { id: storeId },
       data: {
         ...(name !== undefined && { name }),
         ...(storeUrl !== undefined && { storeUrl }),
@@ -158,23 +129,9 @@ export async function PATCH(
       },
     });
 
-    return new Response(JSON.stringify(updatedStore), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders(origin),
-      },
-    });
-
+    return json(updatedStore, 200, origin);
   } catch (error) {
     console.error("[STORE_PATCH]", error);
-
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: corsHeaders(origin),
-      }
-    );
+    return json({ error: "Internal server error" }, 500, origin);
   }
 }

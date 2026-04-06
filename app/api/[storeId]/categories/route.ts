@@ -1,7 +1,7 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
-import { NextResponse } from "next/server";
+
 
 export async function OPTIONS(req: Request) {
     return new Response(null, {
@@ -9,16 +9,16 @@ export async function OPTIONS(req: Request) {
       headers: getCorsHeaders(req.headers.get("origin")),
     });
   }
-export async function GET(req: Request, { params }: { params: { storeId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ storeId: string }> }) {
   const origin = req.headers.get("origin");
-
+const { storeId } = await params;
   try {
-    if (!params.storeId) {
+    if (!storeId) {
       return errorResponse("Store ID required", origin, 400);
     }
 
     const categories = await prismadb.category.findMany({
-      where: { storeId: params.storeId },
+      where: { storeId: storeId },
     });
 
     return corsResponse(categories, origin);

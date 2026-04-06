@@ -21,7 +21,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
-  const params = useParams();
+  const params = useParams<{ storeId: string }>();
   const router = useRouter();
 
   const [name, setName] = useState(initialData.name);

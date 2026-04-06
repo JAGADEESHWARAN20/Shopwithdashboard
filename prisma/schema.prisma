@@ -113,6 +113,9 @@ model DesignCollection {
   @@index([storeId])
 }
 
+
+
+
 model DesignItem {
   id            String           @id @default(uuid()) @map("_id")
   collectionId  String
@@ -136,9 +139,15 @@ model DesignVariation {
   designItemId  String
   designItem    DesignItem @relation("DesignItemToVariation", fields: [designItemId], references: [id], onDelete: Cascade)
 
+<<<<<<< HEAD
   label         String     // e.g. "V-01", "Deep Neck V"
   imageUrl      String     // variation image
   value         String?    // optional value/tag for frontend chips
+=======
+  label         String
+  imageUrl      String
+  value         String?
+>>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
   sortOrder     Int        @default(0)
   isActive      Boolean    @default(true)
 
@@ -162,6 +171,20 @@ model Billboard {
   @@index([storeId])
 }
 
+model RecentWork {
+  id         String   @id @default(uuid()) @map("_id")
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  title      String
+  imageUrl   String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
 model Category {
   id          String    @id @default(uuid()) @map("_id")
   storeId     String
@@ -169,13 +192,18 @@ model Category {
   billboardId String
   billboard   Billboard @relation(fields: [billboardId], references: [id])
   products    Product[] @relation("CategoryToProduct")
+
   name        String
+
+  recentWorks RecentWork[] // ✅ NEW RELATION
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([storeId])
   @@index([billboardId])
 }
+
 
 model Size {
   id        String    @id @default(uuid()) @map("_id")
