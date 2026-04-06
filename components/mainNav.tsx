@@ -16,12 +16,12 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
         { href: `/${params.storeId}`, label: 'Overview' },
         { href: `/${params.storeId}/billboards`, label: 'Billboards' },
         { href: `/${params.storeId}/categories`, label: 'Categories' },
+        { href: `/${params.storeId}/design-collections`, label: 'Collections' },
         { href: `/${params.storeId}/sizes`, label: 'Sizes' },
         { href: `/${params.storeId}/colors`, label: 'Colors' },
         { href: `/${params.storeId}/products`, label: 'Products' },
         { href: `/${params.storeId}/orders`, label: 'Orders' },
         { href: `/${params.storeId}/settings`, label: 'Settings' },
-        { href: `/${params.storeId}/design-collections`, label: 'Collections' },
 
        
 

@@ -62,7 +62,7 @@
     "zod": "^3.22.4",
     "zustand": "^4.5.0"
   },
-  "devDependencies": {
+ "devDependencies": {
     "@clerk/backend": "^1.25.8",
     "@clerk/nextjs": "^5.7.5",
     "@eslint/config-array": "^0.19.2",
@@ -72,9 +72,9 @@
     "@types/date-fns": "^2.5.3",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.17.28",
-    "@types/react": "^18",
+    "@types/react": "^19.0.0",
     "@types/react-color": "^3.0.13",
-    "@types/react-dom": "^18",
+    "@types/react-dom": "^19.0.0",
     "@types/validator": "^13.12.3",
     "@types/ws": "^8.18.0",
     "autoprefixer": "^10.4.21",
