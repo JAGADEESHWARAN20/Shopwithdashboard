@@ -8,10 +8,11 @@ const CollectionPage = async ({
 }: {
   params: { collectionId: string; storeId: string };
 }) => {
+  const { storeId, collectionId } = await params; // ✅ FIX
   const collection = await prismadb.designCollection.findFirst({
     where: {
-      id: params.collectionId,
-      storeId: params.storeId,
+      id: collectionId,
+      storeId,
     },
     include: {
       designs: {

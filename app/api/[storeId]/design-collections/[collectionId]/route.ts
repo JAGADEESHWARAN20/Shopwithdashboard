@@ -12,52 +12,46 @@ export async function OPTIONS(req: Request) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { collectionId: string; storeId: string } }
+  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.collectionId || !params.storeId) {
-      return errorResponse("storeId and collectionId are required", origin, 400);
-    }
+    const { storeId, collectionId } = await params;
 
     const collection = await prismadb.designCollection.findFirst({
-      where: { id: params.collectionId, storeId: params.storeId },
+      where: { id: collectionId, storeId },
       include: {
         designs: {
           include: {
             variations: {
-              orderBy: {
-                sortOrder: "asc",
-              },
+              orderBy: { sortOrder: "asc" },
             },
           },
         },
       },
     });
 
-    if (!collection) {
-      return errorResponse("Collection not found", origin, 404);
-    }
+    if (!collection) return errorResponse("Collection not found", origin, 404);
 
-    return corsResponse(collection, origin);
+    return corsResponse(collection, origin); // ✅ SINGLE
   } catch (error) {
-    console.error("[COLLECTION_GET]", error);
     return errorResponse("Internal error", origin);
   }
 }
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { collectionId: string; storeId: string } }
+  { params }: { params: Promise<{ collectionId: string; storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    const { collectionId, storeId } = await params; // ✅ FIX
+    const { userId } = await auth(); // ✅ FIX
 
-    if (!params.collectionId || !params.storeId) {
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    if (!collectionId || !storeId) {
       return errorResponse("storeId and collectionId are required", origin, 400);
     }
 
@@ -68,13 +62,13 @@ export async function PATCH(
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const updated = await prismadb.designCollection.update({
-      where: { id: params.collectionId },
+      where: { id: collectionId },
       data: {
         label,
         coverImage,
@@ -97,7 +91,7 @@ export async function DELETE(
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     if (!params.collectionId || !params.storeId) {

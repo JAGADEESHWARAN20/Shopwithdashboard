@@ -113,26 +113,7 @@ model DesignCollection {
   @@index([storeId])
 }
 
-model DesignVariation {
-  id           String      @id @default(uuid()) @map("_id")
 
-  designItemId String
-  designItem   DesignItem  @relation(fields: [designItemId], references: [id], onDelete: Cascade)
-
-  label        String      // e.g. "Deep Neck V", "Boat Neck", etc
-  imageUrl     String      // variation image
-  value        String?     // optional (V1, V2, etc)
-  price        Float?      // optional pricing per variation
-
-  isActive     Boolean     @default(true)
-  isDefault    Boolean     @default(false)
-  sortOrder    Int         @default(0)
-
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  @@index([designItemId])
-}
 
 
 model DesignItem {
@@ -158,9 +139,9 @@ model DesignVariation {
   designItemId  String
   designItem    DesignItem @relation("DesignItemToVariation", fields: [designItemId], references: [id], onDelete: Cascade)
 
-  label         String     // e.g. "V-01", "Deep Neck V"
-  imageUrl      String     // variation image
-  value         String?    // optional value/tag for frontend chips
+  label         String
+  imageUrl      String
+  value         String?
   sortOrder     Int        @default(0)
   isActive      Boolean    @default(true)
 
@@ -182,6 +163,20 @@ model Billboard {
   isFeatured Boolean  @default(false) // ✅ always boolean
 
   @@index([storeId])
+}
+
+model RecentWork {
+  id         String   @id @default(uuid()) @map("_id")
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  title      String
+  imageUrl   String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
 }
 
 model Category {

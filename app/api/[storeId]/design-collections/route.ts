@@ -12,15 +12,16 @@ export async function OPTIONS(req: Request) {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: { params: Promise<{ storeId: string }> } // ✅ FIX
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    const { storeId } = await params; // ✅ FIX
+    const { userId } = await auth(); // ✅ FIX
 
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    if (!storeId) return errorResponse("Store ID required", origin, 400);
 
     const { label, coverImage, slug, isFeatured } = await req.json();
 
@@ -29,7 +30,7 @@ export async function POST(
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
@@ -40,7 +41,7 @@ export async function POST(
         coverImage,
         slug,
         isFeatured: Boolean(isFeatured),
-        storeId: params.storeId,
+        storeId,
       },
     });
 
@@ -53,36 +54,29 @@ export async function POST(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
+    const { storeId } = await params;
 
     const collections = await prismadb.designCollection.findMany({
-      where: {
-        storeId: params.storeId,
-      },
+      where: { storeId },
       include: {
         designs: {
           include: {
             variations: {
-              orderBy: {
-                sortOrder: "asc",
-              },
+              orderBy: { sortOrder: "asc" },
             },
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return corsResponse(collections, origin);
+    return corsResponse(collections, origin); // ✅ ARRAY
   } catch (error) {
-    console.error("[COLLECTIONS_GET]", error);
     return errorResponse("Internal Server Error", origin);
   }
 }

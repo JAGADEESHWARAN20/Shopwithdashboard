@@ -10,25 +10,24 @@ export async function OPTIONS(req: Request) {
   });
 }
 
+// GET SINGLE DESIGN
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string; collectionId: string; designId: string } }
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+    const { storeId, collectionId, designId } = await params;
+
     const design = await prismadb.designItem.findFirst({
       where: {
-        id: params.designId,
-        collectionId: params.collectionId,
-        collection: { storeId: params.storeId },
+        id: designId,
+        collectionId,
+        collection: { storeId },
       },
       include: {
-        variations: {
-          orderBy: {
-            sortOrder: "asc",
-          },
-        },
+        variations: { orderBy: { sortOrder: "asc" } },
       },
     });
 
@@ -36,122 +35,106 @@ export async function GET(
 
     return corsResponse(design, origin);
   } catch (error) {
-    console.error("[COLLECTION_DESIGN_GET]", error);
+    console.error("[DESIGN_GET]", error);
     return errorResponse("Internal error", origin);
   }
 }
 
+// PATCH DESIGN
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { storeId: string; collectionId: string; designId: string } }
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { storeId, collectionId, designId } = await params;
+    const { userId } = await auth();
+
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
-    const { label, imageUrl, description, tags, values, variations } = await req.json();
+    const body = await req.json();
+    const { label, imageUrl, description, tags, values, variations } = body;
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
-    const existing = await prismadb.designItem.findFirst({
-      where: {
-        id: params.designId,
-        collectionId: params.collectionId,
-        collection: { storeId: params.storeId },
-      },
-    });
-
-    if (!existing) return errorResponse("Design not found", origin, 404);
-
     const normalizedVariations = Array.isArray(variations)
       ? variations
-          .filter((item: any) => item?.label && item?.imageUrl)
-          .map((item: any, index: number) => ({
-            label: String(item.label),
-            imageUrl: String(item.imageUrl),
-            value: item.value ? String(item.value) : null,
-            sortOrder: Number.isFinite(item.sortOrder) ? Number(item.sortOrder) : index,
-            isActive: item.isActive !== false,
+          .filter((v: any) => v?.label && v?.imageUrl)
+          .map((v: any, i: number) => ({
+            label: String(v.label),
+            imageUrl: String(v.imageUrl),
+            value: v.value ? String(v.value) : null,
+            sortOrder: Number.isFinite(v.sortOrder) ? v.sortOrder : i,
+            isActive: v.isActive !== false,
           }))
       : [];
 
-    await prismadb.designItem.update({
-      where: { id: params.designId },
+    // 🔥 SINGLE UPDATE (no double update)
+    const updated = await prismadb.designItem.update({
+      where: { id: designId },
       data: {
         title: label,
         imageUrl,
         description,
-        tags: Array.isArray(values) ? values : Array.isArray(tags) ? tags : [],
+        tags: Array.isArray(values) ? values : tags || [],
         variations: {
           deleteMany: {},
+          ...(normalizedVariations.length && {
+            createMany: { data: normalizedVariations },
+          }),
         },
-      },
-    });
-
-    const updated = await prismadb.designItem.update({
-      where: { id: params.designId },
-      data: {
-        variations: normalizedVariations.length
-          ? {
-              createMany: {
-                data: normalizedVariations,
-              },
-            }
-          : undefined,
       },
       include: {
-        variations: {
-          orderBy: {
-            sortOrder: "asc",
-          },
-        },
+        variations: { orderBy: { sortOrder: "asc" } },
       },
     });
 
     return corsResponse(updated, origin);
   } catch (error) {
-    console.error("[COLLECTION_DESIGN_PATCH]", error);
+    console.error("[DESIGN_PATCH]", error);
     return errorResponse("Internal error", origin);
   }
 }
 
+// DELETE DESIGN
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { storeId: string; collectionId: string; designId: string } }
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { storeId, collectionId, designId } = await params;
+    const { userId } = await auth();
+
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const deleted = await prismadb.designItem.deleteMany({
       where: {
-        id: params.designId,
-        collectionId: params.collectionId,
-        collection: { storeId: params.storeId },
+        id: designId,
+        collectionId,
+        collection: { storeId },
       },
     });
 
     return corsResponse(deleted, origin);
   } catch (error) {
-    console.error("[COLLECTION_DESIGN_DELETE]", error);
+    console.error("[DESIGN_DELETE]", error);
     return errorResponse("Internal error", origin);
   }
 }

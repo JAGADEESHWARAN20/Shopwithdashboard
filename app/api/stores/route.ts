@@ -98,7 +98,7 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
 
 export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
@@ -219,7 +219,7 @@ export async function GET(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });

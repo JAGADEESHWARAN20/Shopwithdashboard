@@ -6,12 +6,19 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/(.*)",
+  "/_next/(.*)", // ✅ allow Next internals
+  "/favicon.ico",
 ]);
 
 export default clerkMiddleware((auth, request) => {
   const origin = request.headers.get("origin");
 
-  // ✅ Handle preflight
+  // ✅ Allow Clerk internal routes explicitly
+  if (request.nextUrl.pathname.includes("SignUp_clerk_catchall_check")) {
+    return NextResponse.next();
+  }
+
+  // ✅ Preflight
   if (request.method === "OPTIONS") {
     return new NextResponse(null, {
       status: 204,
@@ -19,9 +26,8 @@ export default clerkMiddleware((auth, request) => {
     });
   }
 
-  // ✅ FIX: use auth.protect() instead of auth()
   if (!isPublicRoute(request)) {
-    auth().protect();
+    auth.protect();
   }
 
   const response = NextResponse.next();
@@ -36,7 +42,6 @@ export default clerkMiddleware((auth, request) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

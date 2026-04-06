@@ -1,51 +1,69 @@
+import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
-import { corsResponse, errorResponse } from "@/lib/api-utils";
-import { NextRequest } from "next/server";
 
-
-export async function GET(req: Request, { params }: any) {
-  const origin = req.headers.get("origin");
-
+// =========================
+// GET STORE
+// =========================
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ storeId: string }> }
+) {
   try {
+    const { storeId } = await params;
+
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId },
+      where: { id: storeId },
     });
 
-    if (!store) return errorResponse("Store not found", origin, 404);
+    if (!store) {
+      return NextResponse.json({ error: "Store not found" }, { status: 404 });
+    }
 
-    return corsResponse(store, origin);
-  } catch (err) {
-    console.error("[STORE_GET]", err);
-    return errorResponse("Internal error", origin);
+    return NextResponse.json(store);
+  } catch (error) {
+    console.error("[STORE_GET]", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
-
-
-export async function PATCH(req: NextRequest, { params }: any){
-  const origin = req.headers.get("origin");
-
+// =========================
+// PATCH STORE
+// =========================
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ storeId: string }> }
+) {
   try {
-    const { userId } = auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    const { userId } = await auth(); // ✅ FIX
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    }
+
+    const { storeId } = await params; // ✅ FIX
 
     const body = await req.json();
+    const { name, storeUrl } = body;
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
-    if (!store) return errorResponse("Unauthorized", origin, 403);
+    if (!store) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
 
     const updated = await prismadb.store.update({
-      where: { id: params.storeId },
-      data: body,
+      where: { id: storeId },
+      data: {
+        ...(name && { name }),
+        ...(storeUrl && { storeUrl }),
+      },
     });
 
-    return corsResponse(updated, origin);
-  } catch (err: any) {
-    console.error("[STORE_PATCH]", err);
-    return errorResponse(err.message || "Internal error", origin);
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("[STORE_PATCH]", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

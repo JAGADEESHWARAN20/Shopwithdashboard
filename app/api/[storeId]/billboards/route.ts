@@ -8,7 +8,7 @@ export async function POST(
 ) {
     try {
         // Ensure user is authenticated
-        const { userId } = auth();
+        const { userId } =await auth();
         const body = await req.json();
         const { label, imageUrl } = body;
         if (!userId) {

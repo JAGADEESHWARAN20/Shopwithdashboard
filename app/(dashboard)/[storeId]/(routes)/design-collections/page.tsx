@@ -8,10 +8,10 @@ const DesignCollectionsPage = async ({
 }: {
   params: { storeId: string }
 }) => {
-
+  const { storeId } = await params; // ✅ FIX
   const collections = await prismadb.designCollection.findMany({
     where: {
-      storeId: params.storeId
+      storeId,
     },
     orderBy: {
       createdAt: "desc"
