@@ -15,7 +15,7 @@ export default clerkMiddleware((auth, request) => {
   }
 
   if (!isPublicRoute(request)) {
-    auth().protect();
+    auth.protect();
   }
 
   const response = NextResponse.next();
