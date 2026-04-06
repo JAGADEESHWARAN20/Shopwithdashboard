@@ -33,7 +33,7 @@ const CollectionPage = async ({
   });
 
   const formattedDesigns =
-    collection?.designs.map((item: { id: any; title: any; imageUrl: any; variations: string | any[]; createdAt: any; }) => ({
+    collection?.designs.map((item) => ({
       id: item.id,
       categoryLabel: item.title,
       previewImage: item.imageUrl,

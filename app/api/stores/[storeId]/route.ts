@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import prismadb from "@/lib/prismadb";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 
 // ✅ Allowed origins (frontend + localhost)
 const ALLOWED = process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",") || [];
@@ -103,7 +103,7 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = getAuth(req);
+    const { userId } = auth();
 
     if (!userId) {
       return new Response(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import axios from "axios";
 import validator from "validator";
@@ -10,7 +10,7 @@ const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 
 async function addDomainToProject(projectId: string, domainName: string) {
   if (!VERCEL_ACCESS_TOKEN) {
-    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables");
+    throw new Error("VERCEL_ACCESS_TOKEN is not set in the environment variables.");
   }
 
   try {
@@ -98,7 +98,7 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
 
 export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
   try {
-    const { userId } = getAuth(req);
+    const { userId } = auth();
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
@@ -219,7 +219,7 @@ export async function GET(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = getAuth(req);
+    const { userId } = auth();
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });

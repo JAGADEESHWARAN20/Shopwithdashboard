@@ -140,13 +140,12 @@ model DesignItem {
   collectionId  String
   collection    DesignCollection @relation("CollectionToDesign", fields: [collectionId], references: [id], onDelete: Cascade)
 
-  title         String
-  imageUrl      String
-  description   String?
+  title         String           // variation group label (e.g. "Lehanga Blouse Front")
+  imageUrl      String           // group preview image
+  description   String?          // optional notes
 
-  tags          String[]         @default([])
-
-  variations    DesignVariation[] // ✅ NEW RELATION
+  tags          String[]         @default([]) // optional filters/metadata
+  variations    DesignVariation[] @relation("DesignItemToVariation")
 
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -154,24 +153,21 @@ model DesignItem {
   @@index([collectionId])
 }
 
-model RecentWork {
-  id          String    @id @default(uuid()) @map("_id")
+model DesignVariation {
+  id            String     @id @default(uuid()) @map("_id")
+  designItemId  String
+  designItem    DesignItem @relation("DesignItemToVariation", fields: [designItemId], references: [id], onDelete: Cascade)
 
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  label         String     // e.g. "V-01", "Deep Neck V"
+  imageUrl      String     // variation image
+  value         String?    // optional value/tag for frontend chips
+  sortOrder     Int        @default(0)
+  isActive      Boolean    @default(true)
 
-  title       String    // e.g. "Bridal Lehanga 2026"
-  imageUrl    String
-  description String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
-  tags        String[]  @default([])
-
-  isFeatured  Boolean   @default(false)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([categoryId])
+  @@index([designItemId])
 }
 
 model Billboard {
