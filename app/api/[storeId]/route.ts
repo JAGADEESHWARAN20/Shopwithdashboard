@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: any){
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const body = await req.json();

@@ -32,7 +32,7 @@ export async function POST(req: Request, { params }: { params: { storeId: string
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { name, billboardId } = await req.json();

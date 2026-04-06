@@ -103,7 +103,7 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } =await auth();
 
     if (!userId) {
       return new Response(

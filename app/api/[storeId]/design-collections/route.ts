@@ -17,7 +17,7 @@ export async function POST(
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);

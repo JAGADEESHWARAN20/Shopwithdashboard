@@ -22,7 +22,7 @@ export async function PATCH(req: Request, { params }: any) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { name, billboardId } = await req.json();
@@ -49,7 +49,7 @@ export async function DELETE(req: Request, { params }: any) {
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = auth();
+    const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const store = await prismadb.store.findFirst({
