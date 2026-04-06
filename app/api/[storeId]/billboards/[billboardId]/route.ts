@@ -31,13 +31,8 @@ export async function PATCH(
   { params }: { params: Promise<{ storeId: string; billboardId: string }> }
 ) {
   try {
-<<<<<<< HEAD
     const { userId } =await auth();
     const body = await req.json();
-=======
-    const { storeId, billboardId } = await params; // ✅ FIX
-    const { userId } = await auth();
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
 
     const body = await req.json();
     const { label, imageUrl } = body;
@@ -69,14 +64,8 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ storeId: string; billboardId: string }> }
 ) {
-<<<<<<< HEAD
     try {
         const { userId } =await auth();
-=======
-  try {
-    const { storeId, billboardId } = await params; // ✅ FIX
-    const { userId } = await auth();
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
