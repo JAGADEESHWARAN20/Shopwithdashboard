@@ -11,160 +11,81 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-// ================= GET SINGLE DESIGN =================
+// ================= GET STORE =================
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { storeId, collectionId, designId } = await params;
+    const { storeId } = await params;
 
-    const design = await prismadb.designItem.findFirst({
-      where: {
-        id: designId,
-        collectionId,
-        collection: { storeId },
-      },
-      include: {
-        variations: {
-          orderBy: { sortOrder: "asc" },
-        },
-      },
+    if (!storeId) {
+      return errorResponse("Store ID required", origin, 400);
+    }
+
+    const store = await prismadb.store.findFirst({
+      where: { id: storeId },
     });
 
-    if (!design) return errorResponse("Design not found", origin, 404);
+    if (!store) {
+      return errorResponse("Store not found", origin, 404);
+    }
 
-    return corsResponse(design, origin);
+    return corsResponse(store, origin);
   } catch (error) {
-    console.error("[DESIGN_GET]", error);
+    console.error("[STORE_GET]", error);
     return errorResponse("Internal error", origin);
   }
 }
 
-// ================= PATCH =================
+// ================= PATCH STORE =================
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const { userId } = await auth(); // ✅ FIX
-
-=======
-    const { storeId, collectionId, designId } = await params;
+    const { storeId } = await params;
     const { userId } = await auth();
->>>>>>> 95f3d2a (new update)
-=======
-    const { storeId, collectionId, designId } = await params;
-    const { userId } = await auth();
->>>>>>> 95f3d2a (new update)
 
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-
-    const body = await req.json();
-    const { label, imageUrl, description, tags, values, variations } = body;
-
-    if (!label || !imageUrl) {
-      return errorResponse("label and imageUrl are required", origin, 400);
+    if (!userId) {
+      return errorResponse("Unauthorized", origin, 401);
     }
 
+    if (!storeId) {
+      return errorResponse("Store ID required", origin, 400);
+    }
+
+    const body = await req.json();
+    const { name, storeUrl, isActive, alternateUrls, logoUrl } = body;
+
+    // 🔐 Ownership check
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
     });
 
-    if (!store) return errorResponse("Unauthorized", origin, 403);
+    if (!store) {
+      return errorResponse("Unauthorized", origin, 403);
+    }
 
-    const existing = await prismadb.designItem.findFirst({
-      where: {
-        id: designId,
-        collectionId,
-        collection: { storeId },
-      },
-    });
-
-    if (!existing) return errorResponse("Design not found", origin, 404);
-
-    // 🔥 normalize variations
-    const normalizedVariations = Array.isArray(variations)
-      ? variations
-          .filter((v: any) => v?.label && v?.imageUrl)
-          .map((v: any, i: number) => ({
-            label: String(v.label),
-            imageUrl: String(v.imageUrl),
-            value: v.value ? String(v.value) : null,
-            sortOrder: Number.isFinite(v.sortOrder) ? Number(v.sortOrder) : i,
-            isActive: v.isActive !== false,
-          }))
-      : [];
-
-    // 🔥 single clean update
-    const updated = await prismadb.designItem.update({
-      where: { id: designId },
+    // 🧠 Partial update (safe)
+    const updated = await prismadb.store.update({
+      where: { id: storeId },
       data: {
-        title: label,
-        imageUrl,
-        description,
-        tags: Array.isArray(values)
-          ? values
-          : Array.isArray(tags)
-          ? tags
-          : [],
-        variations: {
-          deleteMany: {},
-          ...(normalizedVariations.length && {
-            createMany: { data: normalizedVariations },
-          }),
-        },
-      },
-      include: {
-        variations: {
-          orderBy: { sortOrder: "asc" },
-        },
+        ...(name !== undefined && { name }),
+        ...(storeUrl !== undefined && { storeUrl }),
+        ...(isActive !== undefined && { isActive }),
+        ...(alternateUrls !== undefined && { alternateUrls }),
+        ...(logoUrl !== undefined && { logoUrl }),
       },
     });
 
     return corsResponse(updated, origin);
   } catch (error) {
-    console.error("[DESIGN_PATCH]", error);
-    return errorResponse("Internal error", origin);
-  }
-}
-
-// ================= DELETE =================
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
-) {
-  const origin = req.headers.get("origin");
-
-  try {
-    const { storeId, collectionId, designId } = await params;
-    const { userId } = await auth();
-
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-
-    const store = await prismadb.store.findFirst({
-      where: { id: storeId, userId },
-    });
-
-    if (!store) return errorResponse("Unauthorized", origin, 403);
-
-    const deleted = await prismadb.designItem.deleteMany({
-      where: {
-        id: designId,
-        collectionId,
-        collection: { storeId },
-      },
-    });
-
-    return corsResponse(deleted, origin);
-  } catch (error) {
-    console.error("[DESIGN_DELETE]", error);
+    console.error("[STORE_PATCH]", error);
     return errorResponse("Internal error", origin);
   }
 }

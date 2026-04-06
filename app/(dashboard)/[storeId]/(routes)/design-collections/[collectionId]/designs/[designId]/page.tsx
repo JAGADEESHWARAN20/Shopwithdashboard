@@ -4,41 +4,37 @@ import { DesignForm } from "../../components/design-form";
 const DesignItemPage = async ({
   params,
 }: {
-  params: Promise<{ storeId: string; collectionId: string; designId: string }>;
+  params: Promise<{
+    storeId: string;
+    collectionId: string;
+    designId: string;
+  }>;
 }) => {
-  const resolvedParams = await params;
-  const design =
-    resolvedParams.designId === "new"
-      ? null
-      : await prismadb.designItem.findFirst({
-          where: {
-            id: resolvedParams.designId,
-            collectionId: resolvedParams.collectionId,
-            collection: { storeId: resolvedParams.storeId },
-}) => {
-  const resolvedParams = await params;
-  const design =
-    resolvedParams.designId === "new"
-      ? null
-      : await prismadb.designItem.findFirst({
-          where: {
+  const { storeId, collectionId, designId } = await params;
 
-            id: resolvedParams.designId,
-            collectionId: resolvedParams.collectionId,
-            collection: { storeId: resolvedParams.storeId },
+  let design = null;
 
+  if (designId !== "new") {
+    design = await prismadb.designItem.findFirst({
+      where: {
+        id: designId,
+        collectionId,
+        collection: {
+          storeId,
+        },
+      },
+      include: {
+        variations: {
+          where: {
+            isActive: true,
           },
-          include: {
-            variations: {
-              where: {
-                isActive: true,
-              },
-              orderBy: {
-                sortOrder: "asc",
-              },
-            },
+          orderBy: {
+            sortOrder: "asc",
           },
-        });
+        },
+      },
+    });
+  }
 
   return (
     <div className="flex-col">

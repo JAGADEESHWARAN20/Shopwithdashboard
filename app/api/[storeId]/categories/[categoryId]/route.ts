@@ -17,11 +17,7 @@ export async function GET(
     const { storeId, categoryId } = await params;
 
     if (!storeId || !categoryId) {
-      return errorResponse(
-        "storeId and categoryId are required",
-        origin,
-        400
-      );
+      return errorResponse("storeId and categoryId are required", origin, 400);
     }
 
     const category = await prismadb.category.findUnique({
@@ -52,32 +48,15 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const { storeId, categoryId } = await params; // ✅ FIX
-    const { userId } = await auth();
-
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-=======
-    const { storeId, categoryId } = await params;
-    const { userId } = await auth();
->>>>>>> 95f3d2a (new update)
-
-=======
     const { storeId, categoryId } = await params;
     const { userId } = await auth();
 
->>>>>>> 95f3d2a (new update)
     if (!userId) {
       return errorResponse("Unauthorized", origin, 401);
     }
 
     if (!storeId || !categoryId) {
-      return errorResponse(
-        "storeId and categoryId are required",
-        origin,
-        400
-      );
+      return errorResponse("storeId and categoryId are required", origin, 400);
     }
 
     const body = await req.json();
@@ -119,37 +98,16 @@ export async function DELETE(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const { storeId, categoryId } = await params; // ✅ FIX
-    const { userId } = await auth();
-
-
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-=======
     const { storeId, categoryId } = await params;
     const { userId } = await auth();
 
-=======
-    const { storeId, categoryId } = await params;
-    const { userId } = await auth();
-
->>>>>>> 95f3d2a (new update)
     if (!userId) {
       return errorResponse("Unauthorized", origin, 401);
     }
 
     if (!storeId || !categoryId) {
-      return errorResponse(
-        "storeId and categoryId are required",
-        origin,
-        400
-      );
+      return errorResponse("storeId and categoryId are required", origin, 400);
     }
-<<<<<<< HEAD
->>>>>>> 95f3d2a (new update)
-=======
->>>>>>> 95f3d2a (new update)
 
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },

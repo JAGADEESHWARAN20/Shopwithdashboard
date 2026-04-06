@@ -24,24 +24,9 @@ export async function POST(
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId) return errorResponse("Store ID required", origin, 400);
-<<<<<<< HEAD
 
-    const { userId } = await auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
-
-=======
-    const { storeId } = await params;
-    const { userId } = await auth();
-
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-    if (!storeId) return errorResponse("Store ID required", origin, 400);
->>>>>>> 95f3d2a (new update)
-=======
->>>>>>> 95f3d2a (new update)
-
-    const { label, coverImage, slug, isFeatured } = await req.json();
+    const body = await req.json();
+    const { label, coverImage, slug, isFeatured } = body;
 
     if (!label || !coverImage || !slug) {
       return errorResponse(
@@ -51,16 +36,9 @@ export async function POST(
       );
     }
 
-    // 🔐 ownership check
+    // 🔐 Ownership check
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> 95f3d2a (new update)
-=======
->>>>>>> 95f3d2a (new update)
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
@@ -72,13 +50,6 @@ export async function POST(
         slug,
         isFeatured: Boolean(isFeatured),
         storeId,
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> 95f3d2a (new update)
-=======
->>>>>>> 95f3d2a (new update)
       },
     });
 
@@ -97,27 +68,11 @@ export async function GET(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-    const { storeId } = await params;
-
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
-
-=======
     const { storeId } = await params;
 
     if (!storeId) {
       return errorResponse("Store ID required", origin, 400);
     }
->>>>>>> 95f3d2a (new update)
-=======
-    const { storeId } = await params;
-
-    if (!storeId) {
-      return errorResponse("Store ID required", origin, 400);
-    }
->>>>>>> 95f3d2a (new update)
 
     const collections = await prismadb.designCollection.findMany({
       where: { storeId },
@@ -125,16 +80,7 @@ export async function GET(
         designs: {
           include: {
             variations: {
-<<<<<<< HEAD
-<<<<<<< HEAD
-              orderBy: { sortOrder: "asc" }
-
-=======
               orderBy: { sortOrder: "asc" },
->>>>>>> 95f3d2a (new update)
-=======
-              orderBy: { sortOrder: "asc" },
->>>>>>> 95f3d2a (new update)
             },
           },
         },
@@ -142,30 +88,10 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    return corsResponse(collections, origin); // ✅ ARRAY
-  } catch (error) {
-
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return corsResponse(collections, origin);
+    // ✅ ALWAYS ARRAY
+    return corsResponse(Array.isArray(collections) ? collections : [], origin);
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
-
-=======
-    return corsResponse(collections, origin); // ✅ ALWAYS ARRAY
-  } catch (error) {
-    console.error("[COLLECTIONS_GET]", error);
->>>>>>> 95f3d2a (new update)
-=======
-    return corsResponse(collections, origin); // ✅ ALWAYS ARRAY
-  } catch (error) {
-    console.error("[COLLECTIONS_GET]", error);
->>>>>>> 95f3d2a (new update)
     return errorResponse("Internal Server Error", origin);
   }
 }
