@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { MainNav } from "./mainNav";
 import StoreSwitcher from "./store-switcher";
+import RouteLoadingOverlay from "./route-loading-overlay";
 
 interface NavbarProps {
     store: any; // The current store
@@ -20,6 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ store, stores }) => {
 
     return (
         <div className="border-b">
+            <RouteLoadingOverlay />
             <div className="flex h-16 items-center px-4">
                 <StoreSwitcher items={stores} />
                 <MainNav className="mx-6" />

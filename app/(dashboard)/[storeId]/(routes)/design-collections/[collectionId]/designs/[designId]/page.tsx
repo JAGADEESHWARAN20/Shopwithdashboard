@@ -4,16 +4,17 @@ import { DesignForm } from "../../components/design-form";
 const DesignItemPage = async ({
   params,
 }: {
-  params: { storeId: string; collectionId: string; designId: string };
+  params: Promise<{ storeId: string; collectionId: string; designId: string }>;
 }) => {
+  const resolvedParams = await params;
   const design =
-    params.designId === "new"
+    resolvedParams.designId === "new"
       ? null
       : await prismadb.designItem.findFirst({
           where: {
-            id: params.designId,
-            collectionId: params.collectionId,
-            collection: { storeId: params.storeId },
+            id: resolvedParams.designId,
+            collectionId: resolvedParams.collectionId,
+            collection: { storeId: resolvedParams.storeId },
           },
           include: {
             variations: {
