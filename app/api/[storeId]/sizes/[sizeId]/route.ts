@@ -43,7 +43,7 @@ export async function PATCH(
 ) {
     try {
         const { storeId, sizeId } = await resolveParams(params);
-        const { userId } = auth();
+        const { userId } = await auth();
         const body = await req.json();
         const { name, value } = body;
 
@@ -102,7 +102,7 @@ export async function DELETE(
 ) {
     try {
         const { storeId, sizeId } = await resolveParams(params);
-        const { userId } = auth();
+        const { userId } = await auth();
 
         if (!userId) {
             return new NextResponse("Unauthoricated", { status: 401 });

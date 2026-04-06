@@ -139,15 +139,10 @@ model DesignVariation {
   designItemId  String
   designItem    DesignItem @relation("DesignItemToVariation", fields: [designItemId], references: [id], onDelete: Cascade)
 
-<<<<<<< HEAD
-  label         String     // e.g. "V-01", "Deep Neck V"
-  imageUrl      String     // variation image
-  value         String?    // optional value/tag for frontend chips
-=======
   label         String
   imageUrl      String
   value         String?
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
   sortOrder     Int        @default(0)
   isActive      Boolean    @default(true)
 

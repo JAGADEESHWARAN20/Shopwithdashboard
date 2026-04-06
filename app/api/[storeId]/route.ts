@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
-<<<<<<< HEAD
 import { corsResponse, errorResponse } from "@/lib/api-utils";
 import { NextRequest } from "next/server";
 
 
 export async function GET(req: Request, { params }: any) {
   const origin = req.headers.get("origin");
-=======
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
 
 // =========================
 // GET STORE
@@ -44,17 +41,17 @@ export async function PATCH(
   { params }: { params: Promise<{ storeId: string }> }
 ) {
   try {
-<<<<<<< HEAD
     const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
-=======
     const { userId } = await auth(); // ✅ FIX
     if (!userId) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
 
     const { storeId } = await params; // ✅ FIX
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+    const { userId } = await auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
 
     const body = await req.json();
     const { name, storeUrl } = body;

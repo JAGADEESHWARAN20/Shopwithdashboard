@@ -17,18 +17,17 @@ export async function POST(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-    const { userId } =await auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
-=======
     const { storeId } = await params; // ✅ FIX
     const { userId } = await auth(); // ✅ FIX
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId) return errorResponse("Store ID required", origin, 400);
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
+    const { userId } = await auth();
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
+
 
     const { label, coverImage, slug, isFeatured } = await req.json();
 
@@ -37,11 +36,8 @@ export async function POST(
     }
 
     const store = await prismadb.store.findFirst({
-<<<<<<< HEAD
-      where: { id: params.storeId, userId },
-=======
       where: { id: storeId, userId },
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
@@ -52,11 +48,8 @@ export async function POST(
         coverImage,
         slug,
         isFeatured: Boolean(isFeatured),
-<<<<<<< HEAD
-        storeId: params.storeId,
-=======
         storeId,
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
       },
     });
 
@@ -74,11 +67,11 @@ export async function GET(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
-=======
+
     const { storeId } = await params;
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
+    if (!params.storeId) return errorResponse("Store ID required", origin, 400);
+
 
     const collections = await prismadb.designCollection.findMany({
       where: { storeId },
@@ -86,18 +79,18 @@ export async function GET(
         designs: {
           include: {
             variations: {
-<<<<<<< HEAD
-              orderBy: {
-                sortOrder: "asc",
-              },
-=======
-              orderBy: { sortOrder: "asc" },
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+              orderBy: { sortOrder: "asc" }
+
             },
           },
         },
       },
-<<<<<<< HEAD
+      orderBy: { createdAt: "desc" },
+    });
+
+    return corsResponse(collections, origin); // ✅ ARRAY
+  } catch (error) {
+
       orderBy: {
         createdAt: "desc",
       },
@@ -106,13 +99,7 @@ export async function GET(
     return corsResponse(collections, origin);
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
-=======
-      orderBy: { createdAt: "desc" },
-    });
 
-    return corsResponse(collections, origin); // ✅ ARRAY
-  } catch (error) {
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
     return errorResponse("Internal Server Error", origin);
   }
 }

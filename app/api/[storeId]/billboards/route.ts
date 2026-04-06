@@ -8,11 +8,8 @@ export async function POST(
 ) {
     try {
         // Ensure user is authenticated
-<<<<<<< HEAD
-        const { userId } = await auth();
-=======
         const { userId } =await auth();
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
         const body = await req.json();
         const { label, imageUrl } = body;
         if (!userId) {

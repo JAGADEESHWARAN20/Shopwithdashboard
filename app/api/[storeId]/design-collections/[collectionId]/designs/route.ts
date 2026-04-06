@@ -12,16 +12,24 @@ export async function OPTIONS(req: Request) {
 
 export async function GET(
   req: NextRequest,
-<<<<<<< HEAD
-  { params }: { params: { storeId: string; collectionId: string } }
-=======
   { params }: { params: Promise<{ storeId: string; collectionId: string }> }
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
 ) {
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
+    const { storeId, collectionId } = await params;
+
+    const designs = await prismadb.designItem.findMany({
+      where: {
+        collectionId,
+        collection: { storeId },
+      },
+      include: {
+        variations: { orderBy: { sortOrder: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+
     if (!params.storeId || !params.collectionId) {
       return errorResponse("storeId and collectionId are required", origin, 400);
     }
@@ -43,53 +51,25 @@ export async function GET(
       orderBy: {
         createdAt: "desc",
       },
-=======
-    const { storeId, collectionId } = await params;
 
-    const designs = await prismadb.designItem.findMany({
-      where: {
-        collectionId,
-        collection: { storeId },
-      },
-      include: {
-        variations: { orderBy: { sortOrder: "asc" } },
-      },
-      orderBy: { createdAt: "desc" },
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
     });
 
     return corsResponse(designs, origin);
   } catch (error) {
-<<<<<<< HEAD
-    console.error("[COLLECTION_DESIGNS_GET]", error);
-=======
     console.error("[DESIGNS_GET]", error);
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
     return errorResponse("Internal error", origin);
   }
 }
 
 export async function POST(
   req: NextRequest,
-<<<<<<< HEAD
-  { params }: { params: { storeId: string; collectionId: string } }
-=======
  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
 ) {
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-    const { userId } =await auth();
-    if (!userId) return errorResponse("Unauthorized", origin, 401);
-
-    if (!params.storeId || !params.collectionId) {
-      return errorResponse("storeId and collectionId are required", origin, 400);
-    }
-
-    const { label, imageUrl, description, tags, values, variations } = await req.json();
-=======
     const { storeId, collectionId } = await params; // ✅ FIX
     const { userId } = await auth();
 
@@ -101,31 +81,24 @@ export async function POST(
 
     const { label, imageUrl, description, tags, values, variations } =
       await req.json();
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
     }
 
     const store = await prismadb.store.findFirst({
-<<<<<<< HEAD
-      where: { id: params.storeId, userId },
-=======
       where: { id: storeId, userId },
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const collection = await prismadb.designCollection.findFirst({
       where: {
-<<<<<<< HEAD
-        id: params.collectionId,
-        storeId: params.storeId,
-=======
         id: collectionId,
         storeId,
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
       },
     });
 
@@ -133,10 +106,8 @@ export async function POST(
       return errorResponse("Collection not found", origin, 404);
     }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
     const normalizedVariations = Array.isArray(variations)
       ? variations
           .filter((item: any) => item?.label && item?.imageUrl)
@@ -151,11 +122,8 @@ export async function POST(
 
     const design = await prismadb.designItem.create({
       data: {
-<<<<<<< HEAD
-        collectionId: params.collectionId,
-=======
         collectionId: collectionId,
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
         title: label,
         imageUrl,
         description,

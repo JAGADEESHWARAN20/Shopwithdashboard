@@ -34,7 +34,8 @@ export async function PATCH(
     const { userId } =await auth();
     const body = await req.json();
 
-    const body = await req.json();
+
+   
     const { label, imageUrl } = body;
 
     if (!userId) return new NextResponse("Unauthenticated", { status: 403 });

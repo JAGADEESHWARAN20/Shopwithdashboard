@@ -85,11 +85,8 @@ export async function PATCH(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
-    const { userId } =await auth();
-=======
     const { userId } = await auth(); // ✅ FIX
->>>>>>> b012185edb29a0bd8b2aa6e73625c787f0bcef16
+
 
     if (!userId) {
       return json({ error: "Unauthenticated" }, 401, origin);

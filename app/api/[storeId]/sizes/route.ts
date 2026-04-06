@@ -25,7 +25,7 @@ export async function POST(
 
   try {
     const { storeId } = await resolveStoreParams(params);
-    const { userId } = auth();
+    const { userId } = await auth();
     const body = await req.json();
     const { name, value } = body;
 
