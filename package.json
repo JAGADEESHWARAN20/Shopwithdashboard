@@ -10,6 +10,12 @@
     "postinstall": "prisma generate",
     "postbuild": "next-sitemap"
   },
+  "overrides": {
+    "tar": "^7.4.3",
+    "@mapbox/node-pre-gyp": {
+      "tar": "^7.4.3"
+    }
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -34,7 +40,7 @@
     "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.321.0",
-    "next": "^14.1.3",
+    "next": "14.2.25",
     "next-cloudinary": "^6.3.0",
     "next-sitemap": "^4.2.3",
     "node-fetch": "^3.3.2",
@@ -74,7 +80,7 @@
     "autoprefixer": "^10.4.21",
     "bcrypt": "^5.1.1",
     "eslint": "8.57.1",
-    "eslint-config-next": "14.1.0",
+    "eslint-config-next": "14.2.25",
     "jsonwebtoken": "^9.0.2",
     "postcss": "^8.5.3",
     "prisma": "^6.14.0",

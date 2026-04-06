@@ -2,11 +2,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
      try {
-          const { userId } = getAuth(req);
+          const { userId } = await auth();
           const { storeId } = params;
           const body = await req.json();
           const { isActive } = body;

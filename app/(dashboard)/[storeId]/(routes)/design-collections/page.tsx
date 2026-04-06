@@ -6,12 +6,13 @@ import { DesignCollectionColumn } from "./components/column";
 const DesignCollectionsPage = async ({
   params
 }: {
-  params: { storeId: string }
+  params: Promise<{ storeId: string }>
 }) => {
+    const { storeId } = await params;
 
   const collections = await prismadb.designCollection.findMany({
     where: {
-      storeId: params.storeId
+      storeId: storeId
     },
     orderBy: {
       createdAt: "desc"

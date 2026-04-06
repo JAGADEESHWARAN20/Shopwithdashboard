@@ -30,7 +30,7 @@ export async function PATCH(
   { params }: { params: { storeId: string, billboardId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     const body = await req.json();
 
     // 1. Ensure imageUrl is extracted from the body
@@ -75,7 +75,7 @@ export async function DELETE(
     { params }: { params: { storeId: string, billboardId: string } }
 ) {
     try {
-        const { userId } = auth();
+        const { userId } = await auth();
 
         if (!userId) {
             return new NextResponse("Unauthoricated", { status: 401 });
