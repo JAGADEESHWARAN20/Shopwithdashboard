@@ -14,8 +14,11 @@ export async function OPTIONS(req: Request) {
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 95f3d2a (new update)
 ) {
   const origin = req.headers.get("origin");
 
@@ -30,6 +33,7 @@ export async function GET(
       },
       include: {
         variations: { orderBy: { sortOrder: "asc" } },
+<<<<<<< HEAD
 
     const design = await prismadb.designItem.findFirst({
       where: {
@@ -43,6 +47,8 @@ export async function GET(
             sortOrder: "asc",
           },
         },
+=======
+>>>>>>> 95f3d2a (new update)
       },
     });
 
@@ -51,24 +57,37 @@ export async function GET(
     return corsResponse(design, origin);
   } catch (error) {
     console.error("[DESIGN_GET]", error);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
     return errorResponse("Internal error", origin);
   }
 }
 
+<<<<<<< HEAD
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { storeId: string; collectionId: string; designId: string } }
 
+=======
+// PATCH DESIGN
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+>>>>>>> 95f3d2a (new update)
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } =await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { label, imageUrl, description, tags, values, variations } = await req.json();
+=======
+>>>>>>> 95f3d2a (new update)
     const { storeId, collectionId, designId } = await params;
     const { userId } = await auth();
 
@@ -76,29 +95,36 @@ export async function PATCH(
 
     const body = await req.json();
     const { label, imageUrl, description, tags, values, variations } = body;
+<<<<<<< HEAD
 
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const { label, imageUrl, description, tags, values, variations } = await req.json();
 
+=======
+>>>>>>> 95f3d2a (new update)
 
     if (!label || !imageUrl) {
       return errorResponse("label and imageUrl are required", origin, 400);
     }
 
     const store = await prismadb.store.findFirst({
+<<<<<<< HEAD
       where: { id: params.storeId, userId },
 
+=======
+      where: { id: storeId, userId },
+>>>>>>> 95f3d2a (new update)
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const existing = await prismadb.designItem.findFirst({
       where: {
-        id: params.designId,
-        collectionId: params.collectionId,
-        collection: { storeId: params.storeId },
+        id: designId,
+        collectionId: collectionId,
+        collection: { storeId: storeId },
       },
     });
 
@@ -117,6 +143,7 @@ export async function PATCH(
       : [];
 
     await prismadb.designItem.update({
+<<<<<<< HEAD
       where: { id: params.designId },
     const normalizedVariations = Array.isArray(variations)
       ? variations
@@ -135,6 +162,9 @@ export async function PATCH(
     const updated = await prismadb.designItem.update({
       where: { id: designId },
 
+=======
+      where: { id: designId },
+>>>>>>> 95f3d2a (new update)
       data: {
         title: label,
         imageUrl,
@@ -147,7 +177,7 @@ export async function PATCH(
     });
 
     const updated = await prismadb.designItem.update({
-      where: { id: params.designId },
+      where: { id: designId },
       data: {
         variations: normalizedVariations.length
           ? {

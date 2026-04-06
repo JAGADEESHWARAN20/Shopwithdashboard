@@ -1,134 +1,165 @@
-import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
+import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
-// =========================
-// 🌐 CORS CONFIG
-// =========================
-const ALLOWED =
-  process.env.NEXT_PUBLIC_ALLOWED_ORIGIN?.split(",").map(o => o.trim()) || [];
-
-function corsHeaders(origin?: string | null) {
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Origin": "*",
-  };
-
-  if (origin && ALLOWED.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-    headers["Access-Control-Allow-Methods"] = "GET, PATCH, OPTIONS";
-    headers["Access-Control-Allow-Headers"] =
-      "Content-Type, Authorization";
-  }
-
-  return headers;
-}
-
-function json(data: unknown, status = 200, origin?: string | null) {
-  return new NextResponse(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      ...corsHeaders(origin),
-    },
-  });
-}
-
-// =========================
-// ✅ OPTIONS (CORS PREFLIGHT)
-// =========================
+// ================= OPTIONS =================
 export async function OPTIONS(req: Request) {
-  const origin = req.headers.get("origin");
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 204,
-    headers: corsHeaders(origin),
+    headers: getCorsHeaders(req.headers.get("origin")),
   });
 }
 
-// =========================
-// 📥 GET STORE (PUBLIC)
-// =========================
+// ================= GET SINGLE DESIGN =================
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> }
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    const { storeId } = await params; // ✅ FIX
+    const { storeId, collectionId, designId } = await params;
 
-    if (!storeId) {
-      return json({ error: "Store ID is required" }, 400, origin);
-    }
-
-    const store = await prismadb.store.findFirst({
-      where: { id: storeId },
+    const design = await prismadb.designItem.findFirst({
+      where: {
+        id: designId,
+        collectionId,
+        collection: { storeId },
+      },
+      include: {
+        variations: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
     });
 
-    if (!store) {
-      return json({ error: "Store not found" }, 404, origin);
-    }
+    if (!design) return errorResponse("Design not found", origin, 404);
 
-    return json(store, 200, origin);
+    return corsResponse(design, origin);
   } catch (error) {
-    console.error("[STORE_GET]", error);
-    return json({ error: "Internal server error" }, 500, origin);
+    console.error("[DESIGN_GET]", error);
+    return errorResponse("Internal error", origin);
   }
 }
 
-// =========================
-// ✏️ PATCH STORE (PROTECTED)
-// =========================
+// ================= PATCH =================
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> }
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { userId } = await auth(); // ✅ FIX
 
+=======
+    const { storeId, collectionId, designId } = await params;
+    const { userId } = await auth();
+>>>>>>> 95f3d2a (new update)
 
-    if (!userId) {
-      return json({ error: "Unauthenticated" }, 401, origin);
-    }
-
-    const { storeId } = await params; // ✅ FIX
-
-    if (!storeId) {
-      return json({ error: "Store ID is required" }, 400, origin);
-    }
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const body = await req.json();
+    const { label, imageUrl, description, tags, values, variations } = body;
 
-    const { name, storeUrl, isActive, alternateUrls, logoUrl } = body;
-
-    // 🔎 Ownership check
-    const store = await prismadb.store.findFirst({
-      where: {
-        id: storeId,
-        userId,
-      },
-    });
-
-    if (!store) {
-      return json({ error: "Unauthorized" }, 403, origin);
+    if (!label || !imageUrl) {
+      return errorResponse("label and imageUrl are required", origin, 400);
     }
 
-    // 🧠 Safe update (no mass assignment)
-    const updatedStore = await prismadb.store.update({
-      where: { id: storeId },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(storeUrl !== undefined && { storeUrl }),
-        ...(isActive !== undefined && { isActive }),
-        ...(alternateUrls !== undefined && { alternateUrls }),
-        ...(logoUrl !== undefined && { logoUrl }),
+    const store = await prismadb.store.findFirst({
+      where: { id: storeId, userId },
+    });
+
+    if (!store) return errorResponse("Unauthorized", origin, 403);
+
+    const existing = await prismadb.designItem.findFirst({
+      where: {
+        id: designId,
+        collectionId,
+        collection: { storeId },
       },
     });
 
-    return json(updatedStore, 200, origin);
+    if (!existing) return errorResponse("Design not found", origin, 404);
+
+    // 🔥 normalize variations
+    const normalizedVariations = Array.isArray(variations)
+      ? variations
+          .filter((v: any) => v?.label && v?.imageUrl)
+          .map((v: any, i: number) => ({
+            label: String(v.label),
+            imageUrl: String(v.imageUrl),
+            value: v.value ? String(v.value) : null,
+            sortOrder: Number.isFinite(v.sortOrder) ? Number(v.sortOrder) : i,
+            isActive: v.isActive !== false,
+          }))
+      : [];
+
+    // 🔥 single clean update
+    const updated = await prismadb.designItem.update({
+      where: { id: designId },
+      data: {
+        title: label,
+        imageUrl,
+        description,
+        tags: Array.isArray(values)
+          ? values
+          : Array.isArray(tags)
+          ? tags
+          : [],
+        variations: {
+          deleteMany: {},
+          ...(normalizedVariations.length && {
+            createMany: { data: normalizedVariations },
+          }),
+        },
+      },
+      include: {
+        variations: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    });
+
+    return corsResponse(updated, origin);
   } catch (error) {
-    console.error("[STORE_PATCH]", error);
-    return json({ error: "Internal server error" }, 500, origin);
+    console.error("[DESIGN_PATCH]", error);
+    return errorResponse("Internal error", origin);
+  }
+}
+
+// ================= DELETE =================
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ storeId: string; collectionId: string; designId: string }> }
+) {
+  const origin = req.headers.get("origin");
+
+  try {
+    const { storeId, collectionId, designId } = await params;
+    const { userId } = await auth();
+
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+
+    const store = await prismadb.store.findFirst({
+      where: { id: storeId, userId },
+    });
+
+    if (!store) return errorResponse("Unauthorized", origin, 403);
+
+    const deleted = await prismadb.designItem.deleteMany({
+      where: {
+        id: designId,
+        collectionId,
+        collection: { storeId },
+      },
+    });
+
+    return corsResponse(deleted, origin);
+  } catch (error) {
+    console.error("[DESIGN_DELETE]", error);
+    return errorResponse("Internal error", origin);
   }
 }

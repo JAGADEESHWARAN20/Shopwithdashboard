@@ -2,15 +2,36 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse } from "@/lib/api-utils";
 
-export async function GET(req: Request,{ params }: { params: Promise<{ storeId: string, categoryId: string }> }) {
+// ================= GET CATEGORY =================
+export async function GET(
+  req: Request,
+  {
+    params,
+  }: {
+    params: Promise<{ storeId: string; categoryId: string }>;
+  }
+) {
   const origin = req.headers.get("origin");
-  const { storeId, categoryId } = await params;
 
   try {
+    const { storeId, categoryId } = await params;
+
+    if (!storeId || !categoryId) {
+      return errorResponse(
+        "storeId and categoryId are required",
+        origin,
+        400
+      );
+    }
+
     const category = await prismadb.category.findUnique({
       where: { id: categoryId },
       include: { billboard: true },
     });
+
+    if (!category) {
+      return errorResponse("Category not found", origin, 404);
+    }
 
     return corsResponse(category, origin);
   } catch (err) {
@@ -19,25 +40,54 @@ export async function GET(req: Request,{ params }: { params: Promise<{ storeId: 
   }
 }
 
+// ================= PATCH CATEGORY =================
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ storeId: string; categoryId: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{ storeId: string; categoryId: string }>;
+  }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { storeId, categoryId } = await params; // ✅ FIX
     const { userId } = await auth();
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
+=======
+    const { storeId, categoryId } = await params;
+    const { userId } = await auth();
+>>>>>>> 95f3d2a (new update)
 
-    const { name, billboardId } = await req.json();
+    if (!userId) {
+      return errorResponse("Unauthorized", origin, 401);
+    }
+
+    if (!storeId || !categoryId) {
+      return errorResponse(
+        "storeId and categoryId are required",
+        origin,
+        400
+      );
+    }
+
+    const body = await req.json();
+    const { name, billboardId } = body;
+
+    if (!name || !billboardId) {
+      return errorResponse("Missing required fields", origin, 400);
+    }
 
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
     });
 
-    if (!store) return errorResponse("Unauthorized", origin, 403);
+    if (!store) {
+      return errorResponse("Unauthorized", origin, 403);
+    }
 
     const updated = await prismadb.category.update({
       where: { id: categoryId },
@@ -51,24 +101,48 @@ export async function PATCH(
   }
 }
 
+// ================= DELETE CATEGORY =================
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ storeId: string; categoryId: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{ storeId: string; categoryId: string }>;
+  }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { storeId, categoryId } = await params; // ✅ FIX
     const { userId } = await auth();
 
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
+=======
+    const { storeId, categoryId } = await params;
+    const { userId } = await auth();
+
+    if (!userId) {
+      return errorResponse("Unauthorized", origin, 401);
+    }
+
+    if (!storeId || !categoryId) {
+      return errorResponse(
+        "storeId and categoryId are required",
+        origin,
+        400
+      );
+    }
+>>>>>>> 95f3d2a (new update)
 
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
     });
 
-    if (!store) return errorResponse("Unauthorized", origin, 403);
+    if (!store) {
+      return errorResponse("Unauthorized", origin, 403);
+    }
 
     await prismadb.category.delete({
       where: { id: categoryId },

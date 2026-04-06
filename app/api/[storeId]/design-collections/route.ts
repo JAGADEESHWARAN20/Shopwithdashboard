@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
+// ================= OPTIONS =================
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 204,
@@ -10,13 +11,15 @@ export async function OPTIONS(req: Request) {
   });
 }
 
+// ================= CREATE COLLECTION =================
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> } // ✅ FIX
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
     const { storeId } = await params; // ✅ FIX
     const { userId } = await auth(); // ✅ FIX
 
@@ -28,16 +31,31 @@ export async function POST(
 
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);
 
+=======
+    const { storeId } = await params;
+    const { userId } = await auth();
+
+    if (!userId) return errorResponse("Unauthorized", origin, 401);
+    if (!storeId) return errorResponse("Store ID required", origin, 400);
+>>>>>>> 95f3d2a (new update)
 
     const { label, coverImage, slug, isFeatured } = await req.json();
 
     if (!label || !coverImage || !slug) {
-      return errorResponse("label, coverImage and slug are required", origin, 400);
+      return errorResponse(
+        "label, coverImage and slug are required",
+        origin,
+        400
+      );
     }
 
+    // 🔐 ownership check
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
@@ -49,7 +67,10 @@ export async function POST(
         slug,
         isFeatured: Boolean(isFeatured),
         storeId,
+<<<<<<< HEAD
 
+=======
+>>>>>>> 95f3d2a (new update)
       },
     });
 
@@ -60,6 +81,7 @@ export async function POST(
   }
 }
 
+// ================= GET ALL COLLECTIONS =================
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ storeId: string }> }
@@ -67,11 +89,19 @@ export async function GET(
   const origin = req.headers.get("origin");
 
   try {
+<<<<<<< HEAD
 
     const { storeId } = await params;
 
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);
 
+=======
+    const { storeId } = await params;
+
+    if (!storeId) {
+      return errorResponse("Store ID required", origin, 400);
+    }
+>>>>>>> 95f3d2a (new update)
 
     const collections = await prismadb.designCollection.findMany({
       where: { storeId },
@@ -79,8 +109,12 @@ export async function GET(
         designs: {
           include: {
             variations: {
+<<<<<<< HEAD
               orderBy: { sortOrder: "asc" }
 
+=======
+              orderBy: { sortOrder: "asc" },
+>>>>>>> 95f3d2a (new update)
             },
           },
         },
@@ -88,6 +122,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
+<<<<<<< HEAD
     return corsResponse(collections, origin); // ✅ ARRAY
   } catch (error) {
 
@@ -100,6 +135,11 @@ export async function GET(
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
 
+=======
+    return corsResponse(collections, origin); // ✅ ALWAYS ARRAY
+  } catch (error) {
+    console.error("[COLLECTIONS_GET]", error);
+>>>>>>> 95f3d2a (new update)
     return errorResponse("Internal Server Error", origin);
   }
 }
