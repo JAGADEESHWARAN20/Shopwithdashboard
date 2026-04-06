@@ -4,42 +4,43 @@ import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 
-export async function PATCH(req: NextRequest, { params }: { params: { storeId: string } }) {
-     try {
-<<<<<<< HEAD
-          const { userId } = auth();
-=======
-          const { userId } = await auth();
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
-          const { storeId } = params;
-          const body = await req.json();
-          const { isActive } = body;
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { storeId: string } }
+) {
+  try {
+    const { userId } = await auth(); // ✅ FIXED
 
-          if (!userId) {
-               return new NextResponse("Unauthorized", { status: 401 });
-          }
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
 
-          if (!storeId) {
-               return new NextResponse("Store ID is required", { status: 400 });
-          }
+    const { storeId } = params;
 
-          if (typeof isActive !== 'boolean') {
-               return new NextResponse("isActive must be a boolean", { status: 400 });
-          }
+    if (!storeId) {
+      return new NextResponse("Store ID is required", { status: 400 });
+    }
 
-          const store = await prismadb.store.updateMany({
-               where: {
-                    id: storeId,
-                    userId: userId,
-               },
-               data: {
-                    isActive: isActive,
-               },
-          });
+    const body = await req.json();
+    const { isActive } = body;
 
-          return NextResponse.json(store);
-     } catch (error) {
-          console.error("[STORE_STATUS_PATCH]", error);
-          return new NextResponse("Internal error", { status: 500 });
-     }
+    if (typeof isActive !== "boolean") {
+      return new NextResponse("isActive must be a boolean", { status: 400 });
+    }
+
+    const store = await prismadb.store.updateMany({
+      where: {
+        id: storeId,
+        userId,
+      },
+      data: {
+        isActive,
+      },
+    });
+
+    return NextResponse.json(store);
+  } catch (error) {
+    console.error("[STORE_STATUS_PATCH]", error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
 }
