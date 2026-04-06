@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server"; // ✅ use auth (NOT getAuth)
 import { redirect } from "next/navigation";
 import Navbar from "../../../components/navbar";
 import prismadb from "../../../lib/prismadb";
@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   children: ReactNode;
   params: { storeId: string };
 }) {
-  const { userId } = auth();
+  const { userId } = await auth(); // ✅ IMPORTANT: await here
 
   if (!userId) {
     redirect("/sign-in");

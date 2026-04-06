@@ -2,11 +2,16 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getCorsHeaders } from "@/lib/api-utils";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/api/(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/(.*)",
+]);
 
 export default clerkMiddleware((auth, request) => {
   const origin = request.headers.get("origin");
 
+  // ✅ Handle preflight
   if (request.method === "OPTIONS") {
     return new NextResponse(null, {
       status: 204,
@@ -14,6 +19,7 @@ export default clerkMiddleware((auth, request) => {
     });
   }
 
+  // ✅ FIX: use auth.protect() instead of auth()
   if (!isPublicRoute(request)) {
     auth().protect();
   }
