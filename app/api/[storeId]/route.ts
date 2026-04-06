@@ -1,5 +1,5 @@
 import prismadb from "@/lib/prismadb";
-import { getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse } from "@/lib/api-utils";
 import { NextRequest } from "next/server";
 
@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: any){
   const origin = req.headers.get("origin");
 
   try {
-    const { userId } = getAuth(req);
+    const { userId } = auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     const body = await req.json();
