@@ -15,6 +15,18 @@ const DesignItemPage = async ({
             id: resolvedParams.designId,
             collectionId: resolvedParams.collectionId,
             collection: { storeId: resolvedParams.storeId },
+}) => {
+  const resolvedParams = await params;
+  const design =
+    resolvedParams.designId === "new"
+      ? null
+      : await prismadb.designItem.findFirst({
+          where: {
+
+            id: resolvedParams.designId,
+            collectionId: resolvedParams.collectionId,
+            collection: { storeId: resolvedParams.storeId },
+
           },
           include: {
             variations: {

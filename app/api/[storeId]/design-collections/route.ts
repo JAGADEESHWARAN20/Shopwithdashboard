@@ -17,18 +17,17 @@ export async function POST(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
     const { storeId } = await params; // ✅ FIX
     const { userId } = await auth(); // ✅ FIX
 
     if (!userId) return errorResponse("Unauthorized", origin, 401);
     if (!storeId) return errorResponse("Store ID required", origin, 400);
-=======
+
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+
 
     const { label, coverImage, slug, isFeatured } = await req.json();
 
@@ -37,11 +36,8 @@ export async function POST(
     }
 
     const store = await prismadb.store.findFirst({
-<<<<<<< HEAD
       where: { id: storeId, userId },
-=======
-      where: { id: params.storeId, userId },
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
@@ -52,11 +48,8 @@ export async function POST(
         coverImage,
         slug,
         isFeatured: Boolean(isFeatured),
-<<<<<<< HEAD
         storeId,
-=======
-        storeId: params.storeId,
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+
       },
     });
 
@@ -74,11 +67,11 @@ export async function GET(
   const origin = req.headers.get("origin");
 
   try {
-<<<<<<< HEAD
+
     const { storeId } = await params;
-=======
+
     if (!params.storeId) return errorResponse("Store ID required", origin, 400);
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+
 
     const collections = await prismadb.designCollection.findMany({
       where: { storeId },
@@ -86,24 +79,18 @@ export async function GET(
         designs: {
           include: {
             variations: {
-<<<<<<< HEAD
-              orderBy: { sortOrder: "asc" },
-=======
-              orderBy: {
-                sortOrder: "asc",
-              },
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+              orderBy: { sortOrder: "asc" }
+
             },
           },
         },
       },
-<<<<<<< HEAD
       orderBy: { createdAt: "desc" },
     });
 
     return corsResponse(collections, origin); // ✅ ARRAY
   } catch (error) {
-=======
+
       orderBy: {
         createdAt: "desc",
       },
@@ -112,7 +99,7 @@ export async function GET(
     return corsResponse(collections, origin);
   } catch (error) {
     console.error("[COLLECTIONS_GET]", error);
->>>>>>> codex/create-api-for-adding-designs-to-collection-waqk9m
+
     return errorResponse("Internal Server Error", origin);
   }
 }

@@ -12,7 +12,7 @@ export default async function DashboardLayout({
   params: Promise<{ storeId: string }>;
 }) {
   const { storeId } = await params;
-
+  const { userId } =await auth();
 
 
   const store = await prismadb.store.findFirst({
