@@ -2,7 +2,6 @@ import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
 import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
-
 function cachedJson(data: unknown, origin: string | null) {
   return new Response(JSON.stringify(data), {
     status: 200,
@@ -14,14 +13,6 @@ function cachedJson(data: unknown, origin: string | null) {
   });
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 export async function OPTIONS(req: Request) {
   return new Response(null, {
     status: 204,
@@ -29,22 +20,21 @@ export async function OPTIONS(req: Request) {
   });
 }
 
-// Home page showcase cards (image2): lehanga, gown, etc.
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: { params: Promise<{ storeId: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.storeId) {
+    const { storeId } = await params; // ✅ FIX
+
+    if (!storeId) {
       return errorResponse("storeId is required", origin, 400);
     }
 
     const collections = await prismadb.designCollection.findMany({
-      where: {
-        storeId: params.storeId,
-      },
+      where: { storeId },
       include: {
         designs: {
           include: {
@@ -54,9 +44,7 @@ export async function GET(
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
     const payload = collections.map((collection) => ({
@@ -64,7 +52,10 @@ export async function GET(
       label: collection.label,
       slug: collection.slug,
       previewImage: collection.coverImage,
-      designsCount: collection.designs.reduce((sum, d) => sum + d.variations.length, 0),
+      designsCount: collection.designs.reduce(
+        (sum, d) => sum + d.variations.length,
+        0
+      ),
       href: `/collections/${collection.slug}`,
       variationCount: collection.designs.length,
     }));

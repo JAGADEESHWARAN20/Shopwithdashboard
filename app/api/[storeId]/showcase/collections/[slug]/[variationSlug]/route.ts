@@ -32,19 +32,21 @@ export async function OPTIONS(req: Request) {
 // Variation detail: all variation images + labels for a selected design group.
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string; slug: string; variationSlug: string } }
+  { params }: { params: Promise<{ storeId: string; slug: string; variationSlug: string }> }
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.storeId || !params.slug || !params.variationSlug) {
+    const { storeId, slug, variationSlug } = await params; // ✅ REQUIRED
+
+    if (!storeId || !slug || !variationSlug) {
       return errorResponse("storeId, slug and variationSlug are required", origin, 400);
     }
 
     const collection = await prismadb.designCollection.findFirst({
       where: {
-        storeId: params.storeId,
-        slug: params.slug,
+        storeId: storeId,
+        slug: slug,
       },
       include: {
         designs: {
@@ -63,7 +65,7 @@ export async function GET(
     }
 
     const selected = collection.designs.find(
-      (design) => slugify(design.title || "other") === params.variationSlug
+      (design) => slugify(design.title || "other") === variationSlug
     );
 
     if (!selected) {
