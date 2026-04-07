@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/ui/data-table";
-import { ApiList } from "@/components/ui/api-list";
+// import { ApiList } from "@/components/ui/api-list";
 
 import { DesignCollectionColumn, columns } from "./column";
 
@@ -42,7 +42,7 @@ export const DesignCollectionClient: React.FC<Props> = ({ data }) => {
 
       <Heading title="API" description="API calls for collections" />
       <Separator />
-      <ApiList entityName="design-collections" entityIdName="collectionId" />
+      {/* <ApiList entityName="design-collections" entityIdName="collectionId" /> */}
     </>
   );
 };

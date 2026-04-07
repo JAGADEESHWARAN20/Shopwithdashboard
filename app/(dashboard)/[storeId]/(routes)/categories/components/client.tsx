@@ -8,7 +8,7 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { CategoryColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-import { ApiList } from '../../../../../../components/ui/api-list'
+// import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
@@ -42,7 +42,8 @@ export const CategoryClient: React.FC<CategoryClientProps> = ({
 />
             <Heading title="API" description="Api calls for Categories" />
             <Separator />
-            <ApiList entityName="categories" entityIdName="categoryId" />
+
+            {/*<ApiList entityName="categories" entityIdName="categoryId" />*/}           
 
         </>
     )
