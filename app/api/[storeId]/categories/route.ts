@@ -28,10 +28,15 @@ const { storeId } = await params;
   }
 }
 
-export async function POST(req: Request, { params }: { params: { storeId: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ storeId: string }> } // ✅ FIX
+) {
   const origin = req.headers.get("origin");
 
   try {
+    const { storeId } = await params; // ✅ IMPORTANT
+
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
@@ -42,13 +47,13 @@ export async function POST(req: Request, { params }: { params: { storeId: string
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const category = await prismadb.category.create({
-      data: { name, billboardId, storeId: params.storeId },
+      data: { name, billboardId, storeId },
     });
 
     return corsResponse(category, origin);

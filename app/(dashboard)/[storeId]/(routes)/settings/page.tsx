@@ -4,45 +4,46 @@ import { redirect } from "next/navigation";
 import SettingsForm from "./components/SettingsForm";
 
 interface SettingsPageProps {
-    params: {
-        storeId: string;
-    };
+  params: Promise<{
+    storeId: string;
+  }>;
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = async ({ params }) => {
-    const { userId } = await auth();
+  const { storeId } = await params; // ✅ IMPORTANT
 
-    if (!userId) {
-        redirect("/sign-in");
-    }
+  const { userId } = await auth();
 
-    const store = await prismadb.store.findFirst({
-        where: {
-            id: params.storeId,
-            userId,
-        },
-    });
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
-    if (!store) {
-        redirect("/");
-    }
+  const store = await prismadb.store.findFirst({
+    where: {
+      id: storeId, // ✅ use extracted value
+      userId,
+    },
+  });
 
-    // Ensure storeUrl is a string (or StoreUrl) by providing a fallback if null
-    const initialData = {
-        name: store.name,
-        isActive: store.isActive,
-        storeUrl: store.storeUrl || "",
-        alternateUrls: store.alternateUrls || [],
-        logoUrl: store.logoUrl || null, // ✅ FIX
-        };
+  if (!store) {
+    redirect("/");
+  }
 
-    return (
-        <div className="flex-col">
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <SettingsForm initialData={initialData} />
-            </div>
-        </div>
-    );
+  const initialData = {
+    name: store.name,
+    isActive: store.isActive,
+    storeUrl: store.storeUrl || "",
+    alternateUrls: store.alternateUrls || [],
+    logoUrl: store.logoUrl || null,
+  };
+
+  return (
+    <div className="flex-col">
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <SettingsForm initialData={initialData} />
+      </div>
+    </div>
+  );
 };
 
 export default SettingsPage;
