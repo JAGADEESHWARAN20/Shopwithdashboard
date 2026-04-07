@@ -3,14 +3,16 @@ import { razorpay } from "@/lib/razorpay";
 import prismadb from "@/lib/prismadb";
 import { getCorsHeaders } from "@/lib/api-utils";
 
-export async function OPTIONS(req: Request) {
+type Params<T> = { params: Promise<T> };
+
+export async function OPTIONS(req: NextRequest) {
   const origin = req.headers.get("origin");
   return NextResponse.json({}, { headers: getCorsHeaders(origin) });
 }
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> }
+  { params }: Params<{ storeId: string }>
 ) {
   const origin = req.headers.get("origin");
 

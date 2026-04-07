@@ -1,11 +1,13 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params<T> = { params: Promise<T> };
 
 // ================= CREATE BILLBOARD =================
 export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { storeId } = await params;
@@ -51,8 +53,8 @@ export async function POST(
 
 // ================= GET ALL BILLBOARDS =================
 export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { storeId } = await params;

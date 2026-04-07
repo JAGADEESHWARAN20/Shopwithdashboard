@@ -2,14 +2,16 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
+type Params<T> = { params: Promise<T> };
 
-export async function OPTIONS(req: Request) {
+
+export async function OPTIONS(req: NextRequest) {
     return new Response(null, {
       status: 204,
       headers: getCorsHeaders(req.headers.get("origin")),
     });
   }
-export async function GET(req: Request, { params }: { params: Promise<{ storeId: string }> }) {
+export async function GET(req: NextRequest, { params }: Params<{ storeId: string }>) {
   const origin = req.headers.get("origin");
 const { storeId } = await params;
   try {
@@ -29,8 +31,8 @@ const { storeId } = await params;
 }
 
 export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string }> } // ✅ FIX
+  req: NextRequest,
+  { params }: Params<{ storeId: string }> // ✅ FIX
 ) {
   const origin = req.headers.get("origin");
 

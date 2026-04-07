@@ -2,10 +2,12 @@ import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse, NextRequest } from "next/server";
 
+type Params<T> = { params: Promise<T> };
+
 // ================= GET =================
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; colorId: string }> }
+  { params }: Params<{ storeId: string; colorId: string }>
 ) {
   try {
     const { colorId } = await params; // ✅ FIX
@@ -30,7 +32,7 @@ export async function GET(
 // ================= PATCH =================
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; colorId: string }> }
+  { params }: Params<{ storeId: string; colorId: string }>
 ) {
   try {
     const { userId } = await auth();
@@ -86,7 +88,7 @@ export async function PATCH(
 // ================= DELETE =================
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; colorId: string }> }
+  { params }: Params<{ storeId: string; colorId: string }>
 ) {
   try {
     const { userId } = await auth();

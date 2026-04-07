@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prismadb from '@/lib/prismadb';  // Import Prisma client
 
 // POST method to save user data to Prisma DB
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
 
      try {
           // Step 1: Parse the incoming JSON request body which contains user data

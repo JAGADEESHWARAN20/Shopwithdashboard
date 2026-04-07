@@ -2,6 +2,8 @@ import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
 import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
+type Params<T> = { params: Promise<T> };
+
 function cachedJson(data: unknown, origin: string | null) {
   return new Response(JSON.stringify(data), {
     status: 200,
@@ -21,7 +23,7 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
   return new Response(null, {
     status: 204,
     headers: getCorsHeaders(req.headers.get("origin")),
@@ -30,7 +32,7 @@ export async function OPTIONS(req: Request) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; slug: string }> }
+  { params }: Params<{ storeId: string; slug: string }>
 ) {
   const origin = req.headers.get("origin");
 

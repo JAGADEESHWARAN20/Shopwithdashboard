@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosResponse } from "axios";
 import prismadb from "@/lib/prismadb";
 
+type Params<T> = { params: Promise<T> };
+
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -72,7 +74,7 @@ async function addDomainToVercel(domainToAdd: string) {
      }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { storeId: string } }) {
+export async function POST(req: NextRequest, { params }: Params<{ storeId: string }>) {
      try {
           const { userId, domainToAdd } = await req.json();
 
@@ -122,7 +124,7 @@ export async function POST(req: NextRequest, { params }: { params: { storeId: st
      }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { storeId: string } }) {
+export async function DELETE(req: NextRequest, { params }: Params<{ storeId: string }>) {
      try {
           const { userId, domainToRemove } = await req.json();
 

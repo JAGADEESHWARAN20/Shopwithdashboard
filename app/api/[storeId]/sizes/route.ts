@@ -3,10 +3,10 @@ import { auth } from "@clerk/nextjs/server";
 import prismadb from "@/lib/prismadb";
 import { getCorsHeaders } from "@/lib/api-utils";
 
-type Params = { params: Promise<{ storeId: string }> };
+type Params<T> = { params: Promise<T> };
 
 // ================= OPTIONS =================
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
   const origin = req.headers.get("origin");
 
   return new NextResponse(null, {
@@ -16,7 +16,7 @@ export async function OPTIONS(req: Request) {
 }
 
 // ================= POST =================
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, { params }: Params<{ storeId: string }>) {
   const origin = req.headers.get("origin");
 
   try {
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 }
 
 // ================= GET =================
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params<{ storeId: string; sizeId: string }>) {
   const origin = req.headers.get("origin");
 
   try {
