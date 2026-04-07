@@ -4,9 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 
+type Params<T> = { params: Promise<T> };
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { userId } = await auth(); // ✅ FIXED
@@ -15,7 +17,7 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { storeId } = params;
+    const { storeId } = await params;
 
     if (!storeId) {
       return new NextResponse("Store ID is required", { status: 400 });

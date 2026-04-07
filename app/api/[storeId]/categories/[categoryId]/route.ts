@@ -1,15 +1,14 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
 import { corsResponse, errorResponse } from "@/lib/api-utils";
+
+type Params<T> = { params: Promise<T> };
 
 // ================= GET CATEGORY =================
 export async function GET(
-  req: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ storeId: string; categoryId: string }>;
-  }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; categoryId: string }>
 ) {
   const origin = req.headers.get("origin");
 
@@ -38,12 +37,8 @@ export async function GET(
 
 // ================= PATCH CATEGORY =================
 export async function PATCH(
-  req: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ storeId: string; categoryId: string }>;
-  }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; categoryId: string }>
 ) {
   const origin = req.headers.get("origin");
 
@@ -88,12 +83,8 @@ export async function PATCH(
 
 // ================= DELETE CATEGORY =================
 export async function DELETE(
-  req: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ storeId: string; categoryId: string }>;
-  }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; categoryId: string }>
 ) {
   const origin = req.headers.get("origin");
 

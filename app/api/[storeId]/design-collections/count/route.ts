@@ -2,10 +2,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
+type Params<T> = { params: Promise<T> };
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> }
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { storeId } = await params; // ✅ FIX

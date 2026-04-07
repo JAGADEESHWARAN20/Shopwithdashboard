@@ -4,6 +4,8 @@ import prismadb from "@/lib/prismadb";
 import axios from "axios";
 import validator from "validator";
 
+type Params<T> = { params: Promise<T> };
+
 const VERCEL_API_URL = "https://api.vercel.com";
 const VERCEL_ACCESS_TOKEN = process.env.VERCEL_ACCESS_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -47,7 +49,7 @@ async function removeDomainFromProject(projectId: string, domainName: string) {
 // ================= GET STORE =================
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     if (!params.storeId) {
@@ -118,7 +120,7 @@ export async function POST(req: NextRequest) {
 // ================= UPDATE STORE =================
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { storeId: string } }
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { userId } = await auth();

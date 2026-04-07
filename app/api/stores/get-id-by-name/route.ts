@@ -23,7 +23,7 @@ function corsHeaders(origin?: string | null) {
 }
 
 // ✅ Handle preflight (VERY IMPORTANT)
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
   const origin = req.headers.get("origin");
 
   return new Response(null, {

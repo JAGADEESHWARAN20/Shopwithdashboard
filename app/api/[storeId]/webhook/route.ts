@@ -2,9 +2,11 @@ import { NextResponse, NextRequest } from "next/server";
 import crypto from "crypto";
 import prismadb from "@/lib/prismadb";
 
+type Params<T> = { params: Promise<T> };
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string }> }
+  { params }: Params<{ storeId: string }>
 ) {
   let storeId: string | undefined;
 

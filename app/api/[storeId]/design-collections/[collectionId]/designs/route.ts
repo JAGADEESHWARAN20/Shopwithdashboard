@@ -3,8 +3,10 @@ import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
+type Params<T> = { params: Promise<T> };
+
 // OPTIONS
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
   return new Response(null, {
     status: 204,
     headers: getCorsHeaders(req.headers.get("origin")),
@@ -14,7 +16,7 @@ export async function OPTIONS(req: Request) {
 // GET SINGLE COLLECTION
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+  { params }: Params<{ storeId: string; collectionId: string }>
 ) {
   const origin = req.headers.get("origin");
 
@@ -52,7 +54,7 @@ export async function GET(
 // PATCH
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+  { params }: Params<{ storeId: string; collectionId: string }>
 ) {
   const origin = req.headers.get("origin");
 
@@ -91,7 +93,7 @@ export async function PATCH(
 // DELETE
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ storeId: string; collectionId: string }> }
+  { params }: Params<{ storeId: string; collectionId: string }>
 ) {
   const origin = req.headers.get("origin");
 
