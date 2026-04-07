@@ -9,8 +9,8 @@ import { ReactNode } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "Admin Dashboard",
+  title: "NW Tailor ADMIN",
+  description: "WE STITCH FOR YOUR FIT",
 };
 
 export default function RootLayout({ 
