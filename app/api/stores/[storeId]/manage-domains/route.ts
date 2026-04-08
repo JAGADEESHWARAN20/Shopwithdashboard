@@ -77,12 +77,13 @@ async function addDomainToVercel(domainToAdd: string) {
 export async function POST(req: NextRequest, { params }: Params<{ storeId: string }>) {
      try {
           const { userId, domainToAdd } = await req.json();
+          const { storeId } = await params;
 
-          console.log("params.storeId:", params.storeId);
+          console.log("params.storeId:", storeId);
           console.log("userId:", userId);
 
           const store = await prismadb.store.findFirst({
-               where: { id: params.storeId, userId },
+               where: { id: storeId, userId },
           });
 
           if (!store) {
@@ -109,7 +110,7 @@ export async function POST(req: NextRequest, { params }: Params<{ storeId: strin
           }
 
           await prismadb.store.update({
-               where: { id: params.storeId, userId },
+               where: { id: storeId, userId },
                data: { alternateUrls, storeUrl: newStoreUrl },
           });
 
@@ -127,12 +128,12 @@ export async function POST(req: NextRequest, { params }: Params<{ storeId: strin
 export async function DELETE(req: NextRequest, { params }: Params<{ storeId: string }>) {
      try {
           const { userId, domainToRemove } = await req.json();
-
-          console.log("params.storeId:", params.storeId);
+          const { storeId } = await params;
+          console.log("params.storeId:", storeId);
           console.log("userId:", userId);
 
           const store = await prismadb.store.findFirst({
-               where: { id: params.storeId, userId },
+               where: { id: storeId, userId },
           });
 
           if (!store) {
@@ -161,7 +162,7 @@ export async function DELETE(req: NextRequest, { params }: Params<{ storeId: str
           }
 
           await prismadb.store.update({
-               where: { id: params.storeId, userId },
+               where: { id: storeId, userId },
                data: { alternateUrls, storeUrl: newStoreUrl },
           });
 

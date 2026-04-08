@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { razorpay } from "@/lib/razorpay";
 import prismadb from "@/lib/prismadb";
 import { getCorsHeaders } from "@/lib/api-utils";
+import { auth } from "@clerk/nextjs/server";
 
 type Params<T> = { params: Promise<T> };
 
@@ -17,85 +18,82 @@ export async function POST(
   const origin = req.headers.get("origin");
 
   try {
-    const { storeId } = await params; // ✅ FIX HERE
+    const { storeId } = await params;
+
+    const { userId } = await auth(); // ✅ GET USER
+
+    if (!userId) {
+      return new NextResponse("Unauthorized", {
+        status: 401,
+        headers: getCorsHeaders(origin),
+      });
+    }
+
+    const user = await prismadb.user.findFirst({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return new NextResponse("User not found", {
+        status: 404,
+        headers: getCorsHeaders(origin),
+      });
+    }
 
     const { productIds, phone, address, name, email, age, location } =
       await req.json();
 
-    if (!storeId || typeof storeId !== "string") {
-      return new NextResponse("Invalid storeId", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    // ================= VALIDATIONS =================
+
+    if (!storeId) {
+      return new NextResponse("Invalid storeId", { status: 400 });
     }
 
-    if (!productIds || productIds.length === 0) {
-      return new NextResponse("Product Ids are required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!productIds?.length) {
+      return new NextResponse("Product Ids are required", { status: 400 });
     }
 
-    if (!phone || typeof phone !== "string" || phone.trim() === "") {
-      return new NextResponse("Phone number is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!phone?.trim()) {
+      return new NextResponse("Phone number is required", { status: 400 });
     }
 
-    if (!address || typeof address !== "string" || address.trim() === "") {
-      return new NextResponse("Address is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!address?.trim()) {
+      return new NextResponse("Address is required", { status: 400 });
     }
 
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return new NextResponse("Name is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!name?.trim()) {
+      return new NextResponse("Name is required", { status: 400 });
     }
 
-    if (!email || typeof email !== "string" || email.trim() === "") {
-      return new NextResponse("Email is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!email?.trim()) {
+      return new NextResponse("Email is required", { status: 400 });
     }
 
-    if (!age || typeof age !== "number") {
-      return new NextResponse("Age is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (typeof age !== "number") {
+      return new NextResponse("Age is required", { status: 400 });
     }
 
-    if (!location || typeof location !== "string" || location.trim() === "") {
-      return new NextResponse("Location is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
+    if (!location?.trim()) {
+      return new NextResponse("Location is required", { status: 400 });
     }
+
+    // ================= PRODUCTS =================
 
     const products = await prismadb.product.findMany({
-      where: {
-        id: { in: productIds },
-      },
+      where: { id: { in: productIds } },
     });
 
     const conversionRate = process.env.USD_TO_INR_RATE
       ? parseFloat(process.env.USD_TO_INR_RATE)
       : 83;
 
-    const totalAmount = products.reduce(
-      (total: number, product: { price: number }) => {
-        return total + Math.round(product.price * conversionRate);
-      },
-      0
-    );
+    const totalAmount = products.reduce((total, product) => {
+      return total + Math.round(product.price * conversionRate);
+    }, 0);
 
     const finalAmount = Math.min(Math.max(totalAmount, 100), 50000000);
+
+    // ================= RAZORPAY =================
 
     const razorpayOrder = await razorpay.orders.create({
       amount: finalAmount,
@@ -105,10 +103,13 @@ export async function POST(
       notes: { storeId },
     });
 
+    // ================= SAVE ORDER =================
+
     const savedorder = await prismadb.order.create({
       data: {
         id: razorpayOrder.id,
         storeId,
+        userId: user.id, // ✅ FIX HERE
         isPaid: false,
         phone,
         address,
@@ -116,6 +117,7 @@ export async function POST(
         email,
         age,
         location,
+
         orderItems: {
           create: productIds.map((productId: string) => ({
             product: {

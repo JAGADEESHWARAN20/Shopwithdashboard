@@ -24,11 +24,12 @@ export async function POST(request: NextRequest) {
           // Create the user
           const user = await prisma.user.create({
                data: {
-                    email,
-                    password: hashedPassword,
-                    name,
+                 email,
+                 password: hashedPassword,
+                 name,
+                 clerkId: "manual_" + email, // ✅ FIX
                },
-          });
+             });
 
           // Create a JWT token
           const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {

@@ -78,16 +78,17 @@ export async function POST(request: NextRequest) {
           // Create the user in Prisma using Clerk ID as the primary ID
           const user = await prisma.user.create({
                data: {
-                    id, // Use Clerk's user ID as the primary key
-                    email,
-                    name: name ?? null, // Use null if name is not provided
-                    phone: phone ?? null,
-                    address: address ?? null,
-                    role: role || Role.CUSTOMER, // Default to CUSTOMER if not provided
-                    emailVerified: emailVerified ?? true, // Default to true since Clerk verified it
-                    password: `CLERK_AUTH_USER_PLACEHOLDER_${id}`,
+                 id,
+                 clerkId: id, // ✅ FIX
+                 email,
+                 name: name ?? null,
+                 phone: phone ?? null,
+                 address: address ?? null,
+                 role: role || Role.CUSTOMER,
+                 emailVerified: emailVerified ?? true,
+                 password: `CLERK_AUTH_USER_PLACEHOLDER_${id}`,
                },
-          });
+             });
 
           // Return only necessary user fields, avoid sending sensitive data if any
           const { password, ...userWithoutPassword } = user; // Example if password field exists but shouldn't be returned

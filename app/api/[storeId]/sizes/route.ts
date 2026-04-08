@@ -16,52 +16,64 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 // ================= POST =================
-export async function POST(req: NextRequest, { params }: Params<{ storeId: string }>) {
+export async function POST(
+  req: NextRequest,
+  { params }: Params<{ storeId: string }>
+) {
   const origin = req.headers.get("origin");
 
   try {
     const { storeId } = await params;
     const { userId } = await auth();
 
-    const body = await req.json();
-    const { name, value } = body;
-
-    if (!userId)
+    if (!userId) {
       return new NextResponse("Unauthorized", {
         status: 401,
         headers: getCorsHeaders(origin),
       });
+    }
 
-    if (!name)
-      return new NextResponse("Name is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
-
-    if (!value)
-      return new NextResponse("Value is required", {
-        status: 400,
-        headers: getCorsHeaders(origin),
-      });
-
-    if (!storeId)
+    if (!storeId) {
       return new NextResponse("Store ID is required", {
         status: 400,
         headers: getCorsHeaders(origin),
       });
+    }
+
+    const body = await req.json();
+    const { name, value } = body;
+
+    if (!name) {
+      return new NextResponse("Name is required", {
+        status: 400,
+        headers: getCorsHeaders(origin),
+      });
+    }
+
+    if (!value) {
+      return new NextResponse("Value is required", {
+        status: 400,
+        headers: getCorsHeaders(origin),
+      });
+    }
 
     const storeByUserId = await prismadb.store.findFirst({
       where: { id: storeId, userId },
     });
 
-    if (!storeByUserId)
+    if (!storeByUserId) {
       return new NextResponse("Unauthorized", {
         status: 403,
         headers: getCorsHeaders(origin),
       });
+    }
 
     const created = await prismadb.size.create({
-      data: { name, value, storeId },
+      data: {
+        name,
+        value,
+        storeId,
+      },
     });
 
     return NextResponse.json(created, {
@@ -77,17 +89,21 @@ export async function POST(req: NextRequest, { params }: Params<{ storeId: strin
 }
 
 // ================= GET =================
-export async function GET(req: NextRequest, { params }: Params<{ storeId: string; sizeId: string }>) {
+export async function GET(
+  req: NextRequest,
+  { params }: Params<{ storeId: string }> // ✅ FIXED
+) {
   const origin = req.headers.get("origin");
 
   try {
     const { storeId } = await params;
 
-    if (!storeId)
+    if (!storeId) {
       return new NextResponse("Store ID is required", {
         status: 400,
         headers: getCorsHeaders(origin),
       });
+    }
 
     const sizes = await prismadb.size.findMany({
       where: { storeId },
