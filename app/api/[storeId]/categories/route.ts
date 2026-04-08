@@ -1,15 +1,18 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
+import { NextRequest } from "next/server";
+
+type Params<T> = { params: Promise<T> };
 
 
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
     return new Response(null, {
       status: 204,
       headers: getCorsHeaders(req.headers.get("origin")),
     });
   }
-export async function GET(req: Request, { params }: { params: Promise<{ storeId: string }> }) {
+export async function GET(req: NextRequest, { params }: Params<{ storeId: string }>) {
   const origin = req.headers.get("origin");
 const { storeId } = await params;
   try {
@@ -28,10 +31,15 @@ const { storeId } = await params;
   }
 }
 
-export async function POST(req: Request, { params }: { params: { storeId: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: Params<{ storeId: string }> // ✅ FIX
+) {
   const origin = req.headers.get("origin");
 
   try {
+    const { storeId } = await params; // ✅ IMPORTANT
+
     const { userId } = await auth();
     if (!userId) return errorResponse("Unauthorized", origin, 401);
 
@@ -42,13 +50,13 @@ export async function POST(req: Request, { params }: { params: { storeId: string
     }
 
     const store = await prismadb.store.findFirst({
-      where: { id: params.storeId, userId },
+      where: { id: storeId, userId },
     });
 
     if (!store) return errorResponse("Unauthorized", origin, 403);
 
     const category = await prismadb.category.create({
-      data: { name, billboardId, storeId: params.storeId },
+      data: { name, billboardId, storeId },
     });
 
     return corsResponse(category, origin);

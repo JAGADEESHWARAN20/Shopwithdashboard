@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://nwtailormadestudioadmin.vercel.app/
+
+# Sitemaps
+Sitemap: https://nwtailormadestudioadmin.vercel.app/sitemap.xml

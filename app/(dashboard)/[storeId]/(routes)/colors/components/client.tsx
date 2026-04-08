@@ -8,7 +8,7 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { ColorColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-import { ApiList } from '../../../../../../components/ui/api-list'
+// import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
@@ -42,7 +42,7 @@ export const ColorClient: React.FC<ColorsClientProps> = ({
 />
             <Heading title="API" description="Api calls for colors" />
             <Separator />
-            <ApiList entityName="colors" entityIdName="colorId" />
+            {/* <ApiList entityName="colors" entityIdName="colorId" /> */}
 
         </>
     )

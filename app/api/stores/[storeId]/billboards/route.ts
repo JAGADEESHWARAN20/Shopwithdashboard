@@ -2,12 +2,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
+type Params<T> = { params: Promise<T> };
+
 export async function GET(
      req: NextRequest,
-     { params }: { params: { storeId: string } }
+     { params }: Params<{ storeId: string }>
 ) {
      try {
-          const { storeId } = params;
+          const { storeId } = await params;
 
           const billboards = await prismadb.billboard.findMany({
                where: { storeId: storeId },

@@ -1,11 +1,13 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params<T> = { params: Promise<T> };
 
 // ================= GET SINGLE BILLBOARD =================
 export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string; billboardId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; billboardId: string }>
 ) {
   try {
     const { storeId, billboardId } = await params;
@@ -34,8 +36,8 @@ export async function GET(
 
 // ================= UPDATE BILLBOARD =================
 export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string; billboardId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; billboardId: string }>
 ) {
   try {
     const { storeId, billboardId } = await params;
@@ -78,8 +80,8 @@ export async function PATCH(
 
 // ================= DELETE BILLBOARD =================
 export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string; billboardId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string; billboardId: string }>
 ) {
   try {
     const { storeId, billboardId } = await params;

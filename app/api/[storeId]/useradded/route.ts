@@ -1,55 +1,62 @@
-import { NextResponse } from 'next/server';
-import prismadb from '@/lib/prismadb';  // Import Prisma client
+import { NextRequest, NextResponse } from "next/server";
+import prismadb from "@/lib/prismadb";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
-// POST method to save user data to Prisma DB
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  try {
+    const { userId: clerkId } = await auth();
+    const clerkUser = await currentUser();
 
-     try {
-          // Step 1: Parse the incoming JSON request body which contains user data
-          const body = await req.json();
-          console.log(body)
+    if (!clerkId || !clerkUser) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-          // Extract the necessary fields from the request body
-          const { email, name, image, emailVerified, phone, role } = body;
+    const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
 
-          // Step 2: Ensure all necessary fields are provided
-          if (!email || !name || !role) {
-               return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-          }
+    let user = await prismadb.user.findFirst({
+      where: { clerkId },
+      include: {
+        wallet: true,
+        cart: true,
+      },
+    });
 
-          // Step 3: Check if the user already exists by their email
-          const existingUser = await prismadb.user.findUnique({
-               where: {
-                    email: email,
-               },
-          });
+    if (user) {
+      return NextResponse.json(user);
+    }
 
-          if (existingUser) {
-               return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-          }
+    user = await prismadb.user.create({
+      data: {
+        clerkId,
+        email,
+        name: clerkUser.fullName ?? "",
+        image: clerkUser.imageUrl ?? "",
+        provider:
+          clerkUser.externalAccounts?.length > 0 ? "google" : "email",
 
-          // Step 4: Insert the user data into the Prisma User model
-          const newUser = await prismadb.user.create({
-               data: {
-                    email,
-                    name,
-                    image: image ?? '',  // If no image, default to empty string
-                    emailVerified: emailVerified ?? false,  // Default to false if not provided
-                    phone: phone ?? null,  // If no phone, set as null
-                    role: role || 'CUSTOMER',  // Default to 'CUSTOMER' if role is not provided
-                    password: '',  // Assuming no password is needed since Clerk handles it
-               },
-          });
-          console.log(newUser);
+        wallet: {
+          create: { balance: 0 },
+        },
 
-          // Step 5: Return a successful response with the created user data
-          return NextResponse.json({ message: 'User created successfully', user: newUser });
-     } catch (error) {
-          // TypeScript expects 'error' to be of type 'unknown', so we need to handle it properly
-          if (error instanceof Error) {
-               return NextResponse.json({ error: 'Something went wrong', details: error.message }, { status: 500 });
-          } else {
-               return NextResponse.json({ error: 'Something went wrong', details: 'Unknown error' }, { status: 500 });
-          }
-     }
+        cart: {
+          create: {},
+        },
+      },
+      include: {
+        wallet: true,
+        cart: true,
+      },
+    });
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("[USER_CREATE_ERROR]", error);
+    return NextResponse.json(
+      { error: "Internal error" },
+      { status: 500 }
+    );
+  }
 }

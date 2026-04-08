@@ -8,7 +8,7 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { SizeColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-import { ApiList } from '../../../../../../components/ui/api-list'
+// import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
@@ -38,7 +38,7 @@ export const SizeClient: React.FC<SizeClientProps> = ({
             <DataTable<SizeColumn, unknown> searchKey={"name"} columns={columns} data={data} />
             <Heading title="API" description="Api calls for Sizes" />
             <Separator />
-            <ApiList entityName="sizes" entityIdName="sizeId" />
+            {/* <ApiList entityName="sizes" entityIdName="sizeId" /> */}
 
         </>
     )

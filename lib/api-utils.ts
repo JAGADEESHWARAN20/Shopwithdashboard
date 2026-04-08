@@ -74,9 +74,7 @@ export function getCorsHeaders(
   };
 }
 
-// =====================================================
-// RESPONSES
-// =====================================================
+
 
 export function optionsResponse(origin: string | null) {
   return new Response(null, {

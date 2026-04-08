@@ -8,7 +8,7 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { ProductColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-import { ApiList } from '../../../../../../components/ui/api-list'
+// import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
@@ -38,7 +38,7 @@ export const ProductClient: React.FC<ProductClientProps> = ({
             <DataTable<ProductColumn, unknown> searchKey={"name"} columns={columns} data={data} />
             <Heading title="API" description="Api calls for products" />
             <Separator />
-            <ApiList entityName="products" entityIdName="productsId" />
+            {/* <ApiList entityName="products" entityIdName="productsId" /> */}
 
         </>
     )

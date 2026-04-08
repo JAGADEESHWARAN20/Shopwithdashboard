@@ -1,11 +1,13 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params<T> = { params: Promise<T> };
 
 // ================= CREATE BILLBOARD =================
 export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { storeId } = await params;
@@ -51,8 +53,8 @@ export async function POST(
 
 // ================= GET ALL BILLBOARDS =================
 export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ storeId: string }> }
+  req: NextRequest,
+  { params }: Params<{ storeId: string }>
 ) {
   try {
     const { storeId } = await params;
@@ -61,6 +63,28 @@ export async function GET(
       return new NextResponse("Store ID is required", { status: 400 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const random = searchParams.get("random");
+
+    // 🔥 If random=true → return ONE random billboard
+    if (random === "true") {
+      const count = await prismadb.billboard.count({
+        where: { storeId },
+      });
+
+      if (count === 0) return NextResponse.json(null);
+
+      const randomIndex = Math.floor(Math.random() * count);
+
+      const billboard = await prismadb.billboard.findFirst({
+        where: { storeId },
+        skip: randomIndex,
+      });
+
+      return NextResponse.json(billboard);
+    }
+
+    // Default → return all
     const billboards = await prismadb.billboard.findMany({
       where: { storeId },
       orderBy: { createdAt: "desc" },

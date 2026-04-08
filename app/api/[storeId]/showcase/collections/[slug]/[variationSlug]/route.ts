@@ -2,6 +2,8 @@ import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
 import { errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
+type Params<T> = { params: Promise<T> };
+
 
 function cachedJson(data: unknown, origin: string | null) {
   return new Response(JSON.stringify(data), {
@@ -22,7 +24,7 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-export async function OPTIONS(req: Request) {
+export async function OPTIONS(req: NextRequest) {
   return new Response(null, {
     status: 204,
     headers: getCorsHeaders(req.headers.get("origin")),
@@ -32,19 +34,21 @@ export async function OPTIONS(req: Request) {
 // Variation detail: all variation images + labels for a selected design group.
 export async function GET(
   req: NextRequest,
-  { params }: { params: { storeId: string; slug: string; variationSlug: string } }
+  { params }: Params<{ storeId: string; slug: string; variationSlug: string }>
 ) {
   const origin = req.headers.get("origin");
 
   try {
-    if (!params.storeId || !params.slug || !params.variationSlug) {
+    const { storeId, slug, variationSlug } = await params; // ✅ REQUIRED
+
+    if (!storeId || !slug || !variationSlug) {
       return errorResponse("storeId, slug and variationSlug are required", origin, 400);
     }
 
     const collection = await prismadb.designCollection.findFirst({
       where: {
-        storeId: params.storeId,
-        slug: params.slug,
+        storeId: storeId,
+        slug: slug,
       },
       include: {
         designs: {
@@ -63,7 +67,7 @@ export async function GET(
     }
 
     const selected = collection.designs.find(
-      (design) => slugify(design.title || "other") === params.variationSlug
+      (design) => slugify(design.title || "other") === variationSlug
     );
 
     if (!selected) {
