@@ -1,5 +1,10 @@
 import next from "eslint-config-next";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
 
 export default [
-  ...next(),
+  ...compat.extends("next/core-web-vitals"),
 ];
