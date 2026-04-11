@@ -5,19 +5,18 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useParams, useRouter } from "next/navigation";
 import * as z from "zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ImageUpload from "@/components/ui/image-upload";
 
 const schema = z.object({
   name: z.string().min(1),
   isActive: z.boolean(),
-  storeUrl: z.string().optional(),
-  alternateUrls: z.array(z.object({ value: z.string().min(1) })),
   logoUrl: z.string().optional(),
   razorpayWebhookId: z.string().optional(),
 });
@@ -28,8 +27,6 @@ interface SettingsFormProps {
   initialData: {
     name: string;
     isActive: boolean;
-    storeUrl: string | null;
-    alternateUrls: string[];
     logoUrl?: string | null;
     razorpayWebhookId?: string | null;
   };
@@ -45,22 +42,15 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
     defaultValues: {
       name: initialData.name,
       isActive: initialData.isActive,
-      storeUrl: initialData.storeUrl || "",
-      alternateUrls: (initialData.alternateUrls || []).map((value) => ({ value })),
       logoUrl: initialData.logoUrl || "",
       razorpayWebhookId: initialData.razorpayWebhookId || "",
     },
   });
 
-  const alt = useFieldArray({ control: form.control, name: "alternateUrls" });
-
   const onSubmit = async (data: Values) => {
     try {
       setLoading(true);
-      await axios.patch(`/api/stores/${params.storeId}`, {
-        ...data,
-        alternateUrls: data.alternateUrls.map((u) => u.value),
-      });
+      await axios.patch(`/api/stores/${params.storeId}`, data);
       toast.success("Settings updated");
       router.refresh();
     } catch {
@@ -72,14 +62,81 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} disabled={loading} /></FormControl><FormMessage /></FormItem>} />
-        <FormField control={form.control} name="isActive" render={({ field }) => <FormItem className="flex items-center justify-between rounded border p-3"><FormLabel>Store Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>} />
-        <FormField control={form.control} name="logoUrl" render={({ field }) => <FormItem><FormLabel>Logo</FormLabel><FormControl><ImageUpload value={field.value || ""} onChange={field.onChange} onRemove={() => field.onChange("")} disabled={loading} /></FormControl></FormItem>} />
-        <FormField control={form.control} name="storeUrl" render={({ field }) => <FormItem><FormLabel>Custom domain (storeUrl)</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl></FormItem>} />
-        <div className="space-y-2"><FormLabel>Alternate URLs</FormLabel>{alt.fields.map((f, i) => <div key={f.id} className="flex gap-2"><FormField control={form.control} name={`alternateUrls.${i}.value`} render={({ field }) => <FormItem className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} /><Button type="button" variant="destructive" onClick={() => alt.remove(i)}>Remove</Button></div>)}<Button type="button" variant="secondary" onClick={() => alt.append({ value: "" })}>Add URL</Button></div>
-        <FormField control={form.control} name="razorpayWebhookId" render={({ field }) => <FormItem><FormLabel>Razorpay Webhook ID</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl></FormItem>} />
-        <Button type="submit" disabled={loading}>Save changes</Button>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-6xl">
+        <Card className="border-0 shadow-md bg-gradient-to-b from-white to-slate-50/60 dark:from-slate-950 dark:to-slate-900">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl font-semibold tracking-tight">Store settings</CardTitle>
+            <CardDescription>Update store identity, visibility, and integrations with a clean branded experience.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">Store Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={loading} className="h-11 text-base bg-white dark:bg-slate-900" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="h-11 mt-6 lg:mt-0 px-4 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between">
+                    <FormLabel className="text-sm font-medium">Store Active</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel className="text-sm font-medium">Brand Logo</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onRemove={() => field.onChange("")}
+                      disabled={loading}
+                      previewClassName="w-52 h-52 md:w-72 md:h-72 rounded-xl border-slate-200 shadow-sm bg-white"
+                      imageClassName="object-contain p-2 bg-white"
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">Use a high-resolution square logo for the best dashboard and storefront clarity.</p>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="razorpayWebhookId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Razorpay Webhook ID</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} className="h-11 bg-white dark:bg-slate-900" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={loading} className="h-11 px-6">
+            Save changes
+          </Button>
+        </div>
       </form>
     </Form>
   );

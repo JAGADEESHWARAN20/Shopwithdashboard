@@ -29,7 +29,6 @@ export async function GET(
          .trim()
          .replace(/\s+/g, " ");
    
-       console.log(`Validating store with subdomain: ${subdomain}`);
    
        const store = await prismadb.store.findFirst({
          where: {
