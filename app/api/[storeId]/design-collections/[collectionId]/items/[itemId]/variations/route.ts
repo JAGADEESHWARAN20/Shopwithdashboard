@@ -1,0 +1,7 @@
+import prismadb from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params<T> = { params: Promise<T> };
+export async function GET(req: NextRequest, { params }: Params<{ itemId: string }>) { const { itemId } = await params; return NextResponse.json(await prismadb.designVariation.findMany({ where: { designItemId: itemId }, orderBy: { sortOrder: "asc" } })); }
+export async function PATCH(req: NextRequest, { params }: Params<{ storeId: string; itemId: string }>) { const { userId } = await auth(); const { storeId, itemId } = await params; if (!userId) return new NextResponse("Unauthenticated", { status: 401 }); const store = await prismadb.store.findFirst({ where: { id: storeId, userId } }); if (!store) return new NextResponse("Unauthorized", { status: 403 }); const { variations } = await req.json(); await prismadb.designVariation.deleteMany({ where: { designItemId: itemId } }); if (Array.isArray(variations) && variations.length) await prismadb.designVariation.createMany({ data: variations.map((v: any, i: number) => ({ designItemId: itemId, label: String(v.label), imageUrl: String(v.imageUrl), value: v.value ?? null, sortOrder: Number(v.sortOrder ?? i), isActive: Boolean(v.isActive ?? true) })) }); return NextResponse.json(await prismadb.designVariation.findMany({ where: { designItemId: itemId }, orderBy: { sortOrder: "asc" } })); }

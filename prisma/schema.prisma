@@ -99,6 +99,7 @@ model Store {
   alternateUrls     String[]           @default([])
   storeUrl          String?
   logoUrl           String?
+  measurements      Measurement[]
 
   @@index([userId])
 }
@@ -328,4 +329,17 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+
+model Measurement {
+  id        String   @id @default(uuid()) @map("_id")
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  fields    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
 }

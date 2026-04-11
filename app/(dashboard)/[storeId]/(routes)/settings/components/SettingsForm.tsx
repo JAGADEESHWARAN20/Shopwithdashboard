@@ -2,13 +2,27 @@
 
 import { useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useParams, useRouter } from "next/navigation";
-import { Trash } from "lucide-react";
-import Image from "next/image";
+import * as z from "zod";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import ImageUpload from "@/components/ui/image-upload";
+
+const schema = z.object({
+  name: z.string().min(1),
+  isActive: z.boolean(),
+  storeUrl: z.string().optional(),
+  alternateUrls: z.array(z.object({ value: z.string().min(1) })),
+  logoUrl: z.string().optional(),
+  razorpayWebhookId: z.string().optional(),
+});
+
+type Values = z.infer<typeof schema>;
 
 interface SettingsFormProps {
   initialData: {
@@ -17,144 +31,57 @@ interface SettingsFormProps {
     storeUrl: string | null;
     alternateUrls: string[];
     logoUrl?: string | null;
+    razorpayWebhookId?: string | null;
   };
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   const params = useParams<{ storeId: string }>();
   const router = useRouter();
-
-  const [name, setName] = useState(initialData.name);
-  const [isActive, setIsActive] = useState(initialData.isActive);
-  const [storeUrl, setStoreUrl] = useState(initialData.storeUrl || "");
-  const [alternateUrls, setAlternateUrls] = useState(
-    initialData.alternateUrls || []
-  );
-  const [logoUrl, setLogoUrl] = useState<string | null>(
-    initialData.logoUrl || null
-  );
-
-  const [showPreview, setShowPreview] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const displayStoreUrl = storeUrl || alternateUrls[0] || "";
+  const form = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: initialData.name,
+      isActive: initialData.isActive,
+      storeUrl: initialData.storeUrl || "",
+      alternateUrls: (initialData.alternateUrls || []).map((value) => ({ value })),
+      logoUrl: initialData.logoUrl || "",
+      razorpayWebhookId: initialData.razorpayWebhookId || "",
+    },
+  });
 
-  // 🔥 Upload Logo
-  const handleUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "tudfiosw");
-    formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "");
+  const alt = useFieldArray({ control: form.control, name: "alternateUrls" });
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const data = await res.json();
-    setLogoUrl(data.secure_url);
-  };
-
-  // 🔥 Submit
-  const onSubmit = async () => {
+  const onSubmit = async (data: Values) => {
     try {
       setLoading(true);
-
       await axios.patch(`/api/stores/${params.storeId}`, {
-        name,
-        isActive,
-        storeUrl,
-        alternateUrls,
-        logoUrl,
+        ...data,
+        alternateUrls: data.alternateUrls.map((u) => u.value),
       });
-
+      toast.success("Settings updated");
       router.refresh();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      toast.error("Failed to update");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-xl">
-
-      {/* 🔹 Store Name */}
-      <div className="space-y-2">
-        <Label>Store Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-
-      {/* 🔹 Active Toggle */}
-      <div className="flex items-center justify-between">
-        <Label>Store Active</Label>
-        <Switch checked={isActive} onCheckedChange={setIsActive} />
-      </div>
-
-      {/* 🔹 Logo Upload */}
-      <div className="space-y-3">
-        <Label>Store Logo</Label>
-
-        <div className="flex items-center gap-4">
-
-          {/* Preview */}
-          <div className="w-20 h-20 rounded-xl border border-white/10 bg-black/20 flex items-center justify-center overflow-hidden">
-            {logoUrl ? (
-              <div className="relative w-20 h-20 rounded-xl border border-white/10 bg-black/20 overflow-hidden">
-                  <Image
-                    src={logoUrl}
-                    alt="logo"
-                    fill
-                    className="object-cover"
-                  />
-             </div>
-            ) : (
-              <span className="text-xs text-gray-400">No Logo</span>
-            )}
-          </div>
-
-          {/* Upload Button */}
-          <label className="cursor-pointer px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-white border border-white/10 transition">
-            Upload Logo
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleUpload(file);
-              }}
-            />
-          </label>
-
-          {/* Remove */}
-          {logoUrl && (
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => setLogoUrl(null)}
-            >
-              <Trash size={16} />
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* 🔹 Store URL */}
-      <div className="space-y-2">
-        <Label>Store URL</Label>
-        <Input
-          value={storeUrl}
-          onChange={(e) => setStoreUrl(e.target.value)}
-        />
-      </div>
-
-     
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input {...field} disabled={loading} /></FormControl><FormMessage /></FormItem>} />
+        <FormField control={form.control} name="isActive" render={({ field }) => <FormItem className="flex items-center justify-between rounded border p-3"><FormLabel>Store Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>} />
+        <FormField control={form.control} name="logoUrl" render={({ field }) => <FormItem><FormLabel>Logo</FormLabel><FormControl><ImageUpload value={field.value || ""} onChange={field.onChange} onRemove={() => field.onChange("")} disabled={loading} /></FormControl></FormItem>} />
+        <FormField control={form.control} name="storeUrl" render={({ field }) => <FormItem><FormLabel>Custom domain (storeUrl)</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl></FormItem>} />
+        <div className="space-y-2"><FormLabel>Alternate URLs</FormLabel>{alt.fields.map((f, i) => <div key={f.id} className="flex gap-2"><FormField control={form.control} name={`alternateUrls.${i}.value`} render={({ field }) => <FormItem className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>} /><Button type="button" variant="destructive" onClick={() => alt.remove(i)}>Remove</Button></div>)}<Button type="button" variant="secondary" onClick={() => alt.append({ value: "" })}>Add URL</Button></div>
+        <FormField control={form.control} name="razorpayWebhookId" render={({ field }) => <FormItem><FormLabel>Razorpay Webhook ID</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl></FormItem>} />
+        <Button type="submit" disabled={loading}>Save changes</Button>
+      </form>
+    </Form>
   );
 };
 
