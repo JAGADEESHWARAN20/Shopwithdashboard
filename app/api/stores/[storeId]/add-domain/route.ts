@@ -28,7 +28,6 @@ async function addDomainToVercel(domainToAdd: string) {
                throw new Error(errorData.error?.message || "Failed to add domain to Vercel target project");
           }
 
-          console.log("[MANAGE_DOMAINS_API] Domain added successfully to target project:", response.status);
           return await response.json(); // Return the response data
      } catch (error: any) {
           console.error("[MANAGE_DOMAINS_API] Error adding domain to target project:", error.message);

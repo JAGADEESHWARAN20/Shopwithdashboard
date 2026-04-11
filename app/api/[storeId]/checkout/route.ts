@@ -139,7 +139,6 @@ export async function POST(
       { headers: getCorsHeaders(origin) }
     );
   } catch (error) {
-    console.log("[CHECKOUT_ERROR]", error);
 
     return new NextResponse("Internal error", {
       status: 500,

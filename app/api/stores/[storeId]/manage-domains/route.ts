@@ -28,7 +28,6 @@ async function removeDomainFromVercel(domainToRemove: string) {
                     },
                }
           );
-          console.log("[MANAGE_DOMAINS_API] Domain removed successfully:", response.data);
      } catch (error: any) {
           console.error("[MANAGE_DOMAINS_API] Error removing domain:", error.response?.data || error.message);
           if (error.response?.status === 429) {
@@ -79,15 +78,12 @@ export async function POST(req: NextRequest, { params }: Params<{ storeId: strin
           const { userId, domainToAdd } = await req.json();
           const { storeId } = await params;
 
-          console.log("params.storeId:", storeId);
-          console.log("userId:", userId);
 
           const store = await prismadb.store.findFirst({
                where: { id: storeId, userId },
           });
 
           if (!store) {
-               console.log("Store not found");
                return NextResponse.json({ error: "Store not found" }, { status: 404 });
           }
 
@@ -129,15 +125,12 @@ export async function DELETE(req: NextRequest, { params }: Params<{ storeId: str
      try {
           const { userId, domainToRemove } = await req.json();
           const { storeId } = await params;
-          console.log("params.storeId:", storeId);
-          console.log("userId:", userId);
 
           const store = await prismadb.store.findFirst({
                where: { id: storeId, userId },
           });
 
           if (!store) {
-               console.log("Store not found");
                return NextResponse.json({ error: "Store not found" }, { status: 404 });
           }
 
