@@ -15,6 +15,8 @@ interface ImageUploadProps {
     onChange: (value: string) => void;
     onRemove: () => void;
     folder?: string; // ✅ NEW
+    previewClassName?: string;
+    imageClassName?: string;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -23,6 +25,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     onChange,
     onRemove,
     folder,
+    previewClassName,
+    imageClassName,
 }) => {
     const [mounted, setMounted] = useState(false);
 
@@ -50,7 +54,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     return (
         <div className="space-y-4">
             {value && (
-                <div className="relative w-40 h-40 rounded-md overflow-hidden border">
+                <div className={`relative w-40 h-40 rounded-md overflow-hidden border ${previewClassName || ""}`}>
                     <Button
                         type="button"
                         variant="destructive"
@@ -66,7 +70,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         src={value}
                         alt="Upload preview"
                         fill
-                        className="object-cover"
+                        className={imageClassName || "object-cover"}
                         sizes="160px"
                     />
                 </div>
