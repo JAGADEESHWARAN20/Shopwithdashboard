@@ -1,0 +1,8 @@
+import prismadb from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type Params<T> = { params: Promise<T> };
+export async function GET(req: NextRequest, { params }: Params<{ itemId: string }>) { const { itemId } = await params; const item = await prismadb.designItem.findUnique({ where: { id: itemId }, include: { variations: { orderBy: { sortOrder: "asc" } } } }); return NextResponse.json(item); }
+export async function PATCH(req: NextRequest, { params }: Params<{ storeId: string; itemId: string }>) { const { userId } = await auth(); const { storeId, itemId } = await params; if (!userId) return new NextResponse("Unauthenticated", { status: 401 }); const store = await prismadb.store.findFirst({ where: { id: storeId, userId } }); if (!store) return new NextResponse("Unauthorized", { status: 403 }); const { title, imageUrl, description, tags } = await req.json(); const item = await prismadb.designItem.update({ where: { id: itemId }, data: { title, imageUrl, description, tags: Array.isArray(tags) ? tags : [] } }); return NextResponse.json(item); }
+export async function DELETE(req: NextRequest, { params }: Params<{ storeId: string; itemId: string }>) { const { userId } = await auth(); const { storeId, itemId } = await params; if (!userId) return new NextResponse("Unauthenticated", { status: 401 }); const store = await prismadb.store.findFirst({ where: { id: storeId, userId } }); if (!store) return new NextResponse("Unauthorized", { status: 403 }); await prismadb.designItem.delete({ where: { id: itemId } }); return NextResponse.json({ success: true }); }

@@ -62,7 +62,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, storeUrl, isActive, alternateUrls, logoUrl } = body;
+    const { name, storeUrl, isActive, alternateUrls, logoUrl, razorpayWebhookId } = body;
 
     const store = await prismadb.store.findFirst({
       where: { id: storeId, userId },
@@ -80,6 +80,7 @@ export async function PATCH(
         ...(isActive !== undefined && { isActive }),
         ...(alternateUrls !== undefined && { alternateUrls }),
         ...(logoUrl !== undefined && { logoUrl }),
+        ...(razorpayWebhookId !== undefined && { razorpayWebhookId }),
       },
     });
 
