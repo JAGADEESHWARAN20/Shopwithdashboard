@@ -5,9 +5,11 @@ import { format } from "date-fns";
 import { Popover, PopoverTrigger, PopoverContent } from "../../../../../../components/ui/popover";
 import { Button } from "../../../../../../components/ui/button";
 import { User } from "lucide-react"; // ✅ Importing Lucide React User Icon
+import Link from "next/link";
 
 export type OrderColumn = {
   id: string;
+  storeId: string;
   phone: string;
   address: string;
   isPaid: boolean;
@@ -58,6 +60,14 @@ export const columns: ColumnDef<OrderColumn>[] = [
     cell: ({ row }) => row.original.deliveredTime
       ? format(new Date(row.original.deliveredTime), "MMMM do, HH:mm")
       : "Not Delivered",
+  },
+
+  {
+    id: "details",
+    header: "Details",
+    cell: ({ row }) => (
+      <Link className="text-blue-600 underline" href={`/${row.original.storeId}/orders/${row.original.id}`}>View</Link>
+    ),
   },
   {
     id: "fullInfo",

@@ -35,6 +35,7 @@ const SettingsPage: React.FC<SettingsPageProps> = async ({ params }) => {
     storeUrl: store.storeUrl || "",
     alternateUrls: store.alternateUrls || [],
     logoUrl: store.logoUrl || null,
+    razorpayWebhookId: store.razorpayWebhookId || null,
   };
 
   return (
