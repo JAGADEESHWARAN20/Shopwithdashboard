@@ -26,7 +26,6 @@ async function removeDomainFromVercel(domainToRemove: string) {
                throw new Error(errorData.error.message || "Failed to remove domain from Vercel target project");
           }
 
-          console.log("[MANAGE_DOMAINS_API] Domain removed successfully from target project:", response.status);
      } catch (error: any) {
           console.error("[MANAGE_DOMAINS_API] Error removing domain from target project:", error.message);
           throw error;

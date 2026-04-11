@@ -80,7 +80,6 @@ export async function POST(
         break;
 
       default:
-        console.log(`[WEBHOOK] Unhandled event: ${payment.event}`);
     }
 
     return new NextResponse(null, { status: 200 });
