@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 module.exports = {
   siteUrl:
     process.env.SITE_URL ||
-    'https://nwtailormadestudioadmin.vercel.app/',
+    'http://localhost:3000',
   generateRobotsTxt: true,
   exclude: ['/api/*', '/server-sitemap.xml'],
 
