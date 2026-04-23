@@ -268,8 +268,17 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                     </FormControl>
                     <SelectContent>
                       {colors.map(color => (
-                        <SelectItem style={{ display: 'flex' }} key={color.id} value={color.id}>
-                          <span style={{ color: color.value }}>{color.name}</span>
+                        <SelectItem className="flex items-center gap-2" key={color.id} value={color.id}>
+                          <span className="flex items-center gap-2">
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4 rounded-full border"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle cx="12" cy="12" r="11" fill={color.value} />
+                            </svg>
+                            <span>{color.name}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>

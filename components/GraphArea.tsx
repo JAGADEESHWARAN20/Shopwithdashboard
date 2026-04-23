@@ -39,7 +39,7 @@ interface CustomTooltipProps extends TooltipProps<number, string> {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
      if (active && payload && payload.length) {
           return (
-               <div className="custom-tooltip" style={{ backgroundColor: '#fff', borderRadius: '5px', padding: '8px', fontSize: '12px' }}>
+               <div className="custom-tooltip rounded-md bg-white p-2 text-xs shadow-sm">
                     <p className="label">{`${label}`}</p>
                     <p className="intro">{`Revenue: $${payload[0].value}`}</p>
                </div>
@@ -138,8 +138,6 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
                                         <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "#374151", opacity: "50%" }} width={40} />
                                         <Tooltip
                                              content={<CustomTooltip />}
-                                             wrapperStyle={{ fontSize: "12px" }}
-                                             contentStyle={{ backgroundColor: "#fff", borderRadius: "5px", padding: "8px" }}
                                              cursor={{ fill: "rgba(108, 74, 182, 0.1)" }}
                                         />
                                         <Bar dataKey="value" fill="#6C4AB6" barSize={30} shape={<CustomBarShape />} animationDuration={500} />

@@ -1,8 +1,21 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import * as z from "zod";
 
 type Params<T> = { params: Promise<T> };
+const measurementPayloadSchema = z.object({
+  name: z.string().trim().min(1, "Name is required."),
+  fields: z
+    .array(
+      z.object({
+        key: z.string().trim().min(1, "Field key is required."),
+        label: z.string().trim().min(1, "Field label is required."),
+        unit: z.string().trim().optional().default(""),
+      })
+    )
+    .min(1, "At least one field is required."),
+});
 
 export async function GET(req: NextRequest, { params }: Params<{ measurementId: string }>) {
   const { measurementId } = await params;
@@ -17,8 +30,19 @@ export async function PATCH(req: NextRequest, { params }: Params<{ storeId: stri
   const store = await prismadb.store.findFirst({ where: { id: storeId, userId } });
   if (!store) return new NextResponse("Unauthorized", { status: 403 });
 
-  const { name, fields } = await req.json();
-  const measurement = await prismadb.measurement.update({ where: { id: measurementId }, data: { name, fields } });
+  const body = await req.json();
+  const parsedBody = measurementPayloadSchema.safeParse(body);
+  if (!parsedBody.success) {
+    return NextResponse.json(
+      { message: "Invalid payload", errors: parsedBody.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const measurement = await prismadb.measurement.update({
+    where: { id: measurementId },
+    data: { name: parsedBody.data.name, fields: parsedBody.data.fields },
+  });
   return NextResponse.json(measurement);
 }
 
