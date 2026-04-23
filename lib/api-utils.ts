@@ -6,10 +6,7 @@ const DEFAULT_DEV_ORIGINS = [
   "http://localhost:3002",
 ];
 
-const DEFAULT_PROD_ORIGINS = [
-  "https://nwtailormadestudio.vercel.app",
-  "https://nwtailormadestudioadmin.vercel.app",
-];
+const DEFAULT_PROD_ORIGINS = parseOrigins(process.env.FRONTEND_URL || "");
 
 const isProd = process.env.NODE_ENV === "production";
 
