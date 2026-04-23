@@ -6,8 +6,9 @@ import prismadb from "@/lib/prismadb";
 // ✅ Allowed origins
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
-  "https://nwtailormadestudio.vercel.app",
-  "https://nwtailormadestudioadmin.vercel.app",
+  ...(process.env.CORS_ALLOWED_ORIGINS
+    ? process.env.CORS_ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
+    : []),
 ];
 
 // ✅ CORS headers
@@ -16,7 +17,7 @@ function corsHeaders(origin?: string | null) {
     "Access-Control-Allow-Origin":
       origin && ALLOWED_ORIGINS.includes(origin)
         ? origin
-        : ALLOWED_ORIGINS[1], // fallback to production frontend
+        : ALLOWED_ORIGINS[0], // fallback to local frontend
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };

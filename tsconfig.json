@@ -40,7 +40,6 @@
     ".next/types/**/*.ts",
     "webhook_secret.js",
     "tailwind.config.ts",
-    "../verceltokenchecker/checkaccessToken.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
