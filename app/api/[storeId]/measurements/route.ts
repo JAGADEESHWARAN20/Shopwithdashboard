@@ -1,6 +1,7 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 type Params<T> = { params: Promise<T> };
 
@@ -21,5 +22,6 @@ export async function POST(req: NextRequest, { params }: Params<{ storeId: strin
   if (!name || !Array.isArray(fields)) return new NextResponse("Invalid payload", { status: 400 });
 
   const measurement = await prismadb.measurement.create({ data: { name, fields, storeId } });
+  revalidateTag(`measurements:${storeId}`);
   return NextResponse.json(measurement);
 }

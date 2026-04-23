@@ -1,6 +1,7 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 type Params<T> = { params: Promise<T> };
 
@@ -19,6 +20,7 @@ export async function PATCH(req: NextRequest, { params }: Params<{ storeId: stri
 
   const { name, fields } = await req.json();
   const measurement = await prismadb.measurement.update({ where: { id: measurementId }, data: { name, fields } });
+  revalidateTag(`measurements:${storeId}`);
   return NextResponse.json(measurement);
 }
 
@@ -30,5 +32,6 @@ export async function DELETE(req: NextRequest, { params }: Params<{ storeId: str
   if (!store) return new NextResponse("Unauthorized", { status: 403 });
 
   await prismadb.measurement.delete({ where: { id: measurementId } });
+  revalidateTag(`measurements:${storeId}`);
   return NextResponse.json({ success: true });
 }

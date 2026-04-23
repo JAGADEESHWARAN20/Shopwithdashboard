@@ -1,6 +1,7 @@
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 type Params<T> = { params: Promise<T> };
 
@@ -22,6 +23,7 @@ export async function PATCH(req: NextRequest, { params }: Params<{ storeId: stri
   if (!title || !imageUrl || !categoryId) return new NextResponse("Missing fields", { status: 400 });
 
   const updated = await prismadb.recentWork.update({ where: { id: recentWorkId }, data: { title, imageUrl, categoryId } });
+  revalidateTag(`recentworks:${storeId}`);
   return NextResponse.json(updated);
 }
 
@@ -33,5 +35,6 @@ export async function DELETE(req: NextRequest, { params }: Params<{ storeId: str
   if (!store) return new NextResponse("Unauthorized", { status: 403 });
 
   await prismadb.recentWork.delete({ where: { id: recentWorkId } });
+  revalidateTag(`recentworks:${storeId}`);
   return NextResponse.json({ success: true });
 }

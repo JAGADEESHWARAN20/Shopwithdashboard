@@ -1,36 +1,24 @@
 import { format } from "date-fns";
-import prismadb from "@/lib/prismadb";
 import { DesignCollectionClient } from "./components/client";
 import { DesignCollectionColumn } from "./components/column";
+import { getDesignCollections } from "@/lib/cache/design-collections";
 
 const DesignCollectionsPage = async ({
   params
 }: {
   params: Promise<{ storeId: string }>
 }) => {
-    const { storeId } = await params;
+  const { storeId } = await params;
 
-  const collections = await prismadb.designCollection.findMany({
-    where: {
-      storeId: storeId
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
+  const collections = await getDesignCollections(storeId);
 
- const formatted: DesignCollectionColumn[] = collections.map((item: { id: any; label: any; slug: any; isFeatured: any; createdAt: string | number | Date; }) => ({
-  id: item.id,
-  label: item.label,
-  slug: item.slug,
-  isFeatured: item.isFeatured,
-  createdAt: format(
-    item.createdAt instanceof Date
-      ? item.createdAt
-      : new Date(item.createdAt),
-    "MMMM do, yyyy"
-  ),
-}));
+  const formatted: DesignCollectionColumn[] = collections.map((item) => ({
+    id: item.id,
+    label: item.label,
+    slug: item.slug,
+    isFeatured: item.isFeatured,
+    createdAt: format(item.createdAt, "MMMM do, yyyy"),
+  }));
 
   return (
     <div className="flex-col">

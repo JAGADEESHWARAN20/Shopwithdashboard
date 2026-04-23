@@ -1,19 +1,11 @@
 import { format } from "date-fns";
-import prismadb from "@/lib/prismadb";
 import { RecentWorkClient } from "./components/client";
 import { RecentWorkColumn } from "./components/column";
+import { getRecentWorks } from "@/lib/cache/recentworks";
 
 const RecentWorksPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
   const { storeId } = await params;
-  const recentWorks = await prismadb.recentWork.findMany({
-    where: {
-      category: { storeId },
-    },
-    include: {
-      category: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const recentWorks = await getRecentWorks(storeId);
 
   const data: RecentWorkColumn[] = recentWorks.map((item) => ({
     id: item.id,

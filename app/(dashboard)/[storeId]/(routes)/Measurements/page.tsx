@@ -1,12 +1,13 @@
 import { format } from "date-fns";
-import prismadb from "@/lib/prismadb";
 import { MeasurementClient } from "./components/client";
+import { getMeasurements } from "@/lib/cache/measurements";
 
 export type MeasurementRow = { id: string; name: string; fieldCount: number; createdAt: string };
 
 const MeasurementsPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
   const { storeId } = await params;
-  const measurements = await prismadb.measurement.findMany({ where: { storeId }, orderBy: { createdAt: "desc" } });
+  const measurements = await getMeasurements(storeId);
+
   const data: MeasurementRow[] = measurements.map((m) => ({
     id: m.id,
     name: m.name,

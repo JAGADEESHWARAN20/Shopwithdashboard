@@ -10,17 +10,26 @@ import { Component, DateRangeType } from "../../../../components/DateRange";
 import GraphDisplay from "../../../../components/GraphArea";
 
 interface DashboardClientProps {
-  storeId: string; // ✅ clean prop
+  storeId: string;
+  initialSummary: {
+    revenue: number;
+    sales: number;
+    stocks: number;
+  };
 }
 
-const DashboardPage: React.FC<DashboardClientProps> = ({ storeId }) => {
+const DashboardPage: React.FC<DashboardClientProps> = ({ storeId, initialSummary }) => {
   const [dateRange, setDateRange] = useState<DateRangeType | undefined>();
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalSales, setTotalSales] = useState(0);
-  const [totalStocks, setTotalStocks] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(initialSummary.revenue);
+  const [totalSales, setTotalSales] = useState(initialSummary.sales);
+  const [totalStocks, setTotalStocks] = useState(initialSummary.stocks);
   const [viewportWidth, setViewportWidth] = useState(1024);
 
   useEffect(() => {
+    if (!dateRange) {
+      return;
+    }
+
     const fetchData = async () => {
       const startDate = dateRange?.from || null;
       const endDate = dateRange?.to || null;
@@ -49,7 +58,7 @@ const DashboardPage: React.FC<DashboardClientProps> = ({ storeId }) => {
     };
 
     fetchData();
-  }, [dateRange, storeId]); // ✅ FIXED
+  }, [dateRange, storeId]);
 
   useEffect(() => {
     setViewportWidth(window.innerWidth);

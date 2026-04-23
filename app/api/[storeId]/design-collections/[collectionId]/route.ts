@@ -1,5 +1,6 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
@@ -83,6 +84,7 @@ export async function PATCH(
       },
     });
 
+    revalidateTag(`design-collections:${storeId}`);
     return corsResponse(updated, origin);
   } catch (error) {
     console.error("[COLLECTION_PATCH]", error);
@@ -113,6 +115,7 @@ export async function DELETE(
       where: { id: collectionId },
     });
 
+    revalidateTag(`design-collections:${storeId}`);
     return corsResponse({ success: true }, origin);
   } catch (error) {
     console.error("[COLLECTION_DELETE]", error);
