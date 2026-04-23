@@ -1,5 +1,6 @@
 import prismadb from "@/lib/prismadb";
 import { NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { corsResponse, errorResponse, getCorsHeaders } from "@/lib/api-utils";
 
@@ -55,6 +56,7 @@ export async function POST(
       },
     });
 
+    revalidateTag(`design-collections:${storeId}`);
     return corsResponse(collection, origin);
   } catch (error) {
     console.error("[COLLECTIONS_POST]", error);

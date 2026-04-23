@@ -1,10 +1,21 @@
-import prismadb from "@/lib/prismadb";
 import { MeasurementForm } from "./components/measurement-form";
+import { getMeasurementById, getMeasurements } from "@/lib/data/measurement";
 
-const MeasurementPage = async ({ params }: { params: Promise<{ measurementId: string }> }) => {
-  const { measurementId } = await params;
-  const measurement = measurementId === "new" ? null : await prismadb.measurement.findUnique({ where: { id: measurementId } });
-  return <div className="flex-col"><div className="flex-1 space-y-4 p-8 pt-6"><MeasurementForm initialData={measurement} /></div></div>;
+const MeasurementPage = async ({ params }: { params: Promise<{ storeId: string; measurementId: string }> }) => {
+  const { storeId, measurementId } = await params;
+
+  const [measurement, templates] = await Promise.all([
+    measurementId === "new" ? null : getMeasurementById(measurementId),
+    getMeasurements(storeId),
+  ]);
+
+  return (
+    <div className="flex-col">
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <MeasurementForm initialData={measurement} templates={templates} />
+      </div>
+    </div>
+  );
 };
 
 export default MeasurementPage;

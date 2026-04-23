@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { X, Menu } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
     const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +41,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
                         <Link
                             key={route.href}
                             href={route.href}
+                            prefetch={false}
                             className={cn(
                                 "text-sm font-medium transition-colors hover:text-primary",
                                 pathname === route.href ? "text-black dark:text-white" : "text-muted-foreground"
@@ -59,6 +60,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
                         <Link
                             key={route.href}
                             href={route.href}
+                            prefetch={false}
                             className={cn(
                                 "text-sm font-medium transition-colors hover:text-primary",
                                 pathname === route.href ? "text-black dark:text-white" : "text-muted-foreground"
