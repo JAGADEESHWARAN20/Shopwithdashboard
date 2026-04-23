@@ -4,18 +4,17 @@ import prismadb from "@/lib/prismadb";
 
 const REVALIDATE_SECONDS = 60;
 
-export const getDesignCollections = cache(async (storeId: string) => {
+export const getMeasurements = cache(async (storeId: string) => {
   return unstable_cache(
-    async () => {
-      return prismadb.designCollection.findMany({
+    async () =>
+      prismadb.measurement.findMany({
         where: { storeId },
         orderBy: { createdAt: "desc" },
-      });
-    },
-    ["design-collections", storeId],
+      }),
+    ["data-measurements", storeId],
     {
       revalidate: REVALIDATE_SECONDS,
-      tags: ["design-collections", `design-collections:${storeId}`],
+      tags: ["measurements", `measurements:${storeId}`],
     }
   )();
 });

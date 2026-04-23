@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Navbar from "../../../components/navbar";
 import { ReactNode } from "react";
-import { getStoreById, getStores } from "@/lib/cache/store";
+import { getStoreById, getStores } from "@/lib/data/stores";
 
 export default async function DashboardLayout({
   children,

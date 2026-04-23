@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { MeasurementClient } from "./components/client";
-import { getMeasurements } from "@/lib/cache/measurements";
+import { getMeasurements } from "@/lib/data/measurements";
 
 export type MeasurementRow = { id: string; name: string; fieldCount: number; createdAt: string };
 

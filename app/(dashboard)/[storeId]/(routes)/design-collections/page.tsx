@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { DesignCollectionClient } from "./components/client";
 import { DesignCollectionColumn } from "./components/column";
-import { getDesignCollections } from "@/lib/cache/design-collections";
+import { getDesignCollections } from "@/lib/data/design-collections";
 
 const DesignCollectionsPage = async ({
   params

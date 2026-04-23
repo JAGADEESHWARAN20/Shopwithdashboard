@@ -1,7 +1,7 @@
 // app/(dashboard)/[storeId]/page.tsx
 
 import DashboardPage from "./DashboardClient";
-import { getDashboardSummary } from "@/lib/cache/dashboard";
+import { getDashboardSummary } from "@/lib/data/dashboard";
 
 export default async function Page({
   params,

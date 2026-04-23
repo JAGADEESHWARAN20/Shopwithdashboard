@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { RecentWorkClient } from "./components/client";
 import { RecentWorkColumn } from "./components/column";
-import { getRecentWorks } from "@/lib/cache/recentworks";
+import { getRecentWorks } from "@/lib/data/recentworks";
 
 const RecentWorksPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
   const { storeId } = await params;
