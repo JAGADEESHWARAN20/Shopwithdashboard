@@ -99,4 +99,4 @@ async function generateCSV() {
   console.log("✅ Interakt CSV generated!");
 }
 
-generateCSV().catch(console.error);
+generateCSV().catch(console.error); 
