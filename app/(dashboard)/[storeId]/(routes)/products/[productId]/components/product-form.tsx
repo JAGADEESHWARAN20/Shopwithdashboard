@@ -134,16 +134,22 @@ export const ProductForm: React.FC<ProductFromProps> = ({
             name="images"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Background Image</FormLabel>
+                <FormLabel>Images</FormLabel>
                 <FormControl>
-                  <ImageUpload
-                    value={field.value[0]?.url ?? ""}
-                    disabled={loading}
-                    onChange={(url) =>
-                      field.onChange([{ url }, ...field.value.slice(1)])
-                    }
-                    onRemove={() => field.onChange(field.value.slice(1))}
-                  />
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {field.value.map((image, index) => (
+                        <ImageUpload
+                          key={`${image.url}-${index}`}
+                          value={image.url}
+                          disabled={loading}
+                          onChange={(url) => field.onChange(field.value.map((item, idx) => idx === index ? { url } : item))}
+                          onRemove={() => field.onChange(field.value.filter((_, idx) => idx !== index))}
+                        />
+                      ))}
+                    </div>
+                    <Button type="button" variant="secondary" onClick={() => field.onChange([...(field.value || []), { url: "" }])}>Add image</Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -262,8 +268,17 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                     </FormControl>
                     <SelectContent>
                       {colors.map(color => (
-                        <SelectItem style={{ display: 'flex' }} key={color.id} value={color.id}>
-                          <span style={{ color: color.value }}>{color.name}</span>
+                        <SelectItem className="flex items-center gap-2" key={color.id} value={color.id}>
+                          <span className="flex items-center gap-2">
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4 rounded-full border"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle cx="12" cy="12" r="11" fill={color.value} />
+                            </svg>
+                            <span>{color.name}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>

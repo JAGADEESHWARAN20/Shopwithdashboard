@@ -39,7 +39,7 @@ interface CustomTooltipProps extends TooltipProps<number, string> {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
      if (active && payload && payload.length) {
           return (
-               <div className="custom-tooltip" style={{ backgroundColor: '#fff', borderRadius: '5px', padding: '8px', fontSize: '12px' }}>
+               <div className="custom-tooltip rounded-md bg-white p-2 text-xs shadow-sm">
                     <p className="label">{`${label}`}</p>
                     <p className="intro">{`Revenue: $${payload[0].value}`}</p>
                </div>
@@ -50,7 +50,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
 
 const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
      const [graphData, setGraphData] = useState<{ date: string; value: number }[]>([]);
-     const [loading, setLoading] = useState(false);
+     const [loading, setLoading] = useState(true);
      const [error, setError] = useState<string | null>(null);
      const [graphHeight, setGraphHeight] = useState(300);
      const [isMonthlyView, setIsMonthlyView] = useState(false);
@@ -58,7 +58,7 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
      // Adjust graph height for responsiveness
      useEffect(() => {
           const updateGraphHeight = () => {
-               setGraphHeight(window.innerWidth < 640 ? 220 : window.innerWidth < 1024 ? 280 : 350);
+               setGraphHeight(window.innerWidth < 640 ? 220 : window.innerWidth < 1024 ? 260 : 300);
           };
           updateGraphHeight();
           window.addEventListener("resize", updateGraphHeight);
@@ -120,7 +120,7 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
                <CardContent className="w-full overflow-hidden p-2 sm:p-3 md:p-4">
                     {loading && (
                          <div className="flex justify-center">
-                              <Skeleton className="w-full h-32 sm:h-40 md:h-48 lg:h-56 bg-gray-300 dark:bg-gray-700" />
+                              <Skeleton className="h-[260px] sm:h-[300px] md:h-[320px] lg:h-[340px] w-full rounded-xl bg-gray-200/70 dark:bg-gray-700/60 animate-pulse" />
                          </div>
                     )}
                     {error && (
@@ -138,8 +138,6 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
                                         <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "#374151", opacity: "50%" }} width={40} />
                                         <Tooltip
                                              content={<CustomTooltip />}
-                                             wrapperStyle={{ fontSize: "12px" }}
-                                             contentStyle={{ backgroundColor: "#fff", borderRadius: "5px", padding: "8px" }}
                                              cursor={{ fill: "rgba(108, 74, 182, 0.1)" }}
                                         />
                                         <Bar dataKey="value" fill="#6C4AB6" barSize={30} shape={<CustomBarShape />} animationDuration={500} />
@@ -148,7 +146,9 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({ dateRange, storeId }) => {
                          </div>
                     )}
                     {!loading && !error && graphData.length === 0 && (
-                         <p className="text-center text-sm text-gray-500">No sales recorded in the selected date range.</p>
+                         <div className="h-[260px] sm:h-[300px] md:h-[320px] lg:h-[340px] w-full rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gray-50/60 dark:bg-gray-800/40">
+                              <p className="text-center text-sm text-gray-500">No sales in this date range yet.</p>
+                         </div>
                     )}
                </CardContent>
           </Card>

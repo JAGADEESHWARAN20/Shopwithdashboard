@@ -111,19 +111,6 @@ export const ColorForm: React.FC<ColorFormProps> = ({
         setDisplayColorPicker(false);
     };
 
-    const popover = {
-        position: 'absolute' as 'absolute',
-        zIndex: '2',
-    };
-
-    const cover = {
-        position: 'fixed' as 'fixed',
-        top: '0px',
-        right: '0px',
-        bottom: '0px',
-        left: '0px',
-    };
-
     return (
         <>
             <AlertModel
@@ -184,16 +171,32 @@ export const ColorForm: React.FC<ColorFormProps> = ({
                                                 value={color}
                                                 onChange={(e) => setColor(e.target.value)}
                                             />
-                                            <div
-                                                className={`border rounded-full p-4 cursor-pointer`}
-                                                style={{ backgroundColor: color }}
+                                            <button
+                                                type="button"
+                                                className="rounded-full border p-1"
                                                 onClick={handleClick}
-                                            />
+                                                aria-label="Open color picker"
+                                            >
+                                                <svg
+                                                    aria-hidden="true"
+                                                    className="h-8 w-8 rounded-full"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle cx="12" cy="12" r="11" fill={color} />
+                                                </svg>
+                                            </button>
                                             {displayColorPicker ? (
-                                                <div style={popover}>
-                                                    <div style={cover} onClick={handleClose} />
-                                                    <ChromePicker color={color} onChange={handleColorChange} />
-                                                </div>
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Close color picker"
+                                                        className="fixed inset-0 z-10 cursor-default"
+                                                        onClick={handleClose}
+                                                    />
+                                                    <span className="absolute right-0 top-full z-20 mt-2 block">
+                                                        <ChromePicker color={color} onChange={handleColorChange} />
+                                                    </span>
+                                                </>
                                             ) : null}
 
                                             <Input
