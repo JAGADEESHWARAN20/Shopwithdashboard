@@ -12,13 +12,22 @@ export default async function DashboardLayout({
   params: Promise<{ storeId: string }>;
 }) {
   const { storeId } = await params;
-  const { userId } =await auth();
+  const { userId } = await auth();
 
+  if (!userId) {
+    redirect(`/`);
+  }
 
   const store = await prismadb.store.findFirst({
     where: {
       id: storeId,
-      
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      isActive: true,
+      storeUrl: true,
     },
   });
 
@@ -26,7 +35,19 @@ export default async function DashboardLayout({
     redirect(`/`);
   }
 
- const stores = await prismadb.store.findMany();
+  const stores = await prismadb.store.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+   select: {
+     id: true,
+     name: true,
+     isActive: true,
+   },
+ });
 
   return (
     <>

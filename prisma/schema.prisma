@@ -14,6 +14,14 @@ enum Role {
   CUSTOMER
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 model Session {
   id        String   @id @default(uuid()) @map("_id")
   userId    String
@@ -52,6 +60,7 @@ model User {
 
   stores   Store[]   @relation("UserToStore")
   orders   Order[]   @relation("UserToOrder")
+  bookingOrders BookingOrder[] @relation("UserToBookingOrder")
   cart     Cart?     @relation("UserToCart")
   sessions Session[] @relation("UserToSession")
 }
@@ -91,6 +100,7 @@ model Store {
   colors            Color[]            @relation("StoreToColor")
   products          Product[]          @relation("StoreToProduct")
   orders            Order[]            @relation("StoreToOrder")
+  bookingOrders     BookingOrder[]     @relation("StoreToBookingOrder")
   designCollections DesignCollection[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -317,6 +327,7 @@ model Order {
   deliveredTime DateTime?
 
   @@index([storeId])
+  @@index([storeId, createdAt])
   @@index([userId])
 }
 
@@ -329,6 +340,37 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+model BookingOrder {
+  id             String        @id @default(uuid()) @map("_id")
+  storeId        String
+  store          Store         @relation("StoreToBookingOrder", fields: [storeId], references: [id])
+  userId         String?
+  user           User?         @relation("UserToBookingOrder", fields: [userId], references: [id])
+  customerName   String
+  customerPhone  String
+  customerEmail  String?
+  address        String?
+  region         String
+  city           String?
+  bookingType    String?
+  appointmentDate DateTime?
+  eventDate      DateTime?
+  notes          String?
+  bookingValue   Float         @default(0)
+  advanceAmount  Float         @default(0)
+  status         BookingStatus @default(PENDING)
+  source         String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([storeId])
+  @@index([storeId, createdAt])
+  @@index([userId])
+  @@index([region])
+  @@index([status])
+  @@index([appointmentDate])
 }
 
 

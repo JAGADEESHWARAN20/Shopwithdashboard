@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
+import { BrandProvider } from "@/Providers/brand-provider";
 import { ModalProvider } from "@/Providers/modal-provider";
 import { ToasterProvider } from "@/Providers/toast-provider";
 import { ReactNode } from "react";
@@ -22,9 +23,11 @@ export default function RootLayout({
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
-          <ToasterProvider />
-          <ModalProvider />
-          {children}
+          <BrandProvider>
+            <ToasterProvider />
+            <ModalProvider />
+            {children}
+          </BrandProvider>
         
         </body>
       </html>

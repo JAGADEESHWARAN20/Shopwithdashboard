@@ -2,6 +2,8 @@ import { format } from "date-fns"
 import prismadb from "@/lib/prismadb";
 import { SizeClient } from "./components/client";
 import { SizeColumn } from "./components/column";
+import { canViewApiEndpoints } from "@/lib/admin-access";
+import { currentUser } from "@clerk/nextjs/server";
 
 const Sizespage = async ({
     params
@@ -9,6 +11,8 @@ const Sizespage = async ({
     params: Promise<{ storeId: string }>
 }) => {
     const { storeId } = await params;
+    const user = await currentUser();
+    const showApi = canViewApiEndpoints(user?.primaryEmailAddress?.emailAddress);
     const sizes = await prismadb.size.findMany({
         where: {
             storeId: storeId
@@ -28,7 +32,7 @@ const Sizespage = async ({
         <>
             <div className="flex-col">
                 <div className="flex-1 space-y-4 p-8 pt-6">
-                    <SizeClient data={formattedSizes} />
+                    <SizeClient data={formattedSizes} showApi={showApi} />
                 </div>
             </div>
         </>

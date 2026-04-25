@@ -8,16 +8,18 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { BillboardColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-// import { ApiList } from '../../../../../../components/ui/api-list'
+import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
 interface BillboardClientProps {
-    data: BillboardColumn[]
+    data: BillboardColumn[];
+    showApi: boolean;
 }
 
 export const BillboardClient: React.FC<BillboardClientProps> = ({
-    data
+    data,
+    showApi,
 }) => {
     const router = useRouter();
     const params = useParams();
@@ -40,10 +42,13 @@ export const BillboardClient: React.FC<BillboardClientProps> = ({
   columns={columns}
   data={data}
 />
-            <Heading title="API" description="Api calls for Billboards" />
-            <Separator />
-
-            {/* <ApiList entityName="billboards" entityIdName="billboardId" /> */}
+            {showApi ? (
+                <>
+                    <Heading title="API" description="Api calls for Billboards" />
+                    <Separator />
+                    <ApiList entityName="billboards" entityIdName="billboardId" />
+                </>
+            ) : null}
 
         </>
     )

@@ -87,13 +87,18 @@ function Component({ onDateChange }: ComponentProps) {
           <div>
                <Popover>
                     <PopoverTrigger asChild>
-                         <Button variant="outline">
-                              {date?.from && date?.to
-                                   ? `${new Intl.DateTimeFormat("en-GB").format(date.from)} - ${new Intl.DateTimeFormat("en-GB").format(date.to)}`
-                                   : "Pick a date range"}
+                         <Button
+                              className="max-w-full bg-black/70 text-black hover:bg-black/70 hover:text-black sm:min-w-56"
+                              variant="outline"
+                         >
+                              <span className="truncate">
+                                   {date?.from && date?.to
+                                        ? `${new Intl.DateTimeFormat("en-GB").format(date.from)} - ${new Intl.DateTimeFormat("en-GB").format(date.to)}`
+                                        : "Pick a date range"}
+                              </span>
                          </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 mr-4 mt-2">
+                    <PopoverContent className="mr-4 mt-2 w-auto max-w-[calc(100vw-2rem)] p-0">
                          <div className="rounded-lg border border-border">
                               <div className="flex max-sm:flex-col">
                                    <div className="relative border-border py-4 max-sm:order-1 max-sm:border-t sm:w-32">

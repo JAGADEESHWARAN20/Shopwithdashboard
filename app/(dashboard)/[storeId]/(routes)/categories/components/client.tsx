@@ -8,16 +8,18 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { CategoryColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-// import { ApiList } from '../../../../../../components/ui/api-list'
+import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
 interface CategoryClientProps {
-    data: CategoryColumn[]
+    data: CategoryColumn[];
+    showApi: boolean;
 }
 
 export const CategoryClient: React.FC<CategoryClientProps> = ({
-    data
+    data,
+    showApi,
 }) => {
     const router = useRouter();
     const params = useParams();
@@ -40,10 +42,13 @@ export const CategoryClient: React.FC<CategoryClientProps> = ({
   columns={columns}
   data={data}
 />
-            <Heading title="API" description="Api calls for Categories" />
-            <Separator />
-
-            {/*<ApiList entityName="categories" entityIdName="categoryId" />*/}           
+            {showApi ? (
+                <>
+                    <Heading title="API" description="Api calls for Categories" />
+                    <Separator />
+                    <ApiList entityName="categories" entityIdName="categoryId" />
+                </>
+            ) : null}           
 
         </>
     )

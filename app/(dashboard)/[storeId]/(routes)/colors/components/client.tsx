@@ -8,16 +8,18 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { ColorColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-// import { ApiList } from '../../../../../../components/ui/api-list'
+import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
 interface ColorsClientProps {
-    data: ColorColumn[]
+    data: ColorColumn[];
+    showApi: boolean;
 }
 
 export const ColorClient: React.FC<ColorsClientProps> = ({
-    data
+    data,
+    showApi,
 }) => {
     const router = useRouter();
     const params = useParams();
@@ -40,9 +42,13 @@ export const ColorClient: React.FC<ColorsClientProps> = ({
   columns={columns}
   data={data}
 />
-            <Heading title="API" description="Api calls for colors" />
-            <Separator />
-            {/* <ApiList entityName="colors" entityIdName="colorId" /> */}
+            {showApi ? (
+                <>
+                    <Heading title="API" description="Api calls for colors" />
+                    <Separator />
+                    <ApiList entityName="colors" entityIdName="colorId" />
+                </>
+            ) : null}
 
         </>
     )

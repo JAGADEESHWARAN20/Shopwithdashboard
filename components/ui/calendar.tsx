@@ -37,7 +37,7 @@ function Calendar({
     cell: "relative focus-within:relative text-sm p-0 focus-within:z-20",
     day: "h-9 w-9 group rounded-full focus-within:bg-accent text-center focus:z-10 focus:outline-none",
     day_selected:
-      "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+      "bg-black/70 text-black hover:bg-black/70 hover:text-black focus:bg-black/70 focus:text-black",
     day_today: "bg-accent text-accent-foreground",
     day_outside: "text-muted-foreground opacity-50",
     day_disabled: "text-muted-foreground opacity-50 line-through",

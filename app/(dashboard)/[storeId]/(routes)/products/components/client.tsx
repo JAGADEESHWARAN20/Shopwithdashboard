@@ -8,16 +8,18 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { ProductColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-// import { ApiList } from '../../../../../../components/ui/api-list'
+import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
 interface ProductClientProps {
-    data: ProductColumn[]
+    data: ProductColumn[];
+    showApi: boolean;
 }
 
 export const ProductClient: React.FC<ProductClientProps> = ({
-    data
+    data,
+    showApi,
 }) => {
     const router = useRouter();
     const params = useParams();
@@ -36,9 +38,13 @@ export const ProductClient: React.FC<ProductClientProps> = ({
             </div>
             <Separator />
             <DataTable<ProductColumn, unknown> searchKey={"name"} columns={columns} data={data} />
-            <Heading title="API" description="Api calls for products" />
-            <Separator />
-            {/* <ApiList entityName="products" entityIdName="productsId" /> */}
+            {showApi ? (
+                <>
+                    <Heading title="API" description="Api calls for products" />
+                    <Separator />
+                    <ApiList entityName="products" entityIdName="productId" />
+                </>
+            ) : null}
 
         </>
     )

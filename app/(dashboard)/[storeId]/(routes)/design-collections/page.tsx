@@ -2,6 +2,8 @@ import { format } from "date-fns";
 import prismadb from "@/lib/prismadb";
 import { DesignCollectionClient } from "./components/client";
 import { DesignCollectionColumn } from "./components/column";
+import { canViewApiEndpoints } from "@/lib/admin-access";
+import { currentUser } from "@clerk/nextjs/server";
 
 const DesignCollectionsPage = async ({
   params
@@ -9,6 +11,8 @@ const DesignCollectionsPage = async ({
   params: Promise<{ storeId: string }>
 }) => {
     const { storeId } = await params;
+  const user = await currentUser();
+  const showApi = canViewApiEndpoints(user?.primaryEmailAddress?.emailAddress);
 
   const collections = await prismadb.designCollection.findMany({
     where: {
@@ -35,7 +39,7 @@ const DesignCollectionsPage = async ({
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <DesignCollectionClient data={formatted} />
+        <DesignCollectionClient data={formatted} showApi={showApi} />
       </div>
     </div>
   );

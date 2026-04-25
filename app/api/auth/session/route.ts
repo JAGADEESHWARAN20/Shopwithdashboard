@@ -1,7 +1,6 @@
 // app/api/auth/session/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
-import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
      try {

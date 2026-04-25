@@ -8,16 +8,18 @@ import { Heading } from "../../../../../../components/ui/heading";
 import { Separator } from "../../../../../../components/ui/separator";
 import { SizeColumn, columns } from "./column";
 import { DataTable } from "../../../../../../components/ui/data-table";
-// import { ApiList } from '../../../../../../components/ui/api-list'
+import { ApiList } from '../../../../../../components/ui/api-list'
 
 
 
 interface SizeClientProps {
-    data: SizeColumn[]
+    data: SizeColumn[];
+    showApi: boolean;
 }
 
 export const SizeClient: React.FC<SizeClientProps> = ({
-    data
+    data,
+    showApi,
 }) => {
     const router = useRouter();
     const params = useParams();
@@ -36,9 +38,13 @@ export const SizeClient: React.FC<SizeClientProps> = ({
             </div>
             <Separator />
             <DataTable<SizeColumn, unknown> searchKey={"name"} columns={columns} data={data} />
-            <Heading title="API" description="Api calls for Sizes" />
-            <Separator />
-            {/* <ApiList entityName="sizes" entityIdName="sizeId" /> */}
+            {showApi ? (
+                <>
+                    <Heading title="API" description="Api calls for Sizes" />
+                    <Separator />
+                    <ApiList entityName="sizes" entityIdName="sizeId" />
+                </>
+            ) : null}
 
         </>
     )

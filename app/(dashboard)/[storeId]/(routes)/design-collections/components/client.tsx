@@ -7,15 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/ui/data-table";
-// import { ApiList } from "@/components/ui/api-list";
+import { ApiList } from "@/components/ui/api-list";
 
 import { DesignCollectionColumn, columns } from "./column";
 
 interface Props {
   data: DesignCollectionColumn[];
+  showApi: boolean;
 }
 
-export const DesignCollectionClient: React.FC<Props> = ({ data }) => {
+export const DesignCollectionClient: React.FC<Props> = ({ data, showApi }) => {
   const router = useRouter();
   const params = useParams();
 
@@ -40,9 +41,13 @@ export const DesignCollectionClient: React.FC<Props> = ({ data }) => {
             data={data}
             />
 
-      <Heading title="API" description="API calls for collections" />
-      <Separator />
-      {/* <ApiList entityName="design-collections" entityIdName="collectionId" /> */}
+      {showApi ? (
+        <>
+          <Heading title="API" description="API calls for collections" />
+          <Separator />
+          <ApiList entityName="design-collections" entityIdName="collectionId" />
+        </>
+      ) : null}
     </>
   );
 };
